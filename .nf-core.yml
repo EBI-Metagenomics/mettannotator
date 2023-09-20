@@ -1,0 +1,21 @@
+repository_type: pipeline
+lint:
+  files_exist:
+  - CODE_OF_CONDUCT.md
+  - assets/nf-core-mettannotator_logo_light.png
+  - docs/images/nf-core-mettannotator_logo_light.png
+  - docs/images/nf-core-mettannotator_logo_dark.png
+  - .github/ISSUE_TEMPLATE/config.yml
+  - .github/workflows/awstest.yml
+  - .github/workflows/awsfulltest.yml
+  files_unchanged:
+  - CODE_OF_CONDUCT.md
+  - assets/nf-core-mettannotator_logo_light.png
+  - docs/images/nf-core-mettannotator_logo_light.png
+  - docs/images/nf-core-mettannotator_logo_dark.png
+  - .github/ISSUE_TEMPLATE/bug_report.yml
+  nextflow_config:
+  - manifest.name
+  - manifest.homePage
+  multiqc_config:
+  - report_comment
