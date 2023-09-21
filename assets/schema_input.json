@@ -7,30 +7,20 @@
     "items": {
         "type": "object",
         "properties": {
-            "sample": {
+            "prefix": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces"
+                "errorMessage": "Prefix, used for the gene names."
             },
-            "fastq_1": {
+            "assembly": {
                 "type": "string",
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
-            },
-            "fastq_2": {
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "pattern": "^\\S+\\.f(ast)?q\\.gz$"
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
+                "pattern": "^\\S+\\.fa$",
+                "errorMessage": "The assembly needs to be a fasta file."
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": [
+            "prefix",
+            "assembly"
+        ]
     }
 }
