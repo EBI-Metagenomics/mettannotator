@@ -18,8 +18,8 @@ process EGGNOG_MAPPER {
     path eggnog_data_dir
 
     output:
-    path "*annotations*", emit: annotations, optional: true
-    path "*orthologs*", emit: orthologs, optional: true
+    tuple val(meta), path("*annotations*"), emit: annotations, optional: true
+    tuple val(meta), path("*orthologs*"), emit: orthologs, optional: true
     path "versions.yml", emit: versions
 
     // TODO: add --db-mem
