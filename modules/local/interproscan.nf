@@ -9,8 +9,6 @@ process IPS {
         '--bind data:/opt/interproscan-5.62-94.0/data':
         '-v /host/path/to/data:/opt/interproscan-5.62-94.0/data' }"
 
-    label 'ips'
-
     input:
     tuple val(meta), path(faa_fasta)
     path interproscan_db
