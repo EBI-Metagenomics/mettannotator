@@ -1,0 +1,51 @@
+Changes in module 'nf-core/quast'
+--- modules/nf-core/quast/main.nf
++++ modules/nf-core/quast/main.nf
+@@ -1,6 +1,6 @@
+ process QUAST {
+-    tag "$meta.id"
+-    label 'process_medium'
++    tag "$meta.prefix"
++    label 'process_light'
+ 
+     conda "bioconda::quast=5.2.0"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+@@ -9,7 +9,6 @@
+ 
+     input:
+     tuple val(meta) , path(consensus)
+-    tuple val(meta2), path(fasta)
+     tuple val(meta3), path(gff)
+ 
+     output:
+@@ -25,13 +24,12 @@
+ 
+     script:
+     def args      = task.ext.args   ?: ''
+-    prefix        = task.ext.prefix ?: "${meta.id}"
++    prefix        = task.ext.prefix ?: "${meta.prefix}"
+     def features  = gff             ?  "--features $gff" : ''
+-    def reference = fasta           ?  "-r $fasta"       : ''
++    def fasta     = ''
+     """
+     quast.py \\
+         --output-dir $prefix \\
+-        $reference \\
+         $features \\
+         --threads $task.cpus \\
+         $args \\
+@@ -50,10 +48,9 @@
+ 
+     stub:
+     def args      = task.ext.args   ?: ''
+-    prefix        = task.ext.prefix ?: "${meta.id}"
++    prefix        = task.ext.prefix ?: "${meta.prefix}"
+     def features  = gff             ? "--features $gff" : ''
+-    def reference = fasta           ? "-r $fasta" : ''
+-
++    def fasta     = ''
+     """
+     mkdir -p $prefix
+     touch $prefix/report.tsv
+
+************************************************************

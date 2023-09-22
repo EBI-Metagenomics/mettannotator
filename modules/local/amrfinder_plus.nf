@@ -9,6 +9,7 @@ process AMRFINDER_PLUS {
 
     output:
     tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv"), emit: amrfinder_tsv
+    path "versions.yml", emit: versions
 
     script:
     """

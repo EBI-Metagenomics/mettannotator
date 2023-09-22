@@ -10,7 +10,10 @@
             "prefix": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Prefix, used for the gene names."
+                "errorMessage": "Prefix, used for the gene names.",
+                "meta": [
+                    "prefix"
+                ]
             },
             "assembly": {
                 "type": "string",

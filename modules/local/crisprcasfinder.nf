@@ -11,6 +11,7 @@ process CRISPRCAS_FINDER {
     tuple val(meta), path("crisprcasfinder_results/${meta.prefix}_crisprcasfinder.gff"), emit: gff
     tuple val(meta), path("crisprcasfinder_results/${meta.prefix}_crisprcasfinder.tsv"), emit: tsv
     tuple val(meta), path("crisprcasfinder_results/${meta.prefix}_crisprcasfinder_hq.gff"), emit: hq_gff
+    path "versions.yml" , emit: versions
 
     script:
     """

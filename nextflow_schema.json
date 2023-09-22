@@ -46,6 +46,57 @@
                 }
             }
         },
+        "reference_databases": {
+            "title": "Reference databases",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "interproscan_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/interpro/interproscan-5.62-94.0/data"
+                },
+                "eggnong_diamond_db": {
+                    "type": "string",
+                    "format": "file-path",
+                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/eggnog/eggnog_proteins.dmnd"
+                },
+                "eggnog_db": {
+                    "type": "string",
+                    "format": "file-path",
+                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/eggnog/eggnog.db"
+                },
+                "eggnong_data_dir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/eggnog"
+                },
+                "rfam_rrna_models": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/rfam/rfams_cms"
+                },
+                "rfam_ncrna_models": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/rfam/ncrna_cms"
+                },
+                "amrfinder_plus_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/amrfinderplus/2023-02-23.1"
+                }
+            },
+            "required": [
+                "interproscan_db",
+                "eggnong_diamond_db",
+                "eggnog_db",
+                "eggnong_data_dir",
+                "rfam_ncrna_models",
+                "amrfinder_plus_db"
+            ]
+        },
         "max_job_request_options": {
             "title": "Max job request options",
             "type": "object",
@@ -92,14 +143,12 @@
                     "type": "boolean",
                     "description": "Display help text.",
                     "fa_icon": "fas fa-question-circle",
-                    "default": false,
                     "hidden": true
                 },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
                     "fa_icon": "fas fa-question-circle",
-                    "default": false,
                     "hidden": true
                 },
                 "publish_dir_mode": {
@@ -130,14 +179,20 @@
                     "type": "boolean",
                     "description": "Send plain-text email instead of HTML.",
                     "fa_icon": "fas fa-remove-format",
-                    "default": false,
+                    "hidden": true
+                },
+                "max_multiqc_email_size": {
+                    "type": "string",
+                    "description": "File size limit when attaching MultiQC reports to summary emails.",
+                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
+                    "default": "25.MB",
+                    "fa_icon": "fas fa-file-upload",
                     "hidden": true
                 },
                 "monochrome_logs": {
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
                     "fa_icon": "fas fa-palette",
-                    "default": false,
                     "hidden": true
                 },
                 "hook_url": {
@@ -158,7 +213,6 @@
                     "type": "boolean",
                     "fa_icon": "far fa-eye-slash",
                     "description": "Show all params when using `--help`",
-                    "default": false,
                     "hidden": true,
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
                 },
@@ -166,7 +220,6 @@
                     "type": "boolean",
                     "fa_icon": "far fa-check-circle",
                     "description": "Validation of parameters fails when an unrecognised parameter is found.",
-                    "default": false,
                     "hidden": true,
                     "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
                 },
@@ -174,7 +227,6 @@
                     "type": "boolean",
                     "fa_icon": "far fa-check-circle",
                     "description": "Validation of parameters in lenient more.",
-                    "default": false,
                     "hidden": true,
                     "help_text": "Allows string values that are parseable as numbers or booleans. For further information see [JSONSchema docs](https://github.com/everit-org/json-schema#lenient-mode)."
                 },
@@ -201,6 +253,9 @@
     "allOf": [
         {
             "$ref": "#/definitions/input_output_options"
+        },
+        {
+            "$ref": "#/definitions/reference_databases"
         },
         {
             "$ref": "#/definitions/max_job_request_options"

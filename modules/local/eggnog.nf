@@ -4,6 +4,8 @@
 
 process EGGNOG_MAPPER {
 
+    tag "${meta.prefix}"
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.eggnog-mapper:v2.1.11'
 
     input:
@@ -20,6 +22,8 @@ process EGGNOG_MAPPER {
     path "*orthologs*", emit: orthologs, optional: true
     path "versions.yml", emit: versions
 
+    // TODO: add --db-mem
+
     script:
     if ( mode == "mapper" )
         """
@@ -31,7 +35,6 @@ process EGGNOG_MAPPER {
         --no_file_comments \
         --cpu ${task.cpus} \
         --no_annot \
-        --dbmem \
         -o ${meta.prefix}
 
         cat <<-END_VERSIONS > versions.yml
@@ -46,7 +49,6 @@ process EGGNOG_MAPPER {
         --no_file_comments \
         --cpu ${task.cpus} \
         --annotate_hits_table ${annotation_hit_table} \
-        --dbmem \
         -o ${meta.prefix}
 
         cat <<-END_VERSIONS > versions.yml

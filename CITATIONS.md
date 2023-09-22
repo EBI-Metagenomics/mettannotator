@@ -1,5 +1,9 @@
 # ebi-metagenomics/mettannotator: Citations
 
+## [MGnify Genomes](https://pubmed.ncbi.nlm.nih.gov/36806692/)
+
+> Gurbich TA, Almeida A, Beracochea M, Burdett T, Burgin J, Cochrane G, Raj S, Richardson L, Rogers AB, Sakharova E, Salazar GA and Finn RD. MGnify Genomes: A Resource for Biome-specific Microbial Genome Catalogues. J Mol Biol. 2023 Jul; 435(14). doi: https://doi.org/10.1016/j.jmb.2023.168016. PubMed PMID:
+
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
 > Ewels PA, Peltzer A, Fillinger S, Patel H, Alneberg J, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. The nf-core framework for community-curated bioinformatics pipelines. Nat Biotechnol. 2020 Mar;38(3):276-278. doi: 10.1038/s41587-020-0439-x. PubMed PMID: 32055031.

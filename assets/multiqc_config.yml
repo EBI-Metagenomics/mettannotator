@@ -9,4 +9,11 @@ report_section_order:
   "ebi-metagenomics-mettannotator-summary":
     order: -1002
 
+top_modules:
+  - quast
+
+sp:
+  quast_config:
+    fn: "*.tsv"
+
 export_plots: true

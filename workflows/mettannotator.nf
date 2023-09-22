@@ -37,6 +37,17 @@ include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eg
 include { IPS } from '../modules/local/interproscan'
 include { DETECT_RRNA } from '../modules/local/detect_rrna'
 include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
+include { SANNTIS } from '../modules/local/sanntis'
+include { ANNONTATE_GFF } from '../modules/local/annotate_gff'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT NF-CORE MODULES/SUBWORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+include { QUAST } from '../modules/nf-core/quast/main'
+include { MULTIQC } from '../modules/nf-core/multiqc/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -61,6 +72,8 @@ ch_eggnog_data_dir = file(params.eggnong_data_dir)
 ch_rfam_rrna_models = file(params.rfam_rrna_models)
 ch_rfam_ncrna_models = file(params.rfam_ncrna_models)
 
+ch_amrfinder_plus_db = file(params.amrfinder_plus_db)
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -80,16 +93,27 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 
+    assemblies_for_quast = assemblies.join(
+        PROKKA.out.gff
+    ).map { it -> tuple(it[0], it[1], it[2]) }
+
+    QUAST(
+        assemblies_for_quast.map { tuple(it[0], it[1]) }, // the assembly
+        assemblies_for_quast.map { tuple(it[0], it[2]) }, // the GFF
+    )
+
+    ch_versions = ch_versions.mix(QUAST.out.versions.first())
+
     CRISPRCAS_FINDER( assemblies )
 
     ch_versions = ch_versions.mix(CRISPRCAS_FINDER.out.versions.first())
 
     // EGGNOG_MAPPER_ORTHOLOGS - needs a third empty file in mode=mapper
-    assemblies = assemblies.map { it -> tuple( it[0], it[1], file("NO_FILE") ) }
+    proteins_for_emapper_orth = PROKKA.out.faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
 
     EGGNOG_MAPPER_ORTHOLOGS(
-        assemblies,
-        channel.val("mapper"),
+        proteins_for_emapper_orth,
+        Channel.value("mapper"),
         ch_eggnog_db,
         ch_eggnog_diamond_db,
         ch_eggnog_data_dir
@@ -98,15 +122,15 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ORTHOLOGS.out.versions.first())
 
     // EGGNOG_MAPPER_ANNOTATIONS - needs a second empty file in mode=annotations
-    assemblies_plus_emapper_orthologs = assemblies.join(EGGNOG_MAPPER_ORTHOLOGS, by: 0).map {
+    orthologs_for_annotations = assemblies.join(EGGNOG_MAPPER_ORTHOLOGS.out.orthologs, by: 0).map {
         it -> {
-            tuple(it[0], file("NO_FILE"), it[2]) // tuple( meta , <empty> , assembly )
+            tuple(it[0], file("NO_FILE"), file(it[2])) // tuple( meta , <empty> , assembly )
         }
     }
 
     EGGNOG_MAPPER_ANNOTATIONS(
-        assemblies,
-        channel.val("annotations"),
+        orthologs_for_annotations,
+        Channel.value("annotations"),
         ch_eggnog_db,
         ch_eggnog_diamond_db,
         ch_eggnog_data_dir
@@ -122,9 +146,9 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(IPS.out.versions.first())
 
     assemblies_plus_faa_and_gff = assemblies.join(
-        PROKKA.out.faa, by: 0
+        PROKKA.out.faa
     ).join(
-        PROKKA.out.gff, by: 0
+        PROKKA.out.gff
     )
 
     AMRFINDER_PLUS( assemblies_plus_faa_and_gff )
@@ -145,6 +169,30 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
 
+    SANNTIS(
+        IPS.out.ips_annontations.join(PROKKA.out.gbk)
+    )
+
+    ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
+
+    ANNONTATE_GFF(
+        PROKKA.out.gff.join(
+            IPS.out.ips_annontations
+        ).join(
+           EGGNOG_MAPPER_ANNOTATIONS.out.annotations, remainder: true
+        ).join(
+            SANNTIS.out.sanntis_gff, remainder: true
+        ).join(
+            DETECT_NCRNA.out.ncrna_tblout
+        ).join(
+            CRISPRCAS_FINDER.out.hq_gff, remainder: true
+        ).join(
+            AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
+        )
+    )
+
+    ch_versions = ch_versions.mix(ANNONTATE_GFF.out.versions.first())
+
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
@@ -162,6 +210,7 @@ workflow METTANNOTATOR {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+    ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.results.collect { it[1] }.ifEmpty([]) )
 
     MULTIQC (
         ch_multiqc_files.collect(),
