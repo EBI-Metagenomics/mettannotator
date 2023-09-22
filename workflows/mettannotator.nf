@@ -136,7 +136,7 @@ workflow METTANNOTATOR {
         ch_eggnog_data_dir
     )
 
-    ch_versions = ch_versions.mix(EGGNOG_MAPPER_ORTHOLOGS.out.versions.first())
+    ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
     IPS(
         PROKKA.out.faa,
