@@ -24,7 +24,7 @@ process AMRFINDER_PLUS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prokka: \$(amrfinder --version)
+        amrfinderplus: \$(amrfinder --version)
     END_VERSIONS
     """
 }

@@ -7,6 +7,14 @@ lint:
     - docs/images/nf-core-mettannotator_logo_dark.png
     - .github/ISSUE_TEMPLATE/config.yml
     - conf/test_full.config
+    - docs/output.md
+    - docs/README.md
+    - docs/README.md
+    - docs/usage.md
+    - conf/igenomes.config
+    - .github/workflows/awstest.yml
+    - .github/workflows/awsfulltest.yml
+    - ci.yml
   files_unchanged:
     - LICENSE
     - CODE_OF_CONDUCT.md
