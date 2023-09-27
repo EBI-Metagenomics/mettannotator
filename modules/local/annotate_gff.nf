@@ -40,7 +40,7 @@ process ANNONTATE_GFF {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        annotate_gff.py: v2.1.1
+        annotate_gff.py: 2.1.1
     END_VERSIONS
     """
 
@@ -50,7 +50,7 @@ process ANNONTATE_GFF {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        annotate_gff.py: v2.1.1
+        annotate_gff.py: 2.1.1
     END_VERSIONS
     """
 }
