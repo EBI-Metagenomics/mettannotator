@@ -3,6 +3,7 @@
 import argparse
 import logging
 import os
+import sys
 
 logging.basicConfig(level=logging.INFO)
 
@@ -32,7 +33,16 @@ def check_dir(directory_path):
 def reformat_line(line, taxid):
     line = line.lstrip('>').strip()
     id, description = line.split(maxsplit=1)
-    formatted_line = ">tr|{id}|{description} OX={taxid}\n".format(id=id, description=description, taxid=taxid)
+    if taxid == "820":
+        sp_name = "Bacteroides uniformis"
+    elif taxid == "821":
+        sp_name = "Phocaeicola vulgatus"
+    elif taxid == "46503":
+        sp_name = "Parabacteroides merdae"
+    else:
+        raise ValueError("Unknown species")
+    formatted_line = ">tr|{id}|{description} OS={sp_name} OX={taxid}\n".format(id=id, description=description,
+                                                                               sp_name=sp_name, taxid=taxid)
     return formatted_line
 
 
