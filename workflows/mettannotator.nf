@@ -38,6 +38,7 @@ include { IPS } from '../modules/local/interproscan'
 include { DETECT_RRNA } from '../modules/local/detect_rrna'
 include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
 include { SANNTIS } from '../modules/local/sanntis'
+include { GECCO } from '../modules/local/gecco'
 include { ANNONTATE_GFF } from '../modules/local/annotate_gff'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -174,6 +175,12 @@ workflow METTANNOTATOR {
     )
 
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
+
+    GECCO(
+        PROKKA.out.gbk
+    )
+
+    ch_versions = ch_versions.mix(GECCO.out.versions.first())
 
     ANNONTATE_GFF(
         PROKKA.out.gff.join(
