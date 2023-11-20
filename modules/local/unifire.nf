@@ -22,3 +22,5 @@ process UNIFIRE {
     singularity run --bind unirule:/volume unifire:2023.4.sif
     echo "Finished running UniFire"
     """
+
+}
