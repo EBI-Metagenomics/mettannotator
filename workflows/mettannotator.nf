@@ -40,6 +40,7 @@ include { DETECT_RRNA } from '../modules/local/detect_rrna'
 include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
 include { SANNTIS } from '../modules/local/sanntis'
 include { GECCO } from '../modules/local/gecco'
+include { UNIFIRE } from '../modules/local/unifire'
 include { ANNONTATE_GFF } from '../modules/local/annotate_gff'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -161,6 +162,8 @@ workflow METTANNOTATOR {
         PROKKA.out.faa,
         ch_defense_finder_db
     )
+
+    UNIFIRE ( PROKKA.out.faa )
 
     ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
 

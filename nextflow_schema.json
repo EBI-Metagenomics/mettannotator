@@ -86,6 +86,11 @@
                     "type": "string",
                     "format": "directory-path",
                     "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/amrfinderplus/2023-02-23.1"
+                },
+                "defense_finder_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/defense-finder-models/1.2.3"
                 }
             },
             "required": [
