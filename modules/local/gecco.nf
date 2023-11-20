@@ -16,7 +16,7 @@ process GECCO {
     gecco run -g $gbk -o gecco --cds-feature CDS
 
     if [ $? -eq 0 ]; then
-        if [ -n "$(find gecco -name "*gbk" -type f)" ]; then
+        if [ -n "\$(find gecco -name "*gbk" -type f)" ]; then
             echo "Converting GECCO output"
             gecco convert clusters -i gecco --format=gff
 
