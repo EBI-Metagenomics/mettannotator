@@ -76,7 +76,7 @@ ch_rfam_ncrna_models = file(params.rfam_ncrna_models)
 
 ch_amrfinder_plus_db = file(params.amrfinder_plus_db)
 
-ch_defense_finder_db = file(params.defense_finder_db).fromPath()
+ch_defense_finder_db = file(params.defense_finder_db)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -157,7 +157,10 @@ workflow METTANNOTATOR {
 
     AMRFINDER_PLUS( assemblies_plus_faa_and_gff )
 
-    DEFENSE_FINDER ( PROKKA.out.faa )
+    DEFENSE_FINDER (
+        PROKKA.out.faa,
+        ch_defense_finder_db
+    )
 
     ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
 
