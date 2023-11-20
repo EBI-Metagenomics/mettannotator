@@ -9,7 +9,7 @@ process GECCO {
 
     output:
     tuple val(meta), path("gecco/${meta.prefix}.clusters.gff"), emit: gff, optional: true
-    path "versions.yml" , emit: versions, , optional: true
+    path "versions.yml" , emit: versions, optional: true
 
     script:
     """
