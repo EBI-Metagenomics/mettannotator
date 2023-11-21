@@ -9,9 +9,10 @@ process UNIFIRE {
     tuple val(meta), path(faa, stageAs: "inputs_to_prep/")
 
     output:
-    tuple val(meta), path("unirule/predictions_arba.out"), emit: arba
-    tuple val(meta), path("unirule/predictions_unirule.out"), emit: unirule
+    tuple val(meta), path("unirule/predictions_arba.out")         , emit: arba
+    tuple val(meta), path("unirule/predictions_unirule.out")      , emit: unirule
     tuple val(meta), path("unirule/predictions_unirule-pirsr.out"), emit: pirsr
+    path("versions.yml")                                          , emit: versions
 
     script:
     // This tool will only work using containers ATM.

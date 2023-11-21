@@ -192,7 +192,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
 
     GECCO_RUN(
-        PROKKA.out.gbk
+        PROKKA.out.gbk, []
     )
 
     ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
