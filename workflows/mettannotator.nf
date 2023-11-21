@@ -39,7 +39,6 @@ include { IPS } from '../modules/local/interproscan'
 include { DETECT_RRNA } from '../modules/local/detect_rrna'
 include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
 include { SANNTIS } from '../modules/local/sanntis'
-include { GECCO } from '../modules/local/gecco'
 include { UNIFIRE } from '../modules/local/unifire'
 include { ANNONTATE_GFF } from '../modules/local/annotate_gff'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -49,6 +48,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { GECCO_RUN } from '../modules/nf-core/gecco/run/main'
 include { QUAST } from '../modules/nf-core/quast/main'
 include { MULTIQC } from '../modules/nf-core/multiqc/main'
 
@@ -158,14 +158,18 @@ workflow METTANNOTATOR {
 
     AMRFINDER_PLUS( assemblies_plus_faa_and_gff )
 
+    ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
+
     DEFENSE_FINDER (
         PROKKA.out.faa,
         ch_defense_finder_db
     )
 
+    ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
+
     UNIFIRE ( PROKKA.out.faa )
 
-    ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
+    ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
     DETECT_RRNA(
         PROKKA.out.fna,
@@ -187,11 +191,11 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
 
-    GECCO(
+    GECCO_RUN(
         PROKKA.out.gbk
     )
 
-    ch_versions = ch_versions.mix(GECCO.out.versions.first())
+    ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
 
     ANNONTATE_GFF(
         PROKKA.out.gff.join(
@@ -229,6 +233,7 @@ workflow METTANNOTATOR {
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
     ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.results.collect { it[1] }.ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( PROKKA.out.txt.collect { it[1] }.ifEmpty([]) )
 
     MULTIQC (
         ch_multiqc_files.collect(),

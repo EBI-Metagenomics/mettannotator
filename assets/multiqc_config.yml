@@ -9,8 +9,16 @@ report_section_order:
   "ebi-metagenomics-mettannotator-summary":
     order: -1002
 
+run_modules:
+  - quast
+  - prokka
+
 top_modules:
   - quast
+  - prokka
+
+prokka_table: true
+prokka_fn_snames: true
 
 sp:
   quast_config:
