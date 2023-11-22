@@ -6,7 +6,7 @@ process UNIFIRE {
     containerOptions "--bind unirule:/volume"
 
     input:
-    tuple val(meta), path(faa, stageAs: "inputs_to_prep/")
+    tuple val(meta), path(faa, stageAs: "unirule/*")
 
     output:
     tuple val(meta), path("unirule/predictions_arba.out")         , emit: arba
@@ -20,8 +20,8 @@ process UNIFIRE {
     // we are mounting unirule in this case
     """
     echo "Pre-processed UniRule input file"
-    prepare_unirule_input.py -i inputs_to_prep/${faa} -o unirule
-    
+    prepare_unirule_input.py -i ${faa} -o unirule
+
     # This is the provided docker running script
     /opt/scripts/bin/unifire-workflow.sh
 
