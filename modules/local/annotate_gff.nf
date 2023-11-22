@@ -1,4 +1,4 @@
-process ANNONTATE_GFF {
+process ANNOTATE_GFF {
 
     tag "${meta.prefix}"
 

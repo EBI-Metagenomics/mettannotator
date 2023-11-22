@@ -380,13 +380,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "-i",
         dest="ips",
-        help="InterproScan annontations results for the cluster rep",
+        help="InterproScan annotations results for the cluster rep",
         required=True,
     )
     parser.add_argument(
         "-e",
         dest="eggnong",
-        help="eggnog annontations for the clutser repo",
+        help="eggnog annotations for the clutser repo",
         required=False,
     )
     parser.add_argument(

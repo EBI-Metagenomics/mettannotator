@@ -40,7 +40,7 @@ include { DETECT_RRNA } from '../modules/local/detect_rrna'
 include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
 include { SANNTIS } from '../modules/local/sanntis'
 include { UNIFIRE } from '../modules/local/unifire'
-include { ANNONTATE_GFF } from '../modules/local/annotate_gff'
+include { ANNOTATE_GFF } from '../modules/local/annotate_gff'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
@@ -186,7 +186,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
 
     SANNTIS(
-        IPS.out.ips_annontations.join(PROKKA.out.gbk)
+        IPS.out.ips_annotations.join(PROKKA.out.gbk)
     )
 
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
@@ -197,9 +197,9 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
 
-    ANNONTATE_GFF(
+    ANNOTATE_GFF(
         PROKKA.out.gff.join(
-            IPS.out.ips_annontations
+            IPS.out.ips_annotations
         ).join(
            EGGNOG_MAPPER_ANNOTATIONS.out.annotations, remainder: true
         ).join(
@@ -213,7 +213,7 @@ workflow METTANNOTATOR {
         )
     )
 
-    ch_versions = ch_versions.mix(ANNONTATE_GFF.out.versions.first())
+    ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
