@@ -14,7 +14,7 @@ process IPS {
     path interproscan_db
 
     output:
-    tuple val(meta), path('*.IPS.tsv'), emit: ips_annontations
+    tuple val(meta), path('*.IPS.tsv'), emit: ips_annotations
     path "versions.yml"               , emit: versions
 
     script:

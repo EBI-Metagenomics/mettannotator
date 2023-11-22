@@ -12,6 +12,7 @@ report_section_order:
 run_modules:
   - quast
   - prokka
+  - custom_content
 
 top_modules:
   - quast
@@ -25,3 +26,7 @@ sp:
     fn: "*.tsv"
 
 export_plots: true
+
+## Prettification
+custom_logo_url: https://github.com/ebi-metagenomics/mettannotator
+custom_logo_title: "ebi-metagenomics/mettannotator"

@@ -1,5 +1,5 @@
 process GECCO_RUN {
-    tag "$meta.id"
+    tag "$meta.prefix"
     label 'process_low'
 
     conda "${moduleDir}/environment.yml"
@@ -17,7 +17,7 @@ process GECCO_RUN {
     tuple val(meta), path("*.features.tsv"),                  emit: features
     tuple val(meta), path("*.clusters.tsv"),  optional: true, emit: clusters
     tuple val(meta), path("*_cluster_*.gbk"), optional: true, emit: gbk
-    tuple val(meta), path("*_cluster_*.gff"), optional: true, emit: gff
+    tuple val(meta), path("*.clusters.gff"),  optional: true, emit: gff
     tuple val(meta), path("*.json"),          optional: true, emit: json
     path "versions.yml"                     , emit: versions
 
@@ -26,7 +26,7 @@ process GECCO_RUN {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = task.ext.prefix ?: "${meta.prefix}"
     def custom_model = model_dir ? "--model ${model_dir}" : ""
     def custom_hmm = hmm ? "--hmm ${hmm}" : ""
     """
