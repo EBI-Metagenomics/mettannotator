@@ -17,10 +17,10 @@ def main(arba, unirule, pirsr, gff, outfile):
             print("ARBA:", arba_dict[record])
 
 
-def load_unirule(unirule):
-    unirule_dict = dict()
-    with open(unirule, "r") as arba_in:
-        for line in arba_in:
+def load_unirule_arba(file):
+    results_dict = dict()
+    with open(file, "r") as file_in:
+        for line in file_in:
             if not line.startswith("Evidence"):
                 parts = line.strip().split("\t")
                 if len(parts) == 6:
@@ -28,33 +28,13 @@ def load_unirule(unirule):
                     pass
                 else:
                     evidence, protein_id, annot_type, value = line.strip().split("\t")
-                if not annot_type.startswith("comment") and not annot_type.startswith("protein."):
-                    unirule_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
-    for record in unirule_dict:
-        if "keyword" in unirule_dict[record]:
-            if len(unirule_dict[record]["keyword"]) > 1:
-                #print("before", unirule_dict[record]["keyword"])
-                unirule_dict[record]["keyword"] = collapse_keywords(list(unirule_dict[record]["keyword"]))
-                #print("after", unirule_dict[record]["keyword"])
-    return unirule_dict
-
-
-def load_arba(arba):
-    arba_dict = dict()
-    with open(arba, "r") as arba_in:
-        for line in arba_in:
-            if not line.startswith("Evidence"):
-                evidence, protein_id, annot_type, value = line.strip().split("\t")
-                if not annot_type.startswith("comment") and not annot_type.startswith("protein."):
-                    arba_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
-    for record in arba_dict:
-        if "keyword" in arba_dict[record]:
-            if len(arba_dict[record]["keyword"]) > 1:
-                arba_dict[record]["keyword"] = collapse_keywords(list(arba_dict[record]["keyword"]))
-        if "xref.GO" in arba_dict[record]:
-            arba_dict[record]["xref.GO"] = ", ".join(arba_dict[record]["xref.GO"])
-        #print(record, arba_dict[record])
-    return arba_dict
+                if not annot_type.startswith("comment"):
+                    results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
+    for record in results_dict:
+        if "keyword" in results_dict[record]:
+            if len(results_dict[record]["keyword"]) > 1:
+                results_dict[record]["keyword"] = collapse_keywords(list(results_dict[record]["keyword"]))
+    return results_dict
 
 
 def collapse_keywords(keyword_list):
