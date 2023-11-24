@@ -41,7 +41,7 @@ include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
 include { SANNTIS } from '../modules/local/sanntis'
 include { UNIFIRE } from '../modules/local/unifire'
 include { ANNOTATE_GFF } from '../modules/local/annotate_gff'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { ANTISMASH } from '../modules/local/antismash'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,6 +51,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 include { GECCO_RUN } from '../modules/nf-core/gecco/run/main'
 include { QUAST } from '../modules/nf-core/quast/main'
 include { MULTIQC } from '../modules/nf-core/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -196,6 +197,12 @@ workflow METTANNOTATOR {
     )
 
     ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
+
+    ANTISMASH(
+        PROKKA.out.gbk
+    )
+
+    ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
 
     ANNOTATE_GFF(
         PROKKA.out.gff.join(

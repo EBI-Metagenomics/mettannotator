@@ -54,43 +54,39 @@
             "properties": {
                 "interproscan_db": {
                     "type": "string",
-                    "format": "directory-path",
-                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/interpro/interproscan-5.62-94.0/data"
+                    "format": "directory-path"
                 },
                 "eggnong_diamond_db": {
                     "type": "string",
-                    "format": "file-path",
-                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/eggnog/eggnog_proteins.dmnd"
+                    "format": "file-path"
                 },
                 "eggnog_db": {
                     "type": "string",
-                    "format": "file-path",
-                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/eggnog/eggnog.db"
+                    "format": "file-path"
                 },
                 "eggnong_data_dir": {
                     "type": "string",
-                    "format": "directory-path",
-                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/eggnog"
+                    "format": "directory-path"
                 },
                 "rfam_rrna_models": {
                     "type": "string",
-                    "format": "directory-path",
-                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/rfam/rfams_cms"
+                    "format": "directory-path"
                 },
                 "rfam_ncrna_models": {
                     "type": "string",
-                    "format": "directory-path",
-                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/rfam/ncrna_cms"
+                    "format": "directory-path"
                 },
                 "amrfinder_plus_db": {
                     "type": "string",
-                    "format": "directory-path",
-                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/amrfinderplus/2023-02-23.1"
+                    "format": "directory-path"
                 },
                 "defense_finder_db": {
                     "type": "string",
-                    "format": "directory-path",
-                    "default": "/home/mbc/projects/ebi-metagenomics-mettannotator/data/dbs/defense-finder-models/1.2.3"
+                    "format": "directory-path"
+                },
+                "antismash_db": {
+                    "type": "string",
+                    "format": "directory-path"
                 }
             },
             "required": [
@@ -99,7 +95,9 @@
                 "eggnog_db",
                 "eggnong_data_dir",
                 "rfam_ncrna_models",
-                "amrfinder_plus_db"
+                "amrfinder_plus_db",
+                "defense_finder_db",
+                "antismash_db"
             ]
         },
         "max_job_request_options": {
