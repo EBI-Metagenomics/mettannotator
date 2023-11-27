@@ -35,7 +35,7 @@ include { DEFENSE_FINDER } from '../modules/local/defense_finder'
 include { CRISPRCAS_FINDER } from '../modules/local/crisprcasfinder'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS } from '../modules/local/eggnog'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
-include { IPS } from '../modules/local/interproscan'
+include { INTERPROSCAN } from '../modules/local/interproscan'
 include { DETECT_RRNA } from '../modules/local/detect_rrna'
 include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
 include { SANNTIS } from '../modules/local/sanntis'
@@ -144,12 +144,12 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
-    IPS(
+    INTERPROSCAN(
         PROKKA.out.faa,
         ch_interproscan_db
     )
 
-    ch_versions = ch_versions.mix(IPS.out.versions.first())
+    ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
 
     assemblies_plus_faa_and_gff = assemblies.join(
         PROKKA.out.faa
@@ -187,7 +187,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
 
     SANNTIS(
-        IPS.out.ips_annotations.join(PROKKA.out.gbk)
+        INTERPROSCAN.out.ips_annotations.join(PROKKA.out.gbk)
     )
 
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
@@ -206,7 +206,7 @@ workflow METTANNOTATOR {
 
     ANNOTATE_GFF(
         PROKKA.out.gff.join(
-            IPS.out.ips_annotations
+            INTERPROSCAN.out.ips_annotations
         ).join(
            EGGNOG_MAPPER_ANNOTATIONS.out.annotations, remainder: true
         ).join(
