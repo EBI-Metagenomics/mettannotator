@@ -2,7 +2,7 @@
  * Interproscan
 */
 
-process IPS {
+process INTERPROSCAN {
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.ips:5.62-94.0'
     containerOptions "${ workflow.containerEngine == 'singularity' ?

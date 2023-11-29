@@ -15,6 +15,10 @@ process CRISPRCAS_FINDER {
 
     script:
     """
+    # CRISPRCasFinder doesn't like it if the folder is there already, which could happen 
+    # when retrying this process
+    rm -rf crisprcasfinder_results || true
+
     CRISPRCasFinder.pl -i $fasta \
     -so /opt/CRISPRCasFinder/sel392v2.so \
     -def G \
