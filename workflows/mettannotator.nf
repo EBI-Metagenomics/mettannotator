@@ -210,7 +210,7 @@ workflow METTANNOTATOR {
     DBCAN(
         PROKKA.out.faa,
         PROKKA.out.gff,
-
+        ch_dbcan_db
     )
 
     ch_versions = ch_versions.mix(DBCAN.out.versions.first())
