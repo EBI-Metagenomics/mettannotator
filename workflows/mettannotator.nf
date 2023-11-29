@@ -42,6 +42,7 @@ include { SANNTIS } from '../modules/local/sanntis'
 include { UNIFIRE } from '../modules/local/unifire'
 include { ANNOTATE_GFF } from '../modules/local/annotate_gff'
 include { ANTISMASH } from '../modules/local/antismash'
+include { DBCAN } from '../modules/local/dbcan'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,6 +204,13 @@ workflow METTANNOTATOR {
     )
 
     ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
+
+    DBCAN(
+        PROKKA.out.faa,
+        PROKKA.out.gff
+    )
+
+    ch_versions = ch_versions.mix(DBCAN.out.versions.first())
 
     ANNOTATE_GFF(
         PROKKA.out.gff.join(
