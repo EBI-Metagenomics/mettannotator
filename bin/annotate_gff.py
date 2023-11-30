@@ -50,7 +50,7 @@ def get_eggnog(eggnog_annot):
                 eggnog = [cols[1]]
                 try:
                     cog = cols[eggnog_fields["cog_func"]]
-                    cog = cog.split()
+                    cog = list(cog)
                     if len(cog) > 1:
                         cog = ["R"]
                 except Exception:
