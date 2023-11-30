@@ -15,12 +15,12 @@ process ANNOTATE_GFF {
 
     // For the version, I'm using the latest stable the genomes-annotation pipeline
     script:
-    def eggnot_annotations_flag = ""
+    def eggnog_annotations_flag = ""
     def sanntis_flag = "";
     def crisprcas_flag = "";
     def amrfinder_flag = "";
-    if ( eggnot_annotations_flag ) {
-        eggnot_annotations_flag = "-e ${eggnog_annotations_tsv} "
+    if ( eggnog_annotations_tsv ) {
+        eggnog_annotations_flag = "-e ${eggnog_annotations_tsv} "
     }
     if ( sanntis_annotations_gff ) {
         sanntis_flag = "-s ${sanntis_annotations_gff} ";
@@ -36,7 +36,7 @@ process ANNOTATE_GFF {
     -g ${gff} \
     -i ${ips_annotations_tsv} \
     -r ${ncrna_tsv} \
-    ${eggnot_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag}
+    ${eggnog_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
