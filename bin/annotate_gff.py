@@ -195,9 +195,7 @@ def get_amr(amr_file):
 
 
 def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file):
-    eggnogs = {}
-    if eggnog_file:
-        eggnogs = get_eggnog(eggnog_file)
+    eggnogs = get_eggnog(eggnog_file)
     iprs = get_iprs(ipr_file)
     sanntis_bgcs = get_sanntis(sanntis_file, in_gff)
     amr_annotations = {}
@@ -385,8 +383,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-e",
-        dest="eggnong",
-        help="eggnog annotations for the clutser repo",
+        dest="eggnog",
+        help="eggnog annotations for the cluster repo",
         required=False,
     )
     parser.add_argument(
@@ -416,7 +414,7 @@ if __name__ == "__main__":
 
     extended_gff = add_gff(
         in_gff=gff,
-        eggnog_file=args.eggnong,
+        eggnog_file=args.eggnog,
         ipr_file=args.ips,
         sanntis_file=args.sanntis,
         amr_file=args.amr,
