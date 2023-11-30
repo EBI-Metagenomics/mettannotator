@@ -32,7 +32,8 @@ def get_iprs(ipr_annot):
                 iprs[protein][0].add(pfam)
             if len(cols) > 12:
                 ipr = cols[11]
-                iprs[protein][1].add(ipr)
+                if not ipr == "-":
+                    iprs[protein][1].add(ipr)
     return iprs
 
 
