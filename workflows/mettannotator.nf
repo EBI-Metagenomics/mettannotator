@@ -227,10 +227,13 @@ workflow METTANNOTATOR {
             CRISPRCAS_FINDER.out.hq_gff, remainder: true
         ).join(
             AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
-        ),
-        UNIFIRE.arba,
-        UNIFIRE.unirule,
-        UNIFIRE.pirsr
+        ).join(
+            UNIFIRE.out.arba, remainder: true
+        ).join(
+            UNIFIRE.out.unirule, remainder: true
+        ).join(
+            UNIFIRE.out.pirsr, remainder: true
+        )
     )
 
     ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())

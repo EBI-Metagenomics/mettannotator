@@ -8,7 +8,7 @@ process ANNOTATE_GFF {
 
     input:
     tuple val(meta), file(gff), file(ips_annotations_tsv), file(eggnog_annotations_tsv), file(sanntis_annotations_gff),
-    file(ncrna_tsv), file(crisprcas_hq_gff), file(amrfinder_tsv), path(arba), path(unirule), path(pirsr)
+    file(ncrna_tsv), file(crisprcas_hq_gff), file(amrfinder_tsv), file(arba), file(unirule), file(pirsr)
 
     output:
     tuple val(meta), path("*_annotated.gff"), emit: annotated_gff
