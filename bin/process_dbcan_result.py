@@ -43,8 +43,8 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
                 if not line.startswith("CGC#"):
                     cgc, gene_type, contig, prot_id, start, end, strand, protein_fam = line.strip().split("\t")
                     if not cgc in cgcs_printed:
-                        substrate = substrates[cgc] if cgc in substrates else "N/A"
-                        file_out.write("{}\tdbCAN:{}\tCGC\t{}\t{}\t.\t.\t.\tID={};substrate={}\n".format(
+                        substrate = substrates[cgc] if cgc in substrates else "substrate_dbcan_pul=N/A;substrate_ecami=N/A"
+                        file_out.write("{}\tdbCAN:{}\tputative PUL\t{}\t{}\t.\t.\t.\tID={};{}\n".format(
                             contig, dbcan_version, cgc_locations[cgc]["start"], cgc_locations[cgc]["end"], cgc,
                             substrate))
                         cgcs_printed.append(cgc)
@@ -59,10 +59,19 @@ def load_substrates(input_folder):
             if not line.startswith("#"):
                 parts = line.strip().split("\t")
                 cgc = parts[0].split("|")[1]
-                substrate = parts[2]
-                if not substrate:
-                    substrate = "N/A"
-                substrates[cgc] = substrate
+                try:
+                    substrate_pul = parts[2]
+                except IndexError:
+                    substrate_pul = "N/A"
+                try:
+                    substrate_ecami = parts[5]
+                except IndexError:
+                    substrate_ecami = "N/A"
+                if not substrate_pul:
+                    substrate_pul = "N/A"
+                if not substrate_ecami:
+                    substrate_ecami = "N/A"
+                substrates[cgc] = "substrate_dbcan_pul={};substrate_ecami={}".format(substrate_pul, substrate_ecami)
     return substrates
 
 
