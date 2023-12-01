@@ -43,7 +43,6 @@ include { UNIFIRE } from '../modules/local/unifire'
 include { ANNOTATE_GFF } from '../modules/local/annotate_gff'
 include { ANTISMASH } from '../modules/local/antismash'
 include { DBCAN } from '../modules/local/dbcan'
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -228,7 +227,10 @@ workflow METTANNOTATOR {
             CRISPRCAS_FINDER.out.hq_gff, remainder: true
         ).join(
             AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
-        )
+        ),
+        UNIFIRE.arba,
+        UNIFIRE.unirule,
+        UNIFIRE.pirsr
     )
 
     ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
