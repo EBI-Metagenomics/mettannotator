@@ -10,10 +10,11 @@ process DBCAN {
     path dbcan_db
 
     output:
-    tuple val(meta), path("dbcan/sub.prediction.out")  , emit: substrates
-    tuple val(meta), path("dbcan/cgc_standard.out")    , emit: cgc
-    tuple val(meta), path("dbcan/overview.txt")        , emit: overview
-    path "versions.yml"                                , emit: versions
+    tuple val(meta), path("dbcan/sub.prediction.out")        , emit: substrates
+    tuple val(meta), path("dbcan/cgc_standard.out")          , emit: cgc
+    tuple val(meta), path("dbcan/overview.txt")              , emit: overview
+    tuple val(meta), path("dbcan/${meta.prefix}.dbcan.gff")  , emit: dbcan_gff
+    path "versions.yml"                                      , emit: versions
 
     script:
     """
@@ -37,6 +38,8 @@ process DBCAN {
         --cluster ${meta.prefix}_noseq.gff \\
         ${faa} \\
         protein
+
+    process_dbcan_result.py -i dbcan -o dbcan/${meta.prefix}.dbcan.gff -v 4.0.0
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
