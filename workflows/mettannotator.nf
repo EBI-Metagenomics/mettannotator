@@ -207,8 +207,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
 
     DBCAN(
-        PROKKA.out.faa,
-        PROKKA.out.gff,
+        PROKKA.out.faa.join( PROKKA.out.gff ),
         ch_dbcan_db
     )
 
