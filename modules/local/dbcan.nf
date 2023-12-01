@@ -5,7 +5,8 @@ process DBCAN {
     container 'quay.io/microbiome-informatics/dbcan:4.0.0'
 
     input:
-    tuple val(meta), path(faa), path(gff),
+    tuple val(meta), path(faa),
+    tuple val(meta), path(gff),
     path dbcan_db
 
     output:
