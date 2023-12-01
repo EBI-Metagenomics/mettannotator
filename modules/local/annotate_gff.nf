@@ -40,7 +40,7 @@ process ANNOTATE_GFF {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        annotate_gff.py: 2.1.1
+        python: \$(python --version 2>&1 | sed 's/Python //g')
     END_VERSIONS
     """
 
@@ -50,7 +50,7 @@ process ANNOTATE_GFF {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        annotate_gff.py: 2.1.1
+        python: \$(python --version 2>&1 | sed 's/Python //g')
     END_VERSIONS
     """
 }
