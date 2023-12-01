@@ -1,0 +1,54 @@
+name: nf-core CI
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+  release:
+    types: [published]
+
+env:
+  NXF_ANSI_LOG: false
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  nf-test:
+    name: Run pipeline with test data
+    runs-on: ubuntu-latest
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'ebi-metagenomics/mettannotator') }}"
+    env:
+        NXF_ANSI_LOG: false
+        NFTEST_VER: "0.8.1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - name: Setup Nextflow
+        uses: nf-core/setup-nextflow@v1
+
+      - name: Cache nf-test installation
+        id: cache-software
+        uses: actions/cache@v3
+        with:
+          path: |
+              /usr/local/bin/nf-test
+              /home/runner/.nf-test/nf-test.jar
+          key: ${{ runner.os }}-${{ env.NFTEST_VER }}-nftest
+
+      - name: Install nf-test
+        if: steps.cache-software.outputs.cache-hit != 'true'
+        run: |
+          wget -qO- https://code.askimed.com/install/nf-test | bash
+          sudo mv nf-test /usr/local/bin/
+
+      - name: Run nf-test
+        run: |
+          NXF_TEST_DIR=~ \
+          nf-test test tests/modules
