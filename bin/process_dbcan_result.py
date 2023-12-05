@@ -23,13 +23,13 @@ def load_cgcs(input_folder):
             if not line.startswith("CGC#"):
                 cgc, _, contig, _, start, end, _, _ = line.strip().split("\t")
                 if cgc in cgc_locations:
-                    if cgc_locations[cgc]["start"] < start:
-                        cgc_locations[cgc]["start"] = start
-                    if cgc_locations[cgc]["end"] > end:
-                        cgc_locations[cgc]["end"] = end
+                    if cgc_locations[cgc]["start"] > int(start):
+                        cgc_locations[cgc]["start"] = int(start)
+                    if cgc_locations[cgc]["end"] < int(end):
+                        cgc_locations[cgc]["end"] = int(end)
                 else:
-                    cgc_locations[cgc] = {"start": start,
-                                          "end": end,
+                    cgc_locations[cgc] = {"start": int(start),
+                                          "end": int(end),
                                           "contig": contig}
     return cgc_locations
 
