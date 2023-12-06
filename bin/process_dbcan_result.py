@@ -48,7 +48,7 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
                             contig, dbcan_version, cgc_locations[cgc]["start"], cgc_locations[cgc]["end"], cgc,
                             substrate))
                         cgcs_printed.append(cgc)
-                    file_out.write("{}\tdbCAN:{}\t{}\t{}\t{}\t.\t{}\t.\tID={};cluster={},protein_family={}\n".format(
+                    file_out.write("{}\tdbCAN:{}\t{}\t{}\t{}\t.\t{}\t.\tID={};Parent={},protein_family={}\n".format(
                         contig, dbcan_version, gene_type, start, end, strand, prot_id, cgc, protein_fam))
 
 
