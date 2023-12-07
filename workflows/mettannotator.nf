@@ -164,7 +164,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
 
     DEFENSE_FINDER (
-        PROKKA.out.faa,
+        PROKKA.out.faa.join( PROKKA.out.gff ),
         ch_defense_finder_db
     )
 
