@@ -11,7 +11,7 @@ process DEFENSE_FINDER {
     output:
     tuple val(meta), path("defense_finder/${meta.prefix}_defense_finder_genes.tsv")  , emit: genes
     tuple val(meta), path("defense_finder/${meta.prefix}_defense_finder_systems.tsv"), emit: systems
-    tuple val(meta), path("defense_finder/${meta.prefix}_defense_finder.gff"),         emit: gff
+    tuple val(meta), path("defense_finder/${meta.prefix}_defense_finder.gff")        , emit: gff
     path "versions.yml"                                                              , emit: versions
 
     script:
