@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import csv
 import logging
 import re
 import sys
@@ -41,10 +42,25 @@ def main(arba, unirule, pirsr, gff, outfile):
 # unifire_alternative_name=
 
 def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
+    fields_dict = {
+        "protein.recommendedName.fullName": "uf_prot_rec_fullname",
+        "protein.recommendedName.shortName": "uf_prot_rec_shortname",
+        "protein.recommendedName.ecNumber": "uf_prot_rec_ecnumber",
+        "protein.alternativeName.fullName": "uf_prot_alt_fullname",
+        "protein.alternativeName.shortName": "uf_prot_alt_shortname",
+        "protein.alternativeName.ecNumber": "uf_prot_alt_ecnumber",
+        "chebi": "uf_chebi",
+        "xref.GO": "uf_ontology_term",
+        "keyword": "uf_keyword",
+        "gene.name.primary": "uf_gene_name",
+        "gene.name.synonym": "uf_gene_name_synonym",
+        "pirsr_name": "uf_pirsr_name",
+    }
+
     fasta_flag = False
     list_of_dicts = [arba_dict, unirule_dict, pirsr_dict]
-    combined_keys = list()
     with open(outfile, "w") as file_out, open(gff, "r") as file_in:
+        writer = csv.writer(file_out, delimiter="\t")
         for line in file_in:
             if fasta_flag is True:
                 file_out.write(line)
@@ -55,8 +71,6 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                     file_out.write(line)
                     fasta_flag = True
                 else:
-                    # temp line below
-                    file_out.write(line)
                     contig, tool, feature, start, end, blank1, strand, blank2, col9 = line.strip().split("\t")
                     if feature == "CDS":
                         id = get_id(col9)
@@ -71,33 +85,47 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                                         combined_dict[key] = value.copy()
                         if len(combined_dict) > 0:
                             combined_dict = condense_dict(combined_dict)
-                            #combined_dict = escape_reserved_characters(combined_dict)
-                        if combined_dict and "xref.GO" in combined_dict:
-                            #print("YES", combined_dict)
-                            combined_dict["xref.GO"] = ",".join(combined_dict["xref.GO"])
-                            #print(combined_dict)
-                        for key, value in combined_dict.items():
-                            #print(key, value)
-                            combined_keys.append(key)
-    combined_keys = set(combined_keys)
-    #print(combined_keys)
+                            combined_dict = escape_reserved_characters(combined_dict)
+                            #if combined_dict and "xref.GO" in combined_dict:
+                            #    #print("YES", combined_dict)
+                            #    combined_dict["xref.GO"] = ",".join(combined_dict["xref.GO"])
+                            #    #print(combined_dict)
+                            added_annot = ""
+                            #print(id, combined_dict)
+                            for key, value in combined_dict.items():
+                                added_annot += ";{}={}".format(fields_dict[key], ",".join(value))
+                            #print(added_annot)
+                            #print("\n\n")
+                            new_col_9 = col9 + added_annot
+                            writer.writerow([contig, tool, feature, start, end, blank1, strand, blank2, new_col_9])
 
 
 def escape_reserved_characters(combined_dict):
     reserved_characters = [";", "=", "&", ","]
     for key, list_of_values in combined_dict.items():
+        remove_values = list()
+        add_values = list()
         for value in list_of_values:
             for ch in reserved_characters:
                 if ch in value:
-                    #print(key, value)
-                    pass
+                    remove_values.append(value)
+                    value = value.replace(ch, '\{}'.format(ch))
+                    add_values.append(value)
+        for v in remove_values:
+            list_of_values.remove(v)
+        for v in add_values:
+            list_of_values.append(v)
+        combined_dict[key] = list_of_values
+
+    return combined_dict
 
 
 def condense_dict(combined_dict):
     for key, list_to_condense in combined_dict.items():
         #print("Before: {}{}".format(key, list_to_condense))
         list_to_condense = list(set(list_to_condense))
-        list_to_condense = collapse_keywords(list_to_condense)
+        if key == "keyword":
+            list_to_condense = collapse_keywords(list_to_condense)
         combined_dict[key] = list_to_condense
         #print("After: {}{}".format(key, list_to_condense))
     return combined_dict
@@ -122,10 +150,11 @@ def load_pirsr(pirsr):
                             if element.lstrip().startswith("Xref"):
                                 value = element.split("=")[1]
                                 annot_type = "chebi"
+                                results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
                             elif element.lstrip().startswith("Name"):
                                 value = element.split("=")[1]
                                 annot_type = "pirsr_name"
-                            results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
+                                results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
                     else:
                         results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
     for record in results_dict:
@@ -145,11 +174,10 @@ def load_unirule_arba(file):
             if not line.startswith("Evidence"):
                 parts = line.strip().split("\t")
                 if len(parts) == 6:
-                    #evidence, protein_id, annot_type, value, start, end = line.strip().split("\t")
                     pass
                 else:
                     evidence, protein_id, annot_type, value = line.strip().split("\t")
-                if not annot_type.startswith("comment"):
+                if not annot_type.startswith("comment") and not annot_type.startswith("protein.domain"):
                     results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
     for record in results_dict:
         if "keyword" in results_dict[record]:
