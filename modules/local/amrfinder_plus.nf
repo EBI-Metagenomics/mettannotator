@@ -9,6 +9,7 @@ process AMRFINDER_PLUS {
 
     output:
     tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv"), emit: amrfinder_tsv
+    tuple val(meta), path("${meta.prefix}_amrfinderplus.gff"), emit: amrfinder_gff
     path "versions.yml", emit: versions
 
     script:
@@ -21,6 +22,8 @@ process AMRFINDER_PLUS {
     -a prokka \
     --output ${meta.prefix}_amrfinderplus.tsv \
     --threads ${task.cpus}
+
+    process_amrfinderplus_results.py -i ${meta.prefix}_amrfinderplus.tsv -o ${meta.prefix}_amrfinderplus.gff -v 3.11.4
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
