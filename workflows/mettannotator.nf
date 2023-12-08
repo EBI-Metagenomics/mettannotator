@@ -30,7 +30,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { PROKKA } from '../modules/local/prokka'
-include { AMRFINDER_PLUS } from '../modules/local/amrfinder_plus'
+include { AMRFINDER_PLUS, AMRFINDER_PLUS_TO_GFF } from '../modules/local/amrfinder_plus'
 include { DEFENSE_FINDER } from '../modules/local/defense_finder'
 include { CRISPRCAS_FINDER } from '../modules/local/crisprcasfinder'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS } from '../modules/local/eggnog'
@@ -162,6 +162,10 @@ workflow METTANNOTATOR {
     AMRFINDER_PLUS( assemblies_plus_faa_and_gff )
 
     ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
+
+    AMRFINDER_PLUS_TO_GFF( AMRFINDER_PLUS.out.amrfinder_tsv )
+
+    ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
 
     DEFENSE_FINDER (
         PROKKA.out.faa.join( PROKKA.out.gff ),
