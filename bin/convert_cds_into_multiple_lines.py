@@ -18,31 +18,8 @@
 import argparse
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Split CDS entries in a GFF file into gene, exon, and mRNA entries")
-    parser.add_argument("-i", "input_file", help="Input GFF file")
-    parser.add_argument("-o", "output_file", help="Output GFF file")
-    args = parser.parse_args()
-
-    input_file = args["input_file"]
-    output_file = args["output_file"]
-
-    # Read the input GFF file and process the entries
-    output_entries = []
-    with open(input_file, "r") as infile:
-        for line in infile:
-            entry = line.strip().split("\t")
-            new_entries = split_cds_to_gene_exon_mrna(entry)
-            output_entries.extend(new_entries)
-
-    # Write the modified GFF entries to the output file
-    with open(output_file, "w") as outfile:
-        for entry in output_entries:
-            outfile.write("\t".join(entry) + "\n")
-
-
-# Function to split CDS entries into gene, exon, and mRNA entries
 def split_cds_to_gene_exon_mrna(entry):
+    """Function to split CDS entries into gene, exon, and mRNA entries"""
     if len(entry) > 8 and entry[2] == "CDS":
         # replicate the line
         gene_entry = entry[:]
@@ -72,9 +49,32 @@ def split_cds_to_gene_exon_mrna(entry):
         return [entry]  # comments, ncrna lines, sequences, possibly also invalid gff!
 
 
-# Function to edit the ID and add Parent attribute
 def edit_id_add_parent(attributes_dict, id, parent=None):
+    """Function to edit the ID and add Parent attribute"""
     attributes_dict["ID"] = id
     if parent is not None:
         attributes_dict["Parent"] = parent
     return ";".join(f"{key}={value}" for key, value in attributes_dict.items())
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Split CDS entries in a GFF file into gene, exon, and mRNA entries")
+    parser.add_argument("-i", "input_file", help="Input GFF file")
+    parser.add_argument("-o", "output_file", help="Output GFF file")
+    args = parser.parse_args()
+
+    input_file = args["input_file"]
+    output_file = args["output_file"]
+
+    # Read the input GFF file and process the entries
+    output_entries = []
+    with open(input_file, "r") as infile:
+        for line in infile:
+            entry = line.strip().split("\t")
+            new_entries = split_cds_to_gene_exon_mrna(entry)
+            output_entries.extend(new_entries)
+
+    # Write the modified GFF entries to the output file
+    with open(output_file, "w") as outfile:
+        for entry in output_entries:
+            outfile.write("\t".join(entry) + "\n")
