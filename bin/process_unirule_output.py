@@ -93,7 +93,8 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                             added_annot = ""
                             #print(id, combined_dict)
                             for key, value in combined_dict.items():
-                                added_annot += ";{}={}".format(fields_dict[key], ",".join(value))
+                                if key in fields_dict:
+                                    added_annot += ";{}={}".format(fields_dict[key], ",".join(value))
                             #print(added_annot)
                             #print("\n\n")
                             new_col_9 = col9 + added_annot
