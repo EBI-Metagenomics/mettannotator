@@ -15,6 +15,10 @@ process ANNOTATE_GFF {
           file(ncrna_tsv),
           file(crisprcas_hq_gff),
           file(amrfinder_tsv),
+          file(antismash_gff),
+          file(gecco_gff),
+          file(dbcan_gff),
+          file(df_gff),
           file(arba),
           file(unirule),
           file(pirsr)
@@ -29,6 +33,10 @@ process ANNOTATE_GFF {
     def sanntis_flag = "";
     def crisprcas_flag = "";
     def amrfinder_flag = "";
+    def antismash_flag = "";
+    def gecco_flag = "";
+    def dbcan_flag = "";
+    def df_flag = "";
     if ( eggnog_annotations_tsv ) {
         eggnog_annotations_flag = "-e ${eggnog_annotations_tsv} "
     }
@@ -41,13 +49,26 @@ process ANNOTATE_GFF {
     if ( amrfinder_tsv ) {
         amrfinder_flag = "-a ${amrfinder_tsv}"
     }
+    if ( antismash_gff ) {
+        antismash_flag = "--antismash ${antismash_gff}"
+    }
+    if ( gecco_gff ) {
+        gecco_flag = "--gecco ${gecco_gff}"
+    }
+    if ( dbcan_gff ) {
+        dbcan_flag = "--dbcan ${dbcan_gff}"
+    }
+    if ( df_gff ) {
+        df_flag = "--defense-finder ${df_gff}"
+    }
     """
-    annotate_gff.py \\
-    -g ${gff} \\
-    -i ${ips_annotations_tsv} \\
-    -r ${ncrna_tsv} \\
-    -o ${meta.prefix}_temp.gff \\
-    ${eggnog_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag}
+    annotate_gff.py \
+    -g ${gff} \
+    -i ${ips_annotations_tsv} \
+    -r ${ncrna_tsv} \
+    -o ${meta.prefix}_temp.gff \
+    ${eggnog_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} \
+    ${antismash_flag} ${gecco_flag} ${dbcan_flag} ${df_flag}
 
     process_unirule_output.py \\
     -g ${meta.prefix}_temp.gff \\
