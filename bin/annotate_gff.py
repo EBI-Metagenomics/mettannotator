@@ -75,19 +75,19 @@ def get_eggnog_fields(line):
     return eggnog_fields
 
 
-def get_bgcs(sanntis_file, prokka_gff, tool):
+def get_bgcs(bgc_file, prokka_gff, tool):
     cluster_positions = dict()
     tool_result = dict()
     bgc_annotations = dict()
-    # save positions of each BGC cluster annotated by SanntiS to dictionary cluster_positions
+    # save positions of each BGC cluster to dictionary cluster_positions
     # and save the annotations to dictionary bgc_result
-    with open(sanntis_file, "r") as sanntis_in:
-        for line in sanntis_in:
+    with open(bgc_file, "r") as bgc_in:
+        for line in bgc_in:
             if not line.startswith("#"):
                 (
                     contig,
                     _,
-                    _,
+                    feature,
                     start_pos,
                     end_pos,
                     _,
@@ -109,7 +109,14 @@ def get_bgcs(sanntis_file, prokka_gff, tool):
                     ):  # go through all parts of the annotation field
                         if a.startswith("Type="):
                             type_value = a.split("=")[1]
-
+                elif tool == "antismash":
+                    if feature != "CDS":
+                        continue
+                    for a in annotations.split(
+                        ";"
+                    ):  # go through all parts of the annotation field
+                        if a.startswith("function="):
+                            type_value = a.split("=")[1]
                 # save cluster positions to a dictionary where key = contig name,
                 # value = list of position pairs (list of lists)
                 cluster_positions.setdefault(contig, list()).append(
@@ -126,6 +133,11 @@ def get_bgcs(sanntis_file, prokka_gff, tool):
                     tool_result.setdefault(contig, dict()).setdefault(
                         "_".join([start_pos, end_pos]),
                         {"bgc_type": type_value},
+                    )
+                elif tool == "antismash":
+                    tool_result.setdefault(contig, dict()).setdefault(
+                        "_".join([start_pos, end_pos]),
+                        {"bgc_function": type_value},
                     )
     # identify CDSs that fall into each of the clusters annotated by the BGC tool
     with open(prokka_gff, "r") as gff_in:
@@ -171,6 +183,15 @@ def get_bgcs(sanntis_file, prokka_gff, tool):
                             {
                                 "gecco_bgc_type": tool_result[contig][matching_interval][
                                     "bgc_type"
+                                ],
+                            },
+                        )
+                    elif tool == "antismash":
+                        bgc_annotations.setdefault(
+                            cds_id,
+                            {
+                                "antismash_bgc_function": tool_result[contig][matching_interval][
+                                    "bgc_function"
                                 ],
                             },
                         )
@@ -223,11 +244,12 @@ def get_amr(amr_file):
     return amr_annotations
 
 
-def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, gecco_file):
+def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, antismash_file, gecco_file):
     eggnogs = get_eggnog(eggnog_file)
     iprs = get_iprs(ipr_file)
     sanntis_bgcs = get_bgcs(sanntis_file, in_gff, tool="sanntis")
     gecco_bgcs = get_bgcs(gecco_file, in_gff, tool="gecco")
+    antismash_bgcs = get_bgcs(antismash_file, in_gff, tool="antismash")
     amr_annotations = {}
     if amr_file:
         amr_annotations = get_amr(amr_file)
@@ -280,6 +302,12 @@ def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, gecco_file):
                     try:
                         gecco_bgcs[protein]
                         for key, value in gecco_bgcs[protein].items():
+                            added_annot[protein][key] = value
+                    except Exception:
+                        pass
+                    try:
+                        antismash_bgcs[protein]
+                        for key, value in antismash_bgcs[protein].items():
                             added_annot[protein][key] = value
                     except Exception:
                         pass
@@ -444,11 +472,11 @@ if __name__ == "__main__":
         help="The TSV file produced by AMRFinderPlus",
         required=False,
     )
-    #parser.add_argument(
-    #    "--antismash",
-    #    help="The GFF file produced by AntiSMASH post-processing script",
-    #    required=False,
-    #)
+    parser.add_argument(
+        "--antismash",
+        help="The GFF file produced by AntiSMASH post-processing script",
+        required=False,
+    )
     parser.add_argument(
         "--gecco",
         help="The GFF file produced by GECCO",
@@ -477,7 +505,7 @@ if __name__ == "__main__":
         ipr_file=args.ips,
         sanntis_file=args.sanntis,
         amr_file=args.amr,
-        #antismash_file=args.antismash,
+        antismash_file=args.antismash,
         gecco_file=args.gecco,
         #dbcan_file=args.dbcan,
         #defense_finder_file=args.defense_finder,
