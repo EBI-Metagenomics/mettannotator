@@ -98,6 +98,10 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                             #print("\n\n")
                             new_col_9 = col9 + added_annot
                             writer.writerow([contig, tool, feature, start, end, blank1, strand, blank2, new_col_9])
+                        else:
+                            file_out.write(line)
+                    else:
+                        file_out.write(line)
 
 
 def escape_reserved_characters(combined_dict):
