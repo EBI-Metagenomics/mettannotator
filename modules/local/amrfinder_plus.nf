@@ -30,6 +30,7 @@ process AMRFINDER_PLUS {
 }
 
 process AMRFINDER_PLUS_TO_GFF {
+
     tag "${meta.prefix}"
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
@@ -42,10 +43,14 @@ process AMRFINDER_PLUS_TO_GFF {
     path "versions.yml", emit: versions
 
     script:
+    // TODO: AMRFINDER_PLUS and AMRFINDER_PLUS_TO_GFF should be just one module
+    //       that requires AMRFINDER_PLUS container to be modified and python included
+    //       this is the reason for the hardcoded version parameter (-v)
     """
-    process_amrfinderplus_results.py \
-    -i ${amrfinder_tsv} \
-    -o ${meta.prefix}_amrfinderplus.gff
+    process_amrfinderplus_results.py \\
+    -i ${amrfinder_tsv} \\
+    -o ${meta.prefix}_amrfinderplus.gff \\
+    -v 3.11.4
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
