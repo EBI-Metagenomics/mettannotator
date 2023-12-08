@@ -181,7 +181,8 @@ def load_unirule_arba(file):
                     pass
                 else:
                     evidence, protein_id, annot_type, value = line.strip().split("\t")
-                if not annot_type.startswith("comment") and not annot_type.startswith("protein.domain"):
+                if not annot_type.startswith("comment") and not annot_type.startswith("protein.domain") and not \
+                    annot_type.startswith("protein.component"):
                     results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
     for record in results_dict:
         if "keyword" in results_dict[record]:
