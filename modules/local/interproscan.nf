@@ -4,6 +4,8 @@
 
 process INTERPROSCAN {
 
+    tag "${meta.prefix}"
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.ips:5.62-94.0'
     containerOptions "${ workflow.containerEngine == 'singularity' ?
         '--bind data:/opt/interproscan-5.62-94.0/data':

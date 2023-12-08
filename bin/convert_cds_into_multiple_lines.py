@@ -59,12 +59,12 @@ def edit_id_add_parent(attributes_dict, id, parent=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Split CDS entries in a GFF file into gene, exon, and mRNA entries")
-    parser.add_argument("-i", "input_file", help="Input GFF file")
-    parser.add_argument("-o", "output_file", help="Output GFF file")
+    parser.add_argument("-i", dest="input_file", required=True, help="Input GFF file")
+    parser.add_argument("-o", dest="output_file", required=True, help="Output GFF file")
     args = parser.parse_args()
 
-    input_file = args["input_file"]
-    output_file = args["output_file"]
+    input_file = args.input_file
+    output_file = args.output_file
 
     # Read the input GFF file and process the entries
     output_entries = []
