@@ -87,6 +87,10 @@
                 "antismash_db": {
                     "type": "string",
                     "format": "directory-path"
+                },
+                "dbcan_db": {
+                  "type": "string",
+                  "format": "directory-path"
                 }
             },
             "required": [
@@ -97,7 +101,8 @@
                 "rfam_ncrna_models",
                 "amrfinder_plus_db",
                 "defense_finder_db",
-                "antismash_db"
+                "antismash_db",
+                "dbcan_db"
             ]
         },
         "max_job_request_options": {
