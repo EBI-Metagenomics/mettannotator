@@ -45,7 +45,16 @@ def create_gff(
                             line = fix_crispr_id(line)
                         if get_crispr_id(line) in high_qual_hits:
                             hq_gff_out.write(line)
+                        if "FLANK" in parts[2]:
+                            line = remove_parent(line)
                         gff_out.write(line)
+
+
+def remove_parent(line):
+    if "Parent" in line:
+        pattern = r'Parent=[^;]*;'
+        line = re.sub(pattern, '', line)
+    return line
 
 
 def fix_crispr_id(line):
