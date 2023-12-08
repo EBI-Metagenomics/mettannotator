@@ -57,6 +57,7 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
             for line in file_in:
                 if not line.startswith("CGC#"):
                     cgc, gene_type, contig, prot_id, start, end, strand, protein_fam = line.strip().split("\t")
+                    protein_fam = protein_fam.replace(" ", "")
                     if not cgc in cgcs_printed:
                         substrate = substrates[cgc] if cgc in substrates else "substrate_dbcan_pul=N/A;substrate_ecami=N/A"
                         file_out.write("{}\tdbCAN:{}\tpredicted PUL\t{}\t{}\t.\t.\t.\tID={};{}\n".format(
