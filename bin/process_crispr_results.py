@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import re
 
 from Bio import SeqIO
 
@@ -41,9 +42,25 @@ def create_gff(
                                 continue
                         if parts[2] == "CRISPR":
                             line = add_evidence_level(line, evidence_levels)
+                            line = fix_crispr_id(line)
                         if get_crispr_id(line) in high_qual_hits:
                             hq_gff_out.write(line)
                         gff_out.write(line)
+
+
+def fix_crispr_id(line):
+    fields = line.strip().split("\t")
+    annot = fields[8]
+    annot_elements = annot.split(";")
+    for a in annot_elements:
+        if a.startswith("Name="):
+            name = a.split("=")[1]
+        elif a.startswith("ID="):
+            id = a.split("=")[1]
+    fixed_annot = re.sub("ID={}".format(id), "ID={}".format(name), annot)
+    fixed_annot = re.sub("Name={}".format(name), "Name={}".format(id), fixed_annot)
+    fields[8] = fixed_annot
+    return "\t".join(fields) + "\n"
 
 
 def add_evidence_level(line, evidence_levels):
@@ -158,8 +175,7 @@ def process_tsv(tsv_report, tsv_output):
                 # add sequence basename to hits
                 hits.append(parts[2])
                 # make crispr_id that the GFFs use
-                #crispr_id = "{}_{}_{}".format(parts[1], parts[5], parts[6])
-                crispr_id = parts[4]
+                crispr_id = "{}_{}_{}".format(parts[1], parts[5], parts[6])
                 # check if evidence level is high (2, 3 or 4)
                 if parts[-1] in ["2", "3", "4"]:
                     # add CRISPR ID (contig_start_end)
