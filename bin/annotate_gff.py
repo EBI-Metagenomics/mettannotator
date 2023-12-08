@@ -244,7 +244,44 @@ def get_amr(amr_file):
     return amr_annotations
 
 
-def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, antismash_file, gecco_file):
+def get_dbcan(dbcan_file):
+    dbcan_annotations = dict()
+    substrates = dict()
+    with (open(dbcan_file, "r") as f):
+        for line in f:
+            if "predicted PUL" in line:
+                annot_fields = line.strip().split("\t")[8].split(";")
+                for a in annot_fields:
+                    if a.startswith("ID="):
+                        cgc = a.split("=")[1]
+                    elif a.startswith("substrate_dbcan_pul"):
+                        substrate_pul = a.split("=")[1]
+                    elif a.startswith("substrate_ecami"):
+                        substrate_ecami = a.split("=")[1]
+                substrates.setdefault(cgc, {})["substrate_ecami"] = substrate_ecami
+                substrates.setdefault(cgc, {})["substrate_pul"] = substrate_pul
+            elif line.startswith("#"):
+                continue
+            else:
+                cols = line.strip().split("\t")
+                prot_type = cols[2]
+                annot_fields = cols[8].split(";")
+                if not prot_type == "null":
+                    for a in annot_fields:
+                        if a.startswith("ID"):
+                            acc = a.split("=")[1]
+                        elif a.startswith("protein_family"):
+                            prot_fam = a.split("=")[1]
+                        elif a.startswith("Parent"):
+                            parent = a.split("=")[1]
+                    dbcan_annotations[acc] = \
+                    "dbcan_prot_type={};dbcan_prot_family={};dbcan_substrate_pul={};dbcan_substrate_ecami={}".format(
+                        prot_type, prot_fam, substrates[parent]["substrate_pul"], substrates[parent]["substrate_ecami"]
+                    )
+    return dbcan_annotations
+
+
+def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, antismash_file, gecco_file, dbcan_file):
     eggnogs = get_eggnog(eggnog_file)
     iprs = get_iprs(ipr_file)
     sanntis_bgcs = get_bgcs(sanntis_file, in_gff, tool="sanntis")
@@ -253,6 +290,7 @@ def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, antismash_fil
     amr_annotations = {}
     if amr_file:
         amr_annotations = get_amr(amr_file)
+    dbcan_annotations = get_dbcan(dbcan_file)
     added_annot = {}
     out_gff = []
     with open(in_gff, "r") as f:
@@ -316,11 +354,16 @@ def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, antismash_fil
                         added_annot[protein]["AMR"] = amr_annotations[protein]
                     except Exception:
                         pass
+                    try:
+                        dbcan_annotations[protein]
+                        added_annot[protein]["dbCAN"] = dbcan_annotations[protein]
+                    except Exception:
+                        pass
                     for a in added_annot[protein]:
                         value = added_annot[protein][a]
                         if type(value) is list:
                             value = ",".join(value)
-                        if a == "AMR":
+                        if a in ["AMR", "dbCAN"]:
                             cols[8] = "{};{}".format(cols[8], value)
                         else:
                             if not value == "-":
@@ -482,11 +525,11 @@ if __name__ == "__main__":
         help="The GFF file produced by GECCO",
         required=False,
     )
-    #parser.add_argument(
-    #    "--dbCAN",
-    #    help="The GFF file produced by dbCAN post-processing script",
-    #    required=False,
-    #)
+    parser.add_argument(
+        "--dbcan",
+        help="The GFF file produced by dbCAN post-processing script",
+        required=False,
+    )
     #parser.add_argument(
     #    "--defense-finder",
     #    help="The GFF file produced by Defense Finder post-processing script",
@@ -507,7 +550,7 @@ if __name__ == "__main__":
         amr_file=args.amr,
         antismash_file=args.antismash,
         gecco_file=args.gecco,
-        #dbcan_file=args.dbcan,
+        dbcan_file=args.dbcan,
         #defense_finder_file=args.defense_finder,
     )
 
