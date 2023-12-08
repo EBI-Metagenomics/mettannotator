@@ -12,7 +12,7 @@ process ANTISMASH {
     output:
     tuple val(meta), path("${meta.prefix}_results/${meta.prefix}.gbk"), emit: gbk
     tuple val(meta), path("${meta.prefix}_antismash.tar.gz")          , emit: results_tarball
-    tuple val(meta), path("${meta.prefix}.gff")                       , emit: gff
+    tuple val(meta), path("${meta.prefix}_antismash.gff")                       , emit: gff
     path "versions.yml"                                               , emit: versions
 
     script:
@@ -36,7 +36,7 @@ process ANTISMASH {
 
     antismash_to_gff.py \\
         -r regions.json -a \$(echo \$(antismash --version | sed 's/^antiSMASH //' )) \\
-        -o ${meta.prefix}.gff
+        -o ${meta.prefix}_antismash.gff
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
