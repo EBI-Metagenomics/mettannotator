@@ -158,7 +158,8 @@ def process_tsv(tsv_report, tsv_output):
                 # add sequence basename to hits
                 hits.append(parts[2])
                 # make crispr_id that the GFFs use
-                crispr_id = "{}_{}_{}".format(parts[1], parts[5], parts[6])
+                #crispr_id = "{}_{}_{}".format(parts[1], parts[5], parts[6])
+                crispr_id = parts[4]
                 # check if evidence level is high (2, 3 or 4)
                 if parts[-1] in ["2", "3", "4"]:
                     # add CRISPR ID (contig_start_end)
