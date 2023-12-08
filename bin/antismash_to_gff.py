@@ -84,7 +84,7 @@ def load_regions_json(json_file) -> list[BGC]:
                 bgcs.append(
                     BGC(
                         contig_name=bgc_entry["seq_id"],
-                        bgc_name=f"{bgc_entry['seq_id']}_{index}",
+                        bgc_name=f"{bgc_entry['seq_id']}_bgc{index}",
                         start=region_start,
                         end=region_end,
                         orfs=bgc_orfs,
@@ -102,7 +102,7 @@ def build_gff(regions_json, antismash_version):
         yield [
             bgc.contig_name,
             f"antiSMASH:{antismash_version}",
-            "biosyntetic-gene-cluster",
+            "biosynthetic-gene-cluster",
             bgc.start,
             bgc.end,
             ".",
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-a",
         dest="antismash_version",
-        help="The version of anstiSMASH",
+        help="The version of antiSMASH",
         required=True,
     )
     parser.add_argument("-o", dest="out", help="Ouput GFF file name", required=True)
