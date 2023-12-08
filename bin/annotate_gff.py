@@ -75,12 +75,12 @@ def get_eggnog_fields(line):
     return eggnog_fields
 
 
-def get_sanntis(sanntis_file, prokka_gff):
+def get_bgcs(sanntis_file, prokka_gff, tool):
     cluster_positions = dict()
-    sanntis_result = dict()
+    tool_result = dict()
     bgc_annotations = dict()
     # save positions of each BGC cluster annotated by SanntiS to dictionary cluster_positions
-    # and save the annotations to dictionary sanntis_result
+    # and save the annotations to dictionary bgc_result
     with open(sanntis_file, "r") as sanntis_in:
         for line in sanntis_in:
             if not line.startswith("#"):
@@ -95,25 +95,39 @@ def get_sanntis(sanntis_file, prokka_gff):
                     _,
                     annotations,
                 ) = line.strip().split("\t")
-                for a in annotations.split(
-                    ";"
-                ):  # go through all parts of the Sanntis annotation field
-                    if a.startswith("nearest_MiBIG_class="):
-                        class_value = a.split("=")[1]
-                    elif a.startswith("nearest_MiBIG="):
-                        mibig_value = a.split("=")[1]
+                if tool == "sanntis":
+                    for a in annotations.split(
+                        ";"
+                    ):  # go through all parts of the annotation field
+                        if a.startswith("nearest_MiBIG_class="):
+                            class_value = a.split("=")[1]
+                        elif a.startswith("nearest_MiBIG="):
+                            mibig_value = a.split("=")[1]
+                elif tool == "gecco":
+                    for a in annotations.split(
+                        ";"
+                    ):  # go through all parts of the annotation field
+                        if a.startswith("Type="):
+                            type_value = a.split("=")[1]
+
                 # save cluster positions to a dictionary where key = contig name,
                 # value = list of position pairs (list of lists)
                 cluster_positions.setdefault(contig, list()).append(
                     [int(start_pos), int(end_pos)]
                 )
-                # save SanntiS annotations to dictionary where key = contig, value = dictionary, where
+                # save BGC annotations to dictionary where key = contig, value = dictionary, where
                 # key = 'start_end' of BGC, value = dictionary, where key = feature type, value = description
-                sanntis_result.setdefault(contig, dict()).setdefault(
-                    "_".join([start_pos, end_pos]),
-                    {"nearest_MiBIG_class": class_value, "nearest_MiBIG": mibig_value},
-                )
-    # identify CDSs that fall into each of the clusters annotated by SanntiS
+                if tool == "sanntis":
+                    tool_result.setdefault(contig, dict()).setdefault(
+                        "_".join([start_pos, end_pos]),
+                        {"nearest_MiBIG_class": class_value, "nearest_MiBIG": mibig_value},
+                    )
+                elif tool == "gecco":
+                    tool_result.setdefault(contig, dict()).setdefault(
+                        "_".join([start_pos, end_pos]),
+                        {"bgc_type": type_value},
+                    )
+    # identify CDSs that fall into each of the clusters annotated by the BGC tool
     with open(prokka_gff, "r") as gff_in:
         for line in gff_in:
             if not line.startswith("#"):
@@ -139,17 +153,27 @@ def get_sanntis(sanntis_file, prokka_gff):
                 # if the CDS is in an interval, save cluster's annotation to this CDS
                 if matching_interval:
                     cds_id = annotations.split(";")[0].split("=")[1]
-                    bgc_annotations.setdefault(
-                        cds_id,
-                        {
-                            "nearest_MiBIG": sanntis_result[contig][matching_interval][
-                                "nearest_MiBIG"
-                            ],
-                            "nearest_MiBIG_class": sanntis_result[contig][
-                                matching_interval
-                            ]["nearest_MiBIG_class"],
-                        },
-                    )
+                    if tool == "sanntis":
+                        bgc_annotations.setdefault(
+                            cds_id,
+                            {
+                                "nearest_MiBIG": tool_result[contig][matching_interval][
+                                    "nearest_MiBIG"
+                                ],
+                                "nearest_MiBIG_class": tool_result[contig][
+                                    matching_interval
+                                ]["nearest_MiBIG_class"],
+                            },
+                        )
+                    elif tool == "gecco":
+                        bgc_annotations.setdefault(
+                            cds_id,
+                            {
+                                "gecco_bgc_type": tool_result[contig][matching_interval][
+                                    "bgc_type"
+                                ],
+                            },
+                        )
             elif line.startswith("##FASTA"):
                 break
     return bgc_annotations
@@ -199,10 +223,11 @@ def get_amr(amr_file):
     return amr_annotations
 
 
-def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file):
+def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, gecco_file):
     eggnogs = get_eggnog(eggnog_file)
     iprs = get_iprs(ipr_file)
-    sanntis_bgcs = get_sanntis(sanntis_file, in_gff)
+    sanntis_bgcs = get_bgcs(sanntis_file, in_gff, tool="sanntis")
+    gecco_bgcs = get_bgcs(gecco_file, in_gff, tool="gecco")
     amr_annotations = {}
     if amr_file:
         amr_annotations = get_amr(amr_file)
@@ -249,6 +274,12 @@ def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file):
                     try:
                         sanntis_bgcs[protein]
                         for key, value in sanntis_bgcs[protein].items():
+                            added_annot[protein][key] = value
+                    except Exception:
+                        pass
+                    try:
+                        gecco_bgcs[protein]
+                        for key, value in gecco_bgcs[protein].items():
                             added_annot[protein][key] = value
                     except Exception:
                         pass
@@ -413,6 +444,26 @@ if __name__ == "__main__":
         help="The TSV file produced by AMRFinderPlus",
         required=False,
     )
+    #parser.add_argument(
+    #    "--antismash",
+    #    help="The GFF file produced by AntiSMASH post-processing script",
+    #    required=False,
+    #)
+    parser.add_argument(
+        "--gecco",
+        help="The GFF file produced by GECCO",
+        required=False,
+    )
+    #parser.add_argument(
+    #    "--dbCAN",
+    #    help="The GFF file produced by dbCAN post-processing script",
+    #    required=False,
+    #)
+    #parser.add_argument(
+    #    "--defense-finder",
+    #    help="The GFF file produced by Defense Finder post-processing script",
+    #    required=False,
+    #)
     parser.add_argument("-r", dest="rfam", help="Rfam results", required=True)
     parser.add_argument("-o", dest="outfile", help="Outfile name", required=False)
 
@@ -426,6 +477,10 @@ if __name__ == "__main__":
         ipr_file=args.ips,
         sanntis_file=args.sanntis,
         amr_file=args.amr,
+        #antismash_file=args.antismash,
+        gecco_file=args.gecco,
+        #dbcan_file=args.dbcan,
+        #defense_finder_file=args.defense_finder,
     )
 
     ncRNAs = get_rnas(args.rfam)
