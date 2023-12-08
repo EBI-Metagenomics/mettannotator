@@ -30,7 +30,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { PROKKA } from '../modules/local/prokka'
-include { AMRFINDER_PLUS, AMRFINDER_PLUS_TO_GFF } from '../modules/local/amrfinder_plus'
+include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF } from '../modules/local/amrfinder_plus'
 include { DEFENSE_FINDER } from '../modules/local/defense_finder'
 include { CRISPRCAS_FINDER } from '../modules/local/crisprcasfinder'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS } from '../modules/local/eggnog'
