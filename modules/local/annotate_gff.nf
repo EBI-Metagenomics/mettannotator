@@ -7,8 +7,17 @@ process ANNOTATE_GFF {
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
-    tuple val(meta), file(gff), file(ips_annotations_tsv), file(eggnog_annotations_tsv), file(sanntis_annotations_gff),
-    file(ncrna_tsv), file(crisprcas_hq_gff), file(amrfinder_tsv), file(arba), file(unirule), file(pirsr)
+    tuple val(meta),
+          file(gff),
+          file(ips_annotations_tsv),
+          file(eggnog_annotations_tsv),
+          file(sanntis_annotations_gff),
+          file(ncrna_tsv),
+          file(crisprcas_hq_gff),
+          file(amrfinder_tsv),
+          file(arba),
+          file(unirule),
+          file(pirsr)
 
     output:
     tuple val(meta), path("*_annotated.gff"), emit: annotated_gff
@@ -33,18 +42,22 @@ process ANNOTATE_GFF {
         amrfinder_flag = "-a ${amrfinder_tsv}"
     }
     """
-    annotate_gff.py \
-    -g ${gff} \
-    -i ${ips_annotations_tsv} \
-    -r ${ncrna_tsv} \
-    -o ${meta.prefix}_temp.gff \
+    annotate_gff.py \\
+    -g ${gff} \\
+    -i ${ips_annotations_tsv} \\
+    -r ${ncrna_tsv} \\
+    -o ${meta.prefix}_temp.gff \\
     ${eggnog_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag}
 
-     process_unirule_output.py \
-    -g ${meta.prefix}_temp.gff \
-    -a ${arba} \
-    -u ${unirule} \
-    -p ${pirsr} \
+    process_unirule_output.py \\
+    -g ${meta.prefix}_temp.gff \\
+    -a ${arba} \\
+    -u ${unirule} \\
+    -p ${pirsr} \\
+    -o ${meta.prefix}_unirule_merged.gff
+
+    convert_cds_into_multiple_lines.py \\
+    -i ${meta.prefix}_unirule_merged.gff \\
     -o ${meta.prefix}_annotated.gff
 
     cat <<-END_VERSIONS > versions.yml
