@@ -39,7 +39,7 @@ def main(indir, outfile):
         for prot, lines in result.items():
             for line in lines:
                 file_out.write(line)
-                
+
 
 def load_file(dbname, indir, filename, result):
     if not os.path.exists(os.path.join(indir, filename)):
