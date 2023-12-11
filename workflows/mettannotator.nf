@@ -231,6 +231,14 @@ workflow METTANNOTATOR {
         ).join(
             AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
         ).join(
+            ANTISMASH.out.gff, remainder: true
+        ).join(
+            GECCO_RUN.out.gff, remainder: true
+        ).join(
+            DBCAN.out.dbcan_gff, remainder: true
+        ).join(
+            DEFENSE_FINDER.out.gff, remainder: true
+        ).join(
             UNIFIRE.out.arba, remainder: true
         ).join(
             UNIFIRE.out.unirule, remainder: true
