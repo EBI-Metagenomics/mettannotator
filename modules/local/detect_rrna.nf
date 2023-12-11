@@ -32,6 +32,13 @@ process DETECT_RRNA {
 
     mkdir "\${RESULTS_FOLDER}"
 
+    # tRNAscan-SE needs a tmp folder otherwise it will use the base TMPDIR (with no subfolder)
+    # and that causes issues as other detect_rrna process will crash when the files are cleaned
+    PROCESSTMP="\$(mktemp -d)"
+    export TMPDIR="\${PROCESSTMP}"
+    # bash trap to clean the tmp directory
+    trap 'rm -r -- "\${PROCESSTMP}"' EXIT
+
     echo "[ Detecting rRNAs ] "
 
     for CM_FILE in "\${CM_DB}"/*.cm; do

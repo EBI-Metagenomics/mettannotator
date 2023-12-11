@@ -9,11 +9,24 @@ report_section_order:
   "ebi-metagenomics-mettannotator-summary":
     order: -1002
 
+run_modules:
+  - quast
+  - prokka
+  - custom_content
+
 top_modules:
   - quast
+  - prokka
+
+prokka_table: true
+prokka_fn_snames: true
 
 sp:
   quast_config:
     fn: "*.tsv"
 
 export_plots: true
+
+## Prettification
+custom_logo_url: https://github.com/ebi-metagenomics/mettannotator
+custom_logo_title: "ebi-metagenomics/mettannotator"

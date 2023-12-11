@@ -1,7 +1,24 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# Copyright 2023 EMBL - European Bioinformatics Institute
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 
 import argparse
 import logging
+import re
 
 from Bio import SeqIO
 
@@ -41,9 +58,34 @@ def create_gff(
                                 continue
                         if parts[2] == "CRISPR":
                             line = add_evidence_level(line, evidence_levels)
+                            line = fix_crispr_id(line)
                         if get_crispr_id(line) in high_qual_hits:
                             hq_gff_out.write(line)
+                        if "FLANK" in parts[2]:
+                            line = remove_parent(line)
                         gff_out.write(line)
+
+
+def remove_parent(line):
+    if "Parent" in line:
+        pattern = r'Parent=[^;]*;'
+        line = re.sub(pattern, '', line)
+    return line
+
+
+def fix_crispr_id(line):
+    fields = line.strip().split("\t")
+    annot = fields[8]
+    annot_elements = annot.split(";")
+    for a in annot_elements:
+        if a.startswith("Name="):
+            name = a.split("=")[1]
+        elif a.startswith("ID="):
+            id = a.split("=")[1]
+    fixed_annot = re.sub("ID={}".format(id), "ID={}".format(name), annot)
+    fixed_annot = re.sub("Name={}".format(name), "Name={}".format(id), fixed_annot)
+    fields[8] = fixed_annot
+    return "\t".join(fields) + "\n"
 
 
 def add_evidence_level(line, evidence_levels):

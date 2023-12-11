@@ -15,6 +15,7 @@ process PROKKA {
     tuple val(meta), file("${meta.prefix}_prokka/${meta.prefix}.fna"), emit: fna
     tuple val(meta), file("${meta.prefix}_prokka/${meta.prefix}.gbk"), emit: gbk
     tuple val(meta), file("${meta.prefix}_prokka/${meta.prefix}.ffn"), emit: ffn
+    tuple val(meta), file("${meta.prefix}_prokka/${meta.prefix}.txt"), emit: txt
     path "versions.yml" , emit: versions
 
     script:

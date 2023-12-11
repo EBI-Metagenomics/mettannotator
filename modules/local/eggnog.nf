@@ -12,7 +12,7 @@ process EGGNOG_MAPPER {
     // on mode "annotations" will be ignored, submit an empty path (channel.path("NO_FILE"))
     tuple val(meta), file(fasta), file(annotation_hit_table)
     // on mode "mapper" will be ignored, submit an empty path (channel.path("NO_FILE"))
-    val mode // mapper or annontations
+    val mode // mapper or annotations
     path eggnog_db
     path eggnog_diamond_db
     path eggnog_data_dir

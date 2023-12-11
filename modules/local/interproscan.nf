@@ -2,7 +2,9 @@
  * Interproscan
 */
 
-process IPS {
+process INTERPROSCAN {
+
+    tag "${meta.prefix}"
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.ips:5.62-94.0'
     containerOptions "${ workflow.containerEngine == 'singularity' ?
@@ -14,7 +16,7 @@ process IPS {
     path interproscan_db
 
     output:
-    tuple val(meta), path('*.IPS.tsv'), emit: ips_annontations
+    tuple val(meta), path('*.IPS.tsv'), emit: ips_annotations
     path "versions.yml"               , emit: versions
 
     script:
