@@ -39,10 +39,10 @@ def main(reference, target, outfile, species):
                         base, copy_num = gene_name.split("_")
                         try:
                             int(copy_num)
-                        except:
+                            dedupl_dict.setdefault(base, dict()).setdefault(gene_name, dict())
+                            dedupl_dict[base][gene_name] = {"locus": locus_name, "alias": alias_name}
+                        except ValueError:
                             pass
-                        dedupl_dict.setdefault(base, dict()).setdefault(gene_name, dict())
-                        dedupl_dict[base][gene_name] = {"locus": locus_name, "alias": alias_name}
     counter = 0
     stats_dict = dict()
     for base in dedupl_dict:
