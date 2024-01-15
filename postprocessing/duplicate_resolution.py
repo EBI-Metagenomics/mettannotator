@@ -7,10 +7,8 @@ import re
 logging.basicConfig(level=logging.INFO)
 
 
-def main(reference, target, outfile, species, mmseqs):
+def main(reference, target, outfile, species):
     # Find genes for which we are not certain which stable ID is the best match
-    mmseqs_identical_hits = process_mmseqs(mmseqs)
-    print("Genes with multiple identical mmseqs hits:\n", mmseqs_identical_hits)
     species_prefix = get_prefix(species)
     alias_genename_dict = load_ref_genenames(reference, species_prefix)
     dedupl_dict = dict()
@@ -38,7 +36,11 @@ def main(reference, target, outfile, species, mmseqs):
                         alias_name = None
                     print(gene_name, locus_name, alias_name)
                     if "_" in gene_name:
-                        base = gene_name.split("_")[0]
+                        base, copy_num = gene_name.split("_")
+                        try:
+                            int(copy_num)
+                        except:
+                            pass
                         dedupl_dict.setdefault(base, dict()).setdefault(gene_name, dict())
                         dedupl_dict[base][gene_name] = {"locus": locus_name, "alias": alias_name}
     counter = 0
@@ -89,31 +91,6 @@ def main(reference, target, outfile, species, mmseqs):
 
     print("Total number of groups: {}".format(counter))
     print(stats_dict)
-
-
-def process_mmseqs(mmseqs):
-    identical_hits = list()
-
-    # Load mmseqs results into a dictionary
-    mmseqs_res = dict()
-    with (open(mmseqs, "r") as file_in):
-        for line in file_in:
-            if not line.startswith("query"):
-                parts = line.strip().split("\t")
-                query, target, evalue, bit, qcov, tcov = parts[0].split(":")[0], parts[1].split(":")[0], parts[8], \
-                parts[9], float(parts[12]), float(parts[13])
-                if tcov > 0.9 and qcov > 0.9:
-                    mmseqs_res.setdefault(query, dict()).setdefault(target, dict())
-                    mmseqs_res[query][target] = {"evalue": evalue, "bit": bit}
-
-    # For genes that have multiple mmseqs matches, check if the best matches are identical
-    for gene_id, res_dict in mmseqs_res.items():
-        if len(res_dict.keys()) > 1:
-            sorted_dict = dict(sorted(res_dict.items(), key=lambda item: float(item[1]['evalue'])))
-            top_values = list(sorted_dict.values())[:2]
-            if top_values[0] == top_values[1]:
-                identical_hits.append(gene_id)
-    return identical_hits
 
 
 def get_prefix(species):
@@ -180,14 +157,6 @@ def parse_args():
             "The name of the species - uniformis or vulgatus."
         ),
     )
-    parser.add_argument(
-        "-m",
-        dest="mmseqs",
-        required=True,
-        help=(
-            "MMseqs2 output file from liftoff (likely named something like gene.topHitResultDb.tsv)."
-        ),
-    )
     return parser.parse_args()
 
 
@@ -198,5 +167,4 @@ if __name__ == "__main__":
         args.target,
         args.outfile,
         args.species,
-        args.mmseqs
     )
