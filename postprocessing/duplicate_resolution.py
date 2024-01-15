@@ -8,41 +8,16 @@ logging.basicConfig(level=logging.INFO)
 
 
 def main(reference, target, outfile, species):
-    # Find genes for which we are not certain which stable ID is the best match
+    # Choose stable ID prefix depending on the species
     species_prefix = get_prefix(species)
+    # Load known gene names and prefixes from the reference
     alias_genename_dict = load_ref_genenames(reference, species_prefix)
-    dedupl_dict = dict()
-    with open(target, "r") as file_in:
-        for line in file_in:
-            if not line.startswith("#"):
-                if line.startswith(">"):
-                    break
-                _, _, feature, _, _, _, _, _, annot = line.strip().split("\t")
-                if feature == "gene" and "gene=" in annot:
-                    gene_pattern = r";gene=(.*?);"
-                    locus_pattern = r";locus_tag=(.*?);"
-                    alias_pattern = r";Alias=(.*?);"
-                    try:
-                        gene_name = re.search(gene_pattern, annot).group(1)
-                    except:
-                        gene_name = None
-                    try:
-                        locus_name = re.search(locus_pattern, annot).group(1)
-                    except:
-                        locus_name = None
-                    try:
-                        alias_name = re.search(alias_pattern, annot).group(1)
-                    except:
-                        alias_name = None
-                    print(gene_name, locus_name, alias_name)
-                    if "_" in gene_name:
-                        base, copy_num = gene_name.split("_")
-                        try:
-                            int(copy_num)
-                            dedupl_dict.setdefault(base, dict()).setdefault(gene_name, dict())
-                            dedupl_dict[base][gene_name] = {"locus": locus_name, "alias": alias_name}
-                        except ValueError:
-                            pass
+    # Get duplicate gene names from the GFF we are modifying.
+    # In dedupl_dict, key = base gene name (e.g. susC), value = dictionary where:
+    # key = full gene name (e.g. susC_1), value = dictionary where:
+    # key = locus name (e.g. BU_ATCC8492_00006), value = alias name (e.g. BACUNI_00053)
+    dedupl_dict = load_duplicates(target)
+
     counter = 0
     stats_dict = dict()
     for base in dedupl_dict:
@@ -91,6 +66,42 @@ def main(reference, target, outfile, species):
 
     print("Total number of groups: {}".format(counter))
     print(stats_dict)
+
+
+def load_duplicates(infile):
+    dedupl_dict = dict()
+    with open(infile, "r") as file_in:
+        for line in file_in:
+            if not line.startswith("#"):
+                if line.startswith(">"):
+                    break
+                _, _, feature, _, _, _, _, _, annot = line.strip().split("\t")
+                if feature == "gene" and "gene=" in annot:
+                    gene_pattern = r";gene=(.*?);"
+                    locus_pattern = r";locus_tag=(.*?);"
+                    alias_pattern = r";Alias=(.*?);"
+                    try:
+                        gene_name = re.search(gene_pattern, annot).group(1)
+                    except:
+                        gene_name = None
+                    try:
+                        locus_name = re.search(locus_pattern, annot).group(1)
+                    except:
+                        locus_name = None
+                    try:
+                        alias_name = re.search(alias_pattern, annot).group(1)
+                    except:
+                        alias_name = None
+                    print(gene_name, locus_name, alias_name)
+                    if "_" in gene_name:
+                        base, copy_num = gene_name.split("_")
+                        try:
+                            int(copy_num)
+                            dedupl_dict.setdefault(base, dict()).setdefault(gene_name, dict())
+                            dedupl_dict[base][gene_name] = {"locus": locus_name, "alias": alias_name}
+                        except ValueError:
+                            pass
+    return dedupl_dict
 
 
 def get_prefix(species):
