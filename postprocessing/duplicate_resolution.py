@@ -15,7 +15,7 @@ def main(reference, target, outfile, species):
     # Get duplicate gene names from the GFF we are modifying.
     # In dedupl_dict, key = base gene name (e.g. susC), value = dictionary where:
     # key = full gene name (e.g. susC_1), value = dictionary where:
-    # key = locus name (e.g. BU_ATCC8492_00006), value = alias name (e.g. BACUNI_00053)
+    # key = "locus", value = locus name (e.g. BU_ATCC8492_00006); key = "alias", value = alias name (e.g. BACUNI_00053)
     dedupl_dict = load_duplicates(target)
 
     counter = 0
@@ -25,21 +25,22 @@ def main(reference, target, outfile, species):
             counter += 1
             print(dedupl_dict[base])
             unknown_counter = 0
-            gene_counter_temp_dict = dict()
+            decision_dict = dict()
             for gene in dedupl_dict[base]:
                 if dedupl_dict[base][gene]['alias'] in alias_genename_dict:
-                    print(dedupl_dict[base][gene]['alias'], alias_genename_dict[dedupl_dict[base][gene]['alias']])
-                    key = alias_genename_dict[dedupl_dict[base][gene]['alias']]
-                    gene_counter_temp_dict[key] = gene_counter_temp_dict.get(key, 0) + 1
+                    print("target", dedupl_dict[base][gene]['alias'], "ref", alias_genename_dict[dedupl_dict[base][gene]['alias']])
+                    ref_gene_name = alias_genename_dict[dedupl_dict[base][gene]['alias']]
+                    decision_dict[ref_gene_name] = decision_dict.get(ref_gene_name, 0) + 1
                 else:
-                    print(dedupl_dict[base][gene]['alias'], "Unknown gene")
+                    print("target", dedupl_dict[base][gene]['alias'], "ref", "Unknown gene")
                     unknown_counter += 1
-            if len(gene_counter_temp_dict) == 0 and unknown_counter > 1:
+            print("decision_dict", decision_dict)
+            if len(decision_dict) == 0 and unknown_counter > 1:
                 stats_dict["unknowns_only"] = stats_dict.get("unknowns_only", 0) + 1
-            elif unknown_counter > 0 and len(gene_counter_temp_dict) == 1:
-                key = list(gene_counter_temp_dict.keys())[0]
-                if key == base:
-                    if gene_counter_temp_dict[key] == 1:
+            elif unknown_counter > 0 and len(decision_dict) == 1:
+                ref_gene_name = list(decision_dict.keys())[0]
+                if ref_gene_name == base:
+                    if decision_dict[ref_gene_name] == 1:
                         stats_dict["unknowns and one matching gene"] = \
                             stats_dict.get("unknowns and one matching gene", 0) + 1
                     else:
@@ -47,11 +48,11 @@ def main(reference, target, outfile, species):
                             stats_dict.get("unknowns and several matching genes", 0) + 1
                 else:
                     stats_dict["unknowns and different genes"] = stats_dict.get("unknowns and different genes", 0) + 1
-            elif unknown_counter > 0 and len(gene_counter_temp_dict) > 1:
+            elif unknown_counter > 0 and len(decision_dict) > 1:
                 stats_dict["unknowns and matching and mismatching genes"] = stats_dict.get("unknowns and matching and mismatching genes", 0) + 1
             elif unknown_counter == 0:
-                if key == base:
-                    if gene_counter_temp_dict[key] == 1:
+                if ref_gene_name == base:
+                    if decision_dict[ref_gene_name] == 1:
                         stats_dict["one matching gene"] = \
                             stats_dict.get("one matching gene", 0) + 1
                     else:
