@@ -20,6 +20,7 @@ def main(reference, target, outfile, species):
 
     counter = 0
     stats_dict = dict()
+    replacements = dict()
     for base in dedupl_dict:
         if len(dedupl_dict[base]) > 1:
             counter += 1
@@ -34,36 +35,49 @@ def main(reference, target, outfile, species):
                 else:
                     print("target", dedupl_dict[base][gene]['alias'], "ref", "Unknown gene")
                     unknown_counter += 1
-            print("decision_dict", decision_dict)
             if len(decision_dict) == 0 and unknown_counter > 1:
                 stats_dict["unknowns_only"] = stats_dict.get("unknowns_only", 0) + 1
-            elif unknown_counter > 0 and len(decision_dict) == 1:
-                ref_gene_name = list(decision_dict.keys())[0]
-                if ref_gene_name == base:
-                    if decision_dict[ref_gene_name] == 1:
-                        stats_dict["unknowns and one matching gene"] = \
-                            stats_dict.get("unknowns and one matching gene", 0) + 1
-                    else:
-                        stats_dict["unknowns and several matching genes"] = \
-                            stats_dict.get("unknowns and several matching genes", 0) + 1
-                else:
-                    stats_dict["unknowns and different genes"] = stats_dict.get("unknowns and different genes", 0) + 1
-            elif unknown_counter > 0 and len(decision_dict) > 1:
-                stats_dict["unknowns and matching and mismatching genes"] = stats_dict.get("unknowns and matching and mismatching genes", 0) + 1
-            elif unknown_counter == 0:
-                if ref_gene_name == base:
-                    if decision_dict[ref_gene_name] == 1:
-                        stats_dict["one matching gene"] = \
-                            stats_dict.get("one matching gene", 0) + 1
-                    else:
-                        stats_dict["several copies match the gene name"] = \
-                            stats_dict.get("several copies match the gene name", 0) + 1
-                else:
-                    stats_dict["different genes"] = stats_dict.get("different genes", 0) + 1
+            elif any(count > 1 for count in decision_dict.values()):
+                stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
+                print("----------------------- > Unable to decide", decision_dict)
             else:
-                print("------------------>UNACCOUNTED")
-                stats_dict["unaccounted"] = \
-                    stats_dict.get("unaccounted", 0) + 1
+                print("====!====!====!====!====!=== > Can decide", decision_dict)
+                if base in decision_dict and len(decision_dict) == 1:
+                    print("Deciding now", dedupl_dict[base])
+
+            #elif base in decision_dict and decision_dict[base] == 1:
+            #    if len(decision_dict) == 1:
+            #        stats_dict["deduplicated"] = stats_dict.get("deduplicated", 0) + 1
+            #        print("========================> Should be able to decide", decision_dict)
+            #    else:
+            #        print("############### multiple gene names", decision_dict)
+            # elif unknown_counter > 0 and len(decision_dict) == 1:
+            #     ref_gene_name = list(decision_dict.keys())[0]
+            #     if ref_gene_name == base:
+            #         if decision_dict[ref_gene_name] == 1:
+            #             stats_dict["unknowns and one matching gene"] = \
+            #                 stats_dict.get("unknowns and one matching gene", 0) + 1
+            #         else:
+            #             stats_dict["unknowns and several matching genes"] = \
+            #                 stats_dict.get("unknowns and several matching genes", 0) + 1
+            #     else:
+            #         stats_dict["unknowns and different genes"] = stats_dict.get("unknowns and different genes", 0) + 1
+            # elif unknown_counter > 0 and len(decision_dict) > 1:
+            #     stats_dict["unknowns and matching and mismatching genes"] = stats_dict.get("unknowns and matching and mismatching genes", 0) + 1
+            # elif unknown_counter == 0:
+            #     if ref_gene_name == base:
+            #         if decision_dict[ref_gene_name] == 1:
+            #             stats_dict["one matching gene"] = \
+            #                 stats_dict.get("one matching gene", 0) + 1
+            #         else:
+            #             stats_dict["several copies match the gene name"] = \
+            #                 stats_dict.get("several copies match the gene name", 0) + 1
+            #     else:
+            #         stats_dict["different genes"] = stats_dict.get("different genes", 0) + 1
+            # else:
+            #     print("------------------>UNACCOUNTED")
+            #     stats_dict["unaccounted"] = \
+            #         stats_dict.get("unaccounted", 0) + 1
 
     print("Total number of groups: {}".format(counter))
     print(stats_dict)
