@@ -59,7 +59,7 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
                     cgc, gene_type, contig, prot_id, start, end, strand, protein_fam = line.strip().split("\t")
                     protein_fam = protein_fam.replace(" ", "")
                     if not cgc in cgcs_printed:
-                        substrate = substrates[cgc] if cgc in substrates else "substrate_dbcan_pul=N/A;substrate_ecami=N/A"
+                        substrate = substrates[cgc] if cgc in substrates else "substrate_dbcan-pul=N/A;substrate_dbcan-sub=N/A"
                         file_out.write("{}\tdbCAN:{}\tpredicted PUL\t{}\t{}\t.\t.\t.\tID={};{}\n".format(
                             contig, dbcan_version, cgc_locations[cgc]["start"], cgc_locations[cgc]["end"], cgc,
                             substrate))
@@ -70,7 +70,7 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
 
 def load_substrates(input_folder):
     substrates = dict()
-    with open(os.path.join(input_folder, "sub.prediction.out"), "r") as file_in:
+    with open(os.path.join(input_folder, "substrate.out"), "r") as file_in:
         for line in file_in:
             if not line.startswith("#"):
                 parts = line.strip().split("\t")
@@ -87,13 +87,13 @@ def load_substrates(input_folder):
                     substrate_pul = "N/A"
                 if not substrate_ecami:
                     substrate_ecami = "N/A"
-                substrates[cgc] = "substrate_dbcan_pul={};substrate_ecami={}".format(substrate_pul, substrate_ecami)
+                substrates[cgc] = "substrate_dbcan-pul={};substrate_dbcan-sub={}".format(substrate_pul, substrate_ecami)
     return substrates
 
 
 def check_folder_completeness(input_folder):
     status = True
-    for file in ["cgc_standard.out", "overview.txt", "sub.prediction.out"]:
+    for file in ["cgc_standard.out", "overview.txt", "substrate.out"]:
         if not os.path.exists(os.path.join(input_folder, file)):
             logging.error("File {} does not exist.".format(file))
             status = False
