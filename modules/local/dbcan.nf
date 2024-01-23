@@ -38,11 +38,11 @@ process DBCAN {
         ${faa} \\
         protein
 
-    process_dbcan_result.py -i dbcan -o dbcan/${meta.prefix}_dbcan.gff -v 4.0.0
+    process_dbcan_result.py -i dbcan -o dbcan/${meta.prefix}_dbcan.gff -v 4.1.2
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        dbcan: 4.0.0
+        dbcan: 4.1.2
     END_VERSIONS
     """
 }
