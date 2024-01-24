@@ -6,7 +6,7 @@ process DBCAN {
 
     input:
     tuple val(meta), path(faa), path(gff)
-    path dbcan_db
+    tuple path(dbcan_db), val(db_version)
 
     output:
     tuple val(meta), path("dbcan/substrate.out")        , emit: substrates
@@ -43,6 +43,7 @@ process DBCAN {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         dbcan: 4.1.2
+        dbcan database: $db_version
     END_VERSIONS
     """
 }

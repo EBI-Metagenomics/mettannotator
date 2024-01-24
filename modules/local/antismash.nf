@@ -6,6 +6,7 @@ process ANTISMASH {
 
     input:
     tuple val(meta), path(gbk)
+    tuple path(antismash_db), val(db_version)
 
     output:
     tuple val(meta), path("${meta.prefix}_results/${meta.prefix}.gbk"), emit: gbk
@@ -18,7 +19,7 @@ process ANTISMASH {
     antismash \\
     -t bacteria \\
     -c ${task.cpus} \\
-    --databases ${params.antismash_db} \\
+    --databases ${antismash_db} \\
     --output-basename ${meta.prefix} \\
     --genefinding-tool none \\
     --output-dir ${meta.prefix}_results \\
@@ -40,6 +41,7 @@ process ANTISMASH {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         antiSMASH: \$(echo \$(antismash --version | sed 's/^antiSMASH //' ))
+        antiSMASH database: $db_version
     END_VERSIONS
     """
 }

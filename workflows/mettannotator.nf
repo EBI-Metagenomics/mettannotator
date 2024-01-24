@@ -86,7 +86,7 @@ interproscan_db = channel.empty()
 
 eggnog_db = channel.empty()
 eggnog_diamond_db = channel.empty()
-eggnog_data_dir = channel.empty()
+eggnog_data = channel.empty()
 
 rfam_rrna_models = channel.empty()
 rfam_ncrna_models = channel.empty()
@@ -100,55 +100,104 @@ rfam_ncrna_models = channel.empty()
 workflow DOWNLOAD_DATABASES {
 
     main:
-        amrfinder_plus_db = file("$params.dbs/amrfinder_db")
 
-        defense_finder_db = file("$params.dbs/defense_finder_db")
+        amrfinder_plus_db = channel.empty()
+        antismash_db = channel.empty()
+        defense_finder_db = channel.empty()
+        dbcan_db = channel.empty()
+        interproscan_db = channel.empty()
+        eggnog_db = channel.empty()
 
-        dbcan_db = file("$params.dbs/dbcan_db")
+        amrfinder_plus_dir = file("$params.dbs/amrfinder/")
+        antismash_dir = file("$params.dbs/antismash")
+        defense_finder_dir = file("$params.dbs/defense_finder/")
+        dbcan_dir = file("$params.dbs/dbcan/")
+        interproscan_dir = file("$params.dbs/interproscan")
+        eggnog_data_dir = file("$params.dbs/eggnog")
+        rfam_rrna_models = file("$params.dbs/rfam_models/rfam_rrna_cms")
+        rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
 
-        interproscan_db = file("$params.dbs/interproscan_db")
-
-        eggnog_data_dir = file("$params.dbs/eggng_db")
-        eggnog_db = file("$params.dbs/eggng_db/eggng.db")
-        eggnog_diamond_db = file("$params.dbs/eggng_db/eggnog_proteins.dmnd")
-
-        rfam_rrna_models = file("$params.dbs/rfam_rrna_models")
-        rfam_ncrna_models = file("$params.dbs/rfam_ncrna_models")
-
-        if (!amrfinder_plus_db.exists()) {
+        if (amrfinder_plus_dir.exists()) {
+            amrfinder_plus_db = tuple(
+                amrfinder_plus_dir,
+                file("${amrfinder_plus_dir}/VERSION.txt", checkIfExists: true).text // the DB version
+            )
+            log.info("AMRFinder plus database exists, or at least the expected folder.")
+        } else {
             AMRFINDER_PLUS_GETDB()
-            amrfinder_plus_db = AMRFINDER_PLUS_GETDB.out.amrfinder_plus_db
+            amrfinder_plus_db = AMRFINDER_PLUS_GETDB.out.amrfinder_plus_db.first()
         }
-        if (!defense_finder_db.exists()) {
+
+        if (antismash_dir.exists()) {
+            antismash_db = tuple(
+                antismash_dir,
+                file("${antismash_dir}/VERSION.txt", checkIfExists: true).text // the DB version
+            )
+            log.info("AntiSMASH database exists, or at least the expected folder.")
+        } else {
+            ANTISMASH_GETDB()
+            antismash_db = ANTISMASH_GETDB.out.antismash_db.first()
+        }
+
+
+        if (defense_finder_dir.exists()) {
+            log.info("Defense Finder models exists, or at least the expected folder.")
+            defense_finder_dir_db = tuple(
+                defense_finder_dir,
+                file("${defense_finder_dir}/VERSION.txt", checkIfExists: true).text // the DB version
+            )
+        } else {
             DEFENSE_FINDER_GETDB()
-            defense_finder_db = DEFENSE_FINDER_GETDB.out.defense_finder_db
+            defense_finder_db = DEFENSE_FINDER_GETDB.out.defense_finder_db.first()
         }
-        if (!dbcan_db.exists()) {
+
+        if (dbcan_dir.exists()) {
+            log.info("DBCan database exists, or at least the expected folder.")
+            dbcan_db = tuple(
+                dbcan_dir,
+                file("${dbcan_dir}/VERSION.txt", checkIfExists: true).text // the DB version
+            )
+        } else {
             DBCAN_GETDB()
-            dbcan_db = DBCAN_GETDB.out.dbcan_db
+            dbcan_db = DBCAN_GETDB.out.dbcan_db.first()
         }
-        if (!interproscan_db.exists()) {
+
+        if (interproscan_dir.exists()) {
+            log.info("InterproScan database exists, or at least the expected folder.")
+            interproscan_db = tuple(
+                interproscan_dir,
+                file("${interproscan_dir}/VERSION.txt", checkIfExists: true).text // the DB version
+            )
+        } else {
             INTEPROSCAN_GETDB()
-            interproscan_db = INTEPROSCAN_GETDB.out.interproscan_db
+            interproscan_db = INTEPROSCAN_GETDB.out.interproscan_db.first()
         }
-        if (!eggnog_data_dir.exists()) {
+
+        if (eggnog_data_dir.exists()) {
+            log.info("EggNOG mapper database exists, or at least the expected folder.")
+            eggnog_data = tuple(
+                eggnog_data_dir,
+                file("${eggnog_data_dir}/VERSION.txt", checkIfExists: true).text
+            )
+        } else {
             EGGNOG_MAPPER_GETDB()
-            eggnog_data_dir = EGGNOG_MAPPER_GETDB.out.eggnog_data_dir
-            eggnog_db = EGGNOG_MAPPER_GETDB.out.eggng_db
-            eggnog_diamond_db = EGGNOG_MAPPER_GETDB.out.eggnog_diamond_db
+            eggnog_db = EGGNOG_MAPPER_GETDB.out.eggnog_db
         }
+
         if (!rfam_rrna_models.exists() || !rfam_ncrna_models.exists()) {
-            rfam_rrna_models = file("$params.dbs/rfam_rrna_models")
-            rfam_ncrna_models = file("$params.dbs/rfam_ncrna_models")
+            RFAM_GETMODELS()
+            rfam_rrna_models = RFAM_GETMODELS.out.rfam_rrna_cms
+            rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms
+        } else {
+            log.info("RFam model files exists, or at least the expected folders.")
         }
     emit:
         amrfinder_plus_db = amrfinder_plus_db
+        antismash_db = antismash_db
         defense_finder_db = defense_finder_db
         dbcan_db = dbcan_db
         interproscan_db = interproscan_db
-        eggnog_data_dir = eggnog_data_dir
         eggnog_db = eggnog_db
-        eggnog_diamond_db = eggnog_diamond_db
         rfam_rrna_models = rfam_rrna_models
         rfam_ncrna_models = rfam_ncrna_models
 
@@ -171,6 +220,8 @@ workflow METTANNOTATOR {
 
         amrfinder_plus_db = DOWNLOAD_DATABASES.out.amrfinder_plus_db
 
+        antismash_db = DOWNLOAD_DATABASES.out.antismash_db
+
         defense_finder_db = DOWNLOAD_DATABASES.out.defense_finder_db
 
         dbcan_db = DOWNLOAD_DATABASES.out.dbcan_db
@@ -178,24 +229,42 @@ workflow METTANNOTATOR {
         interproscan_db = DOWNLOAD_DATABASES.out.interproscan_db
 
         eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
-        eggnog_diamond_db = DOWNLOAD_DATABASES.out.eggnog_diamond_db
-        eggnog_data_dir = DOWNLOAD_DATABASES.out.eggnog_data_dir
 
         rfam_rrna_models = DOWNLOAD_DATABASES.out.rfam_rrna_models
         rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
     } else {
         // Use the parametrized folders and files for the databases //
-        amrfinder_plus_db = file(params.amrfinder_plus_db, checkIfExists: true)
+        amrfinder_plus_db = tuple(
+            file(params.amrfinder_plus_db, checkIfExists: true),
+            params.amrfinder_plus_db_version
+        )
 
-        defense_finder_db = file(params.defense_finder_db, checkIfExists: true)
-        dbcan_db = file(params.dbcan_db, checkIfExists: true)
+        antismash_db = tuple(
+            file(params.antismash_db, checkIfExists: true),
+            params.antismash_db_version
+        )
 
-        interproscan_db = file(params.interproscan_db, checkIfExists: true)
+        defense_finder_db = tuple(
+            file(params.defense_finder_db, checkIfExists: true),
+            params.defense_finder_db_version
+        )
 
-        eggnog_db = file(params.eggnog_db, checkIfExists: true)
-        eggnog_diamond_db = file(params.eggnong_diamond_db, checkIfExists: true)
-        eggnog_data_dir = file(params.eggnong_data_dir, checkIfExists: true)
+        dbcan_db = tuple(
+            file(params.dbcan_db, checkIfExists: true),
+            params.dbcan_db_version
+        )
 
+        interproscan_db = tuple(
+            file(params.interproscan_db, checkIfExists: true),
+            params.interproscan_db_version
+        )
+
+        eggnog_db = tuple(
+            file(params.eggnog_db, checkIfExists: true),
+            params.eggnog_db_version
+        )
+
+        // TODO: add the version here
         rfam_rrna_models = file(params.rfam_rrna_models, checkIfExists: true)
         rfam_ncrna_models = file(params.rfam_ncrna_models, checkIfExists: true)
     }
@@ -231,9 +300,7 @@ workflow METTANNOTATOR {
     EGGNOG_MAPPER_ORTHOLOGS(
         proteins_for_emapper_orth,
         Channel.value("mapper"),
-        eggnog_db,
-        eggnog_diamond_db,
-        eggnog_data_dir
+        eggnog_db
     )
 
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ORTHOLOGS.out.versions.first())
@@ -248,9 +315,7 @@ workflow METTANNOTATOR {
     EGGNOG_MAPPER_ANNOTATIONS(
         orthologs_for_annotations,
         Channel.value("annotations"),
-        eggnog_db,
-        eggnog_diamond_db,
-        eggnog_data_dir
+        eggnog_db
     )
 
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
@@ -268,7 +333,10 @@ workflow METTANNOTATOR {
         PROKKA.out.gff
     )
 
-    AMRFINDER_PLUS( assemblies_plus_faa_and_gff )
+    AMRFINDER_PLUS(
+        assemblies_plus_faa_and_gff,
+        amrfinder_plus_db
+    )
 
     ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
 
@@ -314,7 +382,8 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
 
     ANTISMASH(
-        PROKKA.out.gbk
+        PROKKA.out.gbk,
+        antismash_db
     )
 
     ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
