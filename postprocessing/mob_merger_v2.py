@@ -10,6 +10,7 @@ import os.path
 ##### Alejandra Escobar, EMBL-EBI
 ##### Dec 6, 2023
 
+
 def gff_parser(current_line):
     (
         contig,
@@ -22,9 +23,9 @@ def gff_parser(current_line):
         phase,
         attr,
     ) = current_line.split("\t")
-    seq_id = attr.split(';')[0].replace('ID=','')
-    data_list = [ contig, seq_type, start, end, seq_id ]
-    return( data_list )
+    seq_id = attr.split(";")[0].replace("ID=", "")
+    data_list = [contig, seq_type, start, end, seq_id]
+    return data_list
 
 
 def momo_parser(momofy):
@@ -42,40 +43,37 @@ def momo_parser(momofy):
         "plasmid",
         "viral_sequence",
         "prophage",
-        "phage_plasmid"
+        "phage_plasmid",
     ]
 
-    boundaries = [
-        "terminal_inverted_repeat_element",
-        "direct_repeat_element"
-    ]
+    boundaries = ["terminal_inverted_repeat_element", "direct_repeat_element"]
 
-    with open(momofy, 'r') as input_file:
+    with open(momofy, "r") as input_file:
         for line in input_file:
             line = line.rstrip()
             # Annotation lines have exactly 9 columns
             if len(line.split("\t")) == 9:
-                data_list = gff_parser( line )
+                data_list = gff_parser(line)
                 contig = data_list[0]
                 start = data_list[2]
                 end = data_list[3]
                 if data_list[1] in mges:
-                    if data_list[1] == 'conjugative_integron':
-                        data_list[1] = 'conjugative_element'
-                    if data_list[1] == 'viral_sequence':
-                        data_list[1] = 'phage'
-                    if data_list[1] == 'prophage':
-                        data_list[1] = 'phage'
-                    data_list=tuple(data_list)
+                    if data_list[1] == "conjugative_integron":
+                        data_list[1] = "conjugative_element"
+                    if data_list[1] == "viral_sequence":
+                        data_list[1] = "phage"
+                    if data_list[1] == "prophage":
+                        data_list[1] = "phage"
+                    data_list = tuple(data_list)
                     if contig in momofy_dict:
                         momofy_dict[contig].append(data_list)
                     else:
-                        momofy_dict[contig]=[data_list]
+                        momofy_dict[contig] = [data_list]
 
-                    for attribute in line.split("\t")[8].split(';'):
-                        att_key, att_val = attribute.split('=')
-                        if att_key == 'mobile_element_type':
-                            min_key = contig + ':' + data_list[4].split('-')[1].replace(':','-')
+                    for attribute in line.split("\t")[8].split(";"):
+                        att_key, att_val = attribute.split("=")
+                        if att_key == "mobile_element_type":
+                            min_key = contig + ":" + data_list[4].split("-")[1].replace(":", "-")
                             momo_subtypes[min_key] = att_val
                             bm1_key = (contig, start)
                             bound_map_1[bm1_key] = att_val
@@ -83,70 +81,84 @@ def momo_parser(momofy):
                             bound_map_2[bm2_key] = att_val
 
                 elif data_list[1] in boundaries:
-                    for attribute in line.split("\t")[8].split(';'):
-                        att_key, att_val = attribute.split('=')
-                        if att_key == 'flanking_site':
-                            location = att_val.split('_')[1]
-                            if location == '1':
-                                loc_key = ( contig, start)
+                    for attribute in line.split("\t")[8].split(";"):
+                        att_key, att_val = attribute.split("=")
+                        if att_key == "flanking_site":
+                            location = att_val.split("_")[1]
+                            if location == "1":
+                                loc_key = (contig, start)
                                 data_list.append(att_val)
-                            elif location == '2':
-                                loc_key = ( contig, end)
+                            elif location == "2":
+                                loc_key = (contig, end)
                                 data_list.append(att_val)
                     irdr_map[loc_key] = data_list
 
     # Generating the irdr list with the right key: DR_1.1(IME)
-    boundaries_counter  = 0
+    boundaries_counter = 0
     for contig in momofy_dict:
         for element in momofy_dict[contig]:
-            boundaries_counter+=1
+            boundaries_counter += 1
             start = element[2]
             end = element[3]
-            bm1_key = ( contig, start )
-            bm2_key = ( contig, end )
-            if all([ bm1_key in bound_map_1 , bm1_key in irdr_map ]):
-                new_id = irdr_map[bm1_key][5] + '.' + str(boundaries_counter) + '(' + bound_map_1[bm1_key] + ')'
-                min_info = [ irdr_map[bm1_key][0], irdr_map[bm1_key][1], irdr_map[bm1_key][2], irdr_map[bm1_key][3] ]
+            bm1_key = (contig, start)
+            bm2_key = (contig, end)
+            if all([bm1_key in bound_map_1, bm1_key in irdr_map]):
+                new_id = irdr_map[bm1_key][5] + "." + str(boundaries_counter) + "(" + bound_map_1[bm1_key] + ")"
+                min_info = [irdr_map[bm1_key][0], irdr_map[bm1_key][1], irdr_map[bm1_key][2], irdr_map[bm1_key][3]]
                 irdr_dict[new_id] = min_info
-            if all([ bm2_key in bound_map_2 , bm2_key in irdr_map ]):
-                new_id = irdr_map[bm2_key][5] + '.' + str(boundaries_counter) + '(' + bound_map_2[bm2_key] + ')'
-                min_info = [ irdr_map[bm2_key][0], irdr_map[bm2_key][1], irdr_map[bm2_key][2], irdr_map[bm2_key][3] ]
+            if all([bm2_key in bound_map_2, bm2_key in irdr_map]):
+                new_id = irdr_map[bm2_key][5] + "." + str(boundaries_counter) + "(" + bound_map_2[bm2_key] + ")"
+                min_info = [irdr_map[bm2_key][0], irdr_map[bm2_key][1], irdr_map[bm2_key][2], irdr_map[bm2_key][3]]
                 irdr_dict[new_id] = min_info
 
-    return(momofy_dict, irdr_dict, momo_subtypes)
+    return (momofy_dict, irdr_dict, momo_subtypes)
 
 
 def promge_parser(promge, meta):
-    mge_type=[
-        ("is_tn" , "insertion_sequence"),
-        ("phage" , "phage"),
-        ("phage_like" , "phage"),
-        ("ce" , "conjugative_element"),
-        ("integron" , "integron"),
-        ("mi" , "mobility_island "),
-        ("cellular" , "cellular_recombinase")
+    mge_type = [
+        ("is_tn", "insertion_sequence"),
+        ("phage", "phage"),
+        ("phage_like", "phage"),
+        ("ce", "conjugative_element"),
+        ("integron", "integron"),
+        ("mi", "mobility_island "),
+        ("cellular", "cellular_recombinase"),
     ]
     mge_desc = {}
-    with open(meta, 'r') as input_meta:
+    with open(meta, "r") as input_meta:
         next(input_meta)
         for line in input_meta:
-            is_tn,phage,phage_like,ce,integron,mi,cellular,contig,start,end,size,n_genes,mgeR = line.rstrip().split("\t")
-            new_id = contig+':'+start+'-'+end
+            (
+                is_tn,
+                phage,
+                phage_like,
+                ce,
+                integron,
+                mi,
+                cellular,
+                contig,
+                start,
+                end,
+                size,
+                n_genes,
+                mgeR,
+            ) = line.rstrip().split("\t")
+            new_id = contig + ":" + start + "-" + end
             description = []
             for index in range(7):
-                if int(line.rstrip().split("\t")[index])>0:
+                if int(line.rstrip().split("\t")[index]) > 0:
                     description.append(mge_type[index][1])
-            description='|'.join(description)
-            mge_desc[new_id]=description
+            description = "|".join(description)
+            mge_desc[new_id] = description
 
     promge_dict = {}
     mgeR = {}
-    with open(promge, 'r') as input_gff:
+    with open(promge, "r") as input_gff:
         for line in input_gff:
             line = line.rstrip()
             # Annotation lines have exactly 9 columns
             if len(line.split("\t")) == 9:
-                data_list = gff_parser( line )
+                data_list = gff_parser(line)
                 contig = data_list.pop(0)
                 seq_id = data_list.pop(-1)
                 new_id = re.sub(".*contig_", "contig_", seq_id)
@@ -155,24 +167,24 @@ def promge_parser(promge, meta):
                     data_list.pop(0)
                     data_list.insert(0, desc)
                 else:
-                    print('No description for '+seq_id)
+                    print("No description for " + seq_id)
                 data_list.append(new_id)
                 data_list.insert(0, contig)
-                data_list=tuple(data_list)
+                data_list = tuple(data_list)
                 if contig in promge_dict:
                     promge_dict[contig].append(data_list)
                 else:
-                    promge_dict[contig]=[data_list]
+                    promge_dict[contig] = [data_list]
 
-                for attribute in line.split("\t")[8].split(';'):
-                    att_key, att_val = attribute.split('=')
-                    if att_key == 'mgeR':
+                for attribute in line.split("\t")[8].split(";"):
+                    att_key, att_val = attribute.split("=")
+                    if att_key == "mgeR":
                         mgeR[new_id] = att_val
 
-    return(promge_dict, mgeR)
+    return (promge_dict, mgeR)
 
 
-def mapper( momofy_dict, promge_dict ):
+def mapper(momofy_dict, promge_dict):
     momo_unique = []
     pro_unique = []
     momo_used = []
@@ -186,18 +198,18 @@ def mapper( momofy_dict, promge_dict ):
             pro_seq_id = pro_element[4]
             pro_all.append(pro_seq_id)
             permge_metadata[pro_seq_id] = pro_element
-            #print('proMGE',pro_seq_id, pro_element)
+            # print('proMGE',pro_seq_id, pro_element)
 
     momo_all = []
     for contig in momofy_dict:
         for momo_element in momofy_dict[contig]:
-            momo_coords = momo_element[4].split('-')[1].replace(':', '-')
-            momo_seq_id = contig + ':' + momo_coords
+            momo_coords = momo_element[4].split("-")[1].replace(":", "-")
+            momo_seq_id = contig + ":" + momo_coords
             momo_all.append(momo_seq_id)
             permge_metadata[momo_seq_id] = momo_element
-            #print('momo',momo_seq_id, momo_element)
+            # print('momo',momo_seq_id, momo_element)
 
-    contigs_list = list( set( list(momofy_dict.keys()) + list(promge_dict.keys()) ) )
+    contigs_list = list(set(list(momofy_dict.keys()) + list(promge_dict.keys())))
     for contig in contigs_list:
         if contig in promge_dict:
             for pro_element in promge_dict[contig]:
@@ -206,7 +218,7 @@ def mapper( momofy_dict, promge_dict ):
                 pro_end = pro_element[3]
                 pro_seq_id = pro_element[4]
                 pro_len = int(pro_end) - int(pro_start)
-                pro_range = range(int(pro_start), int(pro_end)+1)
+                pro_range = range(int(pro_start), int(pro_end) + 1)
                 flag = 0
 
                 if pro_seq_id not in pro_used:
@@ -215,20 +227,20 @@ def mapper( momofy_dict, promge_dict ):
                             momo_seq_type = momo_element[1]
                             momo_start = momo_element[2]
                             momo_end = momo_element[3]
-                            momo_seq_id = contig + ':' + momo_start + '-' + momo_end
+                            momo_seq_id = contig + ":" + momo_start + "-" + momo_end
                             momo_len = int(momo_end) - int(momo_start)
-                            momo_range = range(int(momo_start) , int(momo_end)+1)
+                            momo_range = range(int(momo_start), int(momo_end) + 1)
                             intersection = len(list(set(pro_range) & set(momo_range)))
                             if intersection > 0:
                                 flag = 1
                                 momo_used.append(momo_seq_id)
                                 pro_used.append(pro_seq_id)
-                                pair = [pro_seq_id , momo_seq_id]
+                                pair = [pro_seq_id, momo_seq_id]
                                 cluster_flag = 0
                                 index = -1
                                 for cluster in overlapped:
                                     index += 1
-                                    if any([ pro_seq_id in cluster , momo_seq_id in cluster ]):
+                                    if any([pro_seq_id in cluster, momo_seq_id in cluster]):
                                         cluster_flag = 1
                                         overlapped[index].append(pro_seq_id)
                                         overlapped[index].append(momo_seq_id)
@@ -241,9 +253,8 @@ def mapper( momofy_dict, promge_dict ):
 
         momo_unique = list(set(momo_all) - set(momo_used))
 
-    
     ## Collapsing overlapping clusters
-    # saving cluster elements coordinate-s 
+    # saving cluster elements coordinate-s
     cluster_counter = 0
     final_overlapped = []
     clusters_dict = {}
@@ -251,15 +262,15 @@ def mapper( momofy_dict, promge_dict ):
     for cluster in overlapped:
         cluster_counter += 1
         for element in cluster:
-            contig = element.split(':')[0]
-            start = int(element.split(':')[1].split('-')[0])
-            end = int(element.split(':')[1].split('-')[1])
-            composite_key = ( contig, cluster_counter )
+            contig = element.split(":")[0]
+            start = int(element.split(":")[1].split("-")[0])
+            end = int(element.split(":")[1].split("-")[1])
+            composite_key = (contig, cluster_counter)
             if composite_key in clusters_dict:
                 clusters_dict[composite_key].append(start)
                 clusters_dict[composite_key].append(end)
             else:
-                clusters_dict[composite_key] = [ start, end ]
+                clusters_dict[composite_key] = [start, end]
         clusters_labels[composite_key] = cluster
 
     # saving clusters boundaries
@@ -267,7 +278,7 @@ def mapper( momofy_dict, promge_dict ):
     for comp_key in clusters_dict:
         min_coord = sorted(clusters_dict[comp_key])[0]
         max_coord = sorted(clusters_dict[comp_key])[-1]
-        coords = ( min_coord, max_coord )
+        coords = (min_coord, max_coord)
         clust_bounderies[comp_key] = coords
 
     # Finding overlapping clusters
@@ -278,7 +289,7 @@ def mapper( momofy_dict, promge_dict ):
         cluster_1 = comp_key_1[1]
         clst_1_start = clust_bounderies[comp_key_1][0]
         clst_1_end = clust_bounderies[comp_key_1][1]
-        clst_1_range = (int(clst_1_start), int(clst_1_end)+1)
+        clst_1_range = (int(clst_1_start), int(clst_1_end) + 1)
         for comp_key_2 in clust_bounderies:
             contig_2 = comp_key_2[0]
             cluster_2 = comp_key_2[1]
@@ -286,116 +297,123 @@ def mapper( momofy_dict, promge_dict ):
                 if comp_key_1 != comp_key_2:
                     clst_2_start = clust_bounderies[comp_key_2][0]
                     clst_2_end = clust_bounderies[comp_key_2][1]
-                    clst_2_range = (int(clst_2_start), int(clst_2_end)+1)
+                    clst_2_range = (int(clst_2_start), int(clst_2_end) + 1)
                     intersection = len(list(set(clst_1_range) & set(clst_2_range)))
                     if intersection > 0:
-                        if all([ comp_key_1 not in clst_used , comp_key_2 not in clst_used ]):
-                            boundaries_list = [ clst_1_start, clst_1_end, clst_2_start, clst_2_end ]
+                        if all([comp_key_1 not in clst_used, comp_key_2 not in clst_used]):
+                            boundaries_list = [clst_1_start, clst_1_end, clst_2_start, clst_2_end]
                             new_min = sorted(boundaries_list)[0]
                             new_max = sorted(boundaries_list)[1]
-                            collapsed_cluster = list(set( clusters_labels[comp_key_1] + clusters_labels[comp_key_2]))
+                            collapsed_cluster = list(set(clusters_labels[comp_key_1] + clusters_labels[comp_key_2]))
                             cluster_counter += 1
-                            collapsed_key = ( contig_1, cluster_counter )
+                            collapsed_key = (contig_1, cluster_counter)
                             clst_2_add[collapsed_key] = collapsed_cluster
-                            #print(comp_key_1, comp_key_2,new_min, new_max, collapsed_cluster)
+                            # print(comp_key_1, comp_key_2,new_min, new_max, collapsed_cluster)
                             clst_used.append(comp_key_1)
                             clst_used.append(comp_key_2)
-    
 
     for comp_key in clst_used:
         del clusters_labels[comp_key]
 
     for comp_key in clst_2_add:
-        clusters_labels[comp_key]=clst_2_add[comp_key]
+        clusters_labels[comp_key] = clst_2_add[comp_key]
 
     for cluster in clusters_labels:
         final_overlapped.append(clusters_labels[cluster])
 
-    return(momo_unique, pro_unique, final_overlapped, permge_metadata)
-    
+    return (momo_unique, pro_unique, final_overlapped, permge_metadata)
+
 
 def to_print(metadata_tuple, genome, source, extra_attributes):
     contig = metadata_tuple[0]
-    mge_type = metadata_tuple[1].replace('|','/')
+    mge_type = metadata_tuple[1].replace("|", "/")
     start = metadata_tuple[2]
     end = metadata_tuple[3]
     element_id = metadata_tuple[4]
-    global_id = 'ID='+genome+'|'+contig+':'+start+'-'+end
-    extra_attributes.insert(0 ,global_id)
-    attributes = ';'.join(extra_attributes)
-    line = "\t".join([
-        contig,
-        source,
-        mge_type,
-        start,
-        end,
-        '.',
-        '.',
-        '.',
-        attributes,
-    ]) + '\n'
+    global_id = "ID=" + genome + "|" + contig + ":" + start + "-" + end
+    extra_attributes.insert(0, global_id)
+    attributes = ";".join(extra_attributes)
+    line = (
+        "\t".join(
+            [
+                contig,
+                source,
+                mge_type,
+                start,
+                end,
+                ".",
+                ".",
+                ".",
+                attributes,
+            ]
+        )
+        + "\n"
+    )
 
-    return(line)
+    return line
 
 
-def merger( momo_unique, pro_unique, final_overlapped, permge_metadata, irdr_dict, momo_subtypes, mgeR, genome_name ):
-    with open( genome_name+'_merged.gff', 'w' ) as to_merged:
-        to_merged.write('##gff-version 3\n')
+def merger(momo_unique, pro_unique, final_overlapped, permge_metadata, irdr_dict, momo_subtypes, mgeR, genome_name):
+    with open(genome_name + "_merged.gff", "w") as to_merged:
+        to_merged.write("##gff-version 3\n")
         for mge in pro_unique:
-            source = 'promge'
+            source = "promge"
             extra_attributes = [
-                'merged_label=promge_unique',
-                'merged_coords=NA',
-                'merged_types=NA',
-                'subtype=NA',
-                'mge_recombinase='+mgeR[mge]
+                "merged_label=promge_unique",
+                "merged_coords=NA",
+                "merged_types=NA",
+                "subtype=NA",
+                "mge_recombinase=" + mgeR[mge],
             ]
             line = to_print(permge_metadata[mge], genome_name, source, extra_attributes)
             to_merged.write(line)
 
         for mge in momo_unique:
-            source = 'MAP'
+            source = "MAP"
             extra_attributes = [
-                'merged_label=MAP_unique',
-                'merged_coords=NA',
-                'merged_types=NA',
-                'subtype='+momo_subtypes[mge],
-                'mge_recombinase=NA'
+                "merged_label=MAP_unique",
+                "merged_coords=NA",
+                "merged_types=NA",
+                "subtype=" + momo_subtypes[mge],
+                "mge_recombinase=NA",
             ]
             line = to_print(permge_metadata[mge], genome_name, source, extra_attributes)
             to_merged.write(line)
 
-        
         for boundary in irdr_dict:
-            source = 'MAP'
+            source = "MAP"
             extra_attributes = [
-                'merged_label=MAP_unique',
-                'merged_coords=NA',
-                'merged_types=NA',
-                'subtype=NA',
-                'mge_recombinase=NA'
+                "merged_label=MAP_unique",
+                "merged_coords=NA",
+                "merged_types=NA",
+                "subtype=NA",
+                "mge_recombinase=NA",
             ]
 
             contig = irdr_dict[boundary][0]
             mge_type = irdr_dict[boundary][1]
             start = irdr_dict[boundary][2]
             end = irdr_dict[boundary][3]
-            global_id = 'ID='+boundary
-            extra_attributes.insert(0 ,global_id)
-            attributes = ';'.join(extra_attributes)
-            line = "\t".join([
-                contig,
-                source,
-                mge_type,
-                start,
-                end,
-                '.',
-                '.',
-                '.',
-                attributes,
-            ]) + '\n'
+            global_id = "ID=" + boundary
+            extra_attributes.insert(0, global_id)
+            attributes = ";".join(extra_attributes)
+            line = (
+                "\t".join(
+                    [
+                        contig,
+                        source,
+                        mge_type,
+                        start,
+                        end,
+                        ".",
+                        ".",
+                        ".",
+                        attributes,
+                    ]
+                )
+                + "\n"
+            )
             to_merged.write(line)
-        
 
         for cluster in final_overlapped:
             cluster = list(set(cluster))
@@ -408,12 +426,12 @@ def merger( momo_unique, pro_unique, final_overlapped, permge_metadata, irdr_dic
             momosub_list = []
             promge_positions = []
             momofy_positions = []
-            
+
             for element in cluster:
                 contig = permge_metadata[element][0]
-                element_type = permge_metadata[element][1].replace(' ','')
-                if '|' in element_type:
-                    for composite_type in element_type.split('|'):
+                element_type = permge_metadata[element][1].replace(" ", "")
+                if "|" in element_type:
+                    for composite_type in element_type.split("|"):
                         nested_types.append(composite_type)
                 else:
                     nested_types.append(element_type)
@@ -422,7 +440,7 @@ def merger( momo_unique, pro_unique, final_overlapped, permge_metadata, irdr_dic
                 mge_end = permge_metadata[element][3]
                 ends.append(mge_end)
 
-                element_range = list(range(int(mge_start), int(mge_end)+1))
+                element_range = list(range(int(mge_start), int(mge_end) + 1))
                 if element in mgeR:
                     mgeR_list.append(mgeR[element])
                     promge_positions = promge_positions + element_range
@@ -430,58 +448,62 @@ def merger( momo_unique, pro_unique, final_overlapped, permge_metadata, irdr_dic
                 if element in momo_subtypes:
                     momosub_list.append(momo_subtypes[element])
                     momofy_positions = momofy_positions + element_range
- 
-                mge_data = element_type+':'+element.split(':')[1]
+
+                mge_data = element_type + ":" + element.split(":")[1]
                 coord_list.append(mge_data)
 
-            source = 'promge/MAP'
+            source = "promge/MAP"
             start = sorted(starts)[0]
             end = sorted(ends)[-1]
-            
+
             # Finding coverage per method
             promge_positions = len(list(set(promge_positions)))
             momofy_positions = len(list(set(momofy_positions)))
-            merged_len = int(end)-int(start)
-            promge_cov = float(promge_positions)/float(merged_len)
-            momo_cov = float(momofy_positions)/float(merged_len)
+            merged_len = int(end) - int(start)
+            promge_cov = float(promge_positions) / float(merged_len)
+            momo_cov = float(momofy_positions) / float(merged_len)
 
-            if all([ promge_cov >= 0.75 , momo_cov >= 0.75 ]):
-                mge_type = 'complete_overlap'
+            if all([promge_cov >= 0.75, momo_cov >= 0.75]):
+                mge_type = "complete_overlap"
             else:
-                mge_type = 'partial_overlap'
+                mge_type = "partial_overlap"
 
-            global_id = 'ID='+genome_name+'|'+contig+':'+start+'-'+end
+            global_id = "ID=" + genome_name + "|" + contig + ":" + start + "-" + end
 
-            merge_info = ','.join(coord_list)
-            nested_info = ','.join(list(set(nested_types)))
-            mgeR_info = ','.join(mgeR_list)
-            momo_sub_info = ','.join(momosub_list)
+            merge_info = ",".join(coord_list)
+            nested_info = ",".join(list(set(nested_types)))
+            mgeR_info = ",".join(mgeR_list)
+            momo_sub_info = ",".join(momosub_list)
 
             extra_attributes = [
-                'merged_label='+mge_type,
-                'merged_coords='+merge_info,
-                'merged_types='+nested_info,
-                'subtype='+momo_sub_info,
-                'mge_recombinase='+mgeR_info
+                "merged_label=" + mge_type,
+                "merged_coords=" + merge_info,
+                "merged_types=" + nested_info,
+                "subtype=" + momo_sub_info,
+                "mge_recombinase=" + mgeR_info,
             ]
 
-            extra_attributes.insert(0 ,global_id)
-            attributes = ';'.join(extra_attributes)
-            line = "\t".join([
-                contig,
-                source,
-                'nested',
-                start,
-                end,
-                '.',
-                '.',
-                '.',
-                attributes,
-            ]) + '\n'
-    
+            extra_attributes.insert(0, global_id)
+            attributes = ";".join(extra_attributes)
+            line = (
+                "\t".join(
+                    [
+                        contig,
+                        source,
+                        "nested",
+                        start,
+                        end,
+                        ".",
+                        ".",
+                        ".",
+                        attributes,
+                    ]
+                )
+                + "\n"
+            )
+
             to_merged.write(line)
 
-            
 
 def main():
     parser = argparse.ArgumentParser(
@@ -518,19 +540,13 @@ def main():
     promge = args.proMGE
     meta = args.meta
 
-    ( momofy_dict, irdr_dict, momo_subtypes ) = momo_parser( momofy )
-    ( promge_dict, mgeR ) = promge_parser( promge, meta )
+    (momofy_dict, irdr_dict, momo_subtypes) = momo_parser(momofy)
+    (promge_dict, mgeR) = promge_parser(promge, meta)
 
-    ( 
-        momo_unique, 
-        pro_unique, 
-        final_overlapped, 
-        permge_metadata ) = mapper( momofy_dict, promge_dict )
+    (momo_unique, pro_unique, final_overlapped, permge_metadata) = mapper(momofy_dict, promge_dict)
 
-    merger( momo_unique, pro_unique, final_overlapped, permge_metadata, irdr_dict, momo_subtypes, mgeR, args.genome_name )
-
+    merger(momo_unique, pro_unique, final_overlapped, permge_metadata, irdr_dict, momo_subtypes, mgeR, args.genome_name)
 
 
 if __name__ == "__main__":
     main()
-
