@@ -57,59 +57,81 @@
         },
         "interproscan_db": {
           "type": "string",
-          "format": "directory-path"
+          "format": "directory-path",
+          "description": "The InterProScan reference database, ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/",
+          "help_text": "Set this variable to the path of the uncompressed tarball for the database (obtained from the EBI FTP server)."
         },
         "interproscan_db_version": {
           "type": "string",
-          "default": "5.62-94.0"
+          "default": "5.62-94.0",
+          "description": "The InterProScan reference database version."
         },
         "eggnog_db": {
           "type": "string",
-          "format": "directory-path"
+          "format": "directory-path",
+          "description": "The EggNOG reference database folder, https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.12#requirements",
+          "help_text": "Set this variable to the path of the uncompressed tarball for the database."
         },
         "eggnog_db_version": {
           "type": "string",
-          "default": "5.0.2"
+          "default": "5.0.2",
+          "description": "The EggNOG reference database version."
         },
         "rfam_rrna_models": {
           "type": "string",
-          "format": "directory-path"
+          "format": "directory-path",
+          "description": "RFam rRNA models, ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/rfams_cms/",
+          "help_text": "Set this variable to the path of the folder that contains the RFam models."
         },
         "rfam_ncrna_models": {
           "type": "string",
-          "format": "directory-path"
+          "format": "directory-path",
+          "description": "RFam ncRNA models, ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/ncrna/",
+          "help_text": "Set this variable to the path of the folder that contains the RFam models."
         },
         "amrfinder_plus_db": {
           "type": "string",
-          "format": "directory-path"
+          "format": "directory-path",
+          "description": "AMRFinderPlus reference database, https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/. Go to the following documentation for the db setup https://github.com/ncbi/amr/wiki/Upgrading#database-updates.",
+          "help_text": "Set this variable to the path of the folder that contains the AMRFinderPlus database directory."
         },
         "amrfinder_plus_db_version": {
           "type": "string",
-          "default": "2023-02-23.1"
+          "default": "2023-02-23.1",
+          "description": "The AMRFinderPlus reference database version."
         },
         "defense_finder_db": {
           "type": "string",
-          "format": "directory-path"
+          "format": "directory-path",
+          "description": "Defense Finder reference models, https://github.com/mdmparis/defense-finder#updating-defensefinder. The Microbiome Informatics team provides a pre-indexed version of the models for version 1.2.3 on this ftp location: ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.",
+          "help_text": "Set this variable to the path of the folder that contains the Defense Finder models directory."
         },
         "defense_finder_db_version": {
           "type": "string",
-          "default": "1.2.3"
+          "default": "1.2.3",
+          "description": "The Defense Finder models version."
         },
         "antismash_db": {
           "type": "string",
-          "format": "directory-path"
+          "format": "directory-path",
+          "description": "antiSMASH reference database, go to this documentation to do the database setup https://docs.antismash.secondarymetabolites.org/install/#installing-the-latest-antismash-release.",
+          "help_text": "Set this variable to the path of the folder that contains the antiSMASH indexed database directory."
         },
         "antismash_db_version": {
           "type": "string",
-          "default": "7.0.1.0"
+          "default": "7.0.1.0",
+          "description": "The antiSMASH reference database version."
         },
         "dbcan_db": {
           "type": "string",
-          "format": "directory-path"
+          "format": "directory-path",
+          "description": "dbCAN indexed reference database, please go to the documentation for the setup https://dbcan.readthedocs.io/en/latest/. The Microbiome Informatics team provides a pre-indexed version of the database for version 4.0 on this ftp location: ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/dbcan/dbcan_4.0.tar.gz",
+          "help_text": "Set this variable to the path of the folder that contains the dbCAN indexed database directory."
         },
         "dbcan_db_version": {
           "type": "string",
-          "default": "4.0"
+          "default": "4.0",
+          "description": "The dbCAN reference database version."
         }
       }
     },
