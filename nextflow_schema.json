@@ -80,14 +80,26 @@
         "rfam_rrna_models": {
           "type": "string",
           "format": "directory-path",
-          "description": "RFam rRNA models, ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/rfams_cms/",
-          "help_text": "Set this variable to the path of the folder that contains the RFam models."
+          "description": "Rfam rRNA models, ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/rfams_cms/",
+          "help_text": "Set this variable to the path of the folder that contains the Rfam models."
+        },
+        "rfam_rrna_models_rfam_version": {
+          "type": "string",
+          "default": "14.9",
+          "description": "Rfam release version where the models come from.",
+          "help_text": "Rfam release version."
         },
         "rfam_ncrna_models": {
           "type": "string",
           "format": "directory-path",
-          "description": "RFam ncRNA models, ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/ncrna/",
-          "help_text": "Set this variable to the path of the folder that contains the RFam models."
+          "description": "Rfam ncRNA models, ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/ncrna/",
+          "help_text": "Set this variable to the path of the folder that contains the Rfam models."
+        },
+        "rfam_ncrna_models_rfam_version": {
+          "type": "string",
+          "default": "14.9",
+          "description": "Rfam release version where the models come from.",
+          "help_text": "Rfam release version."
         },
         "amrfinder_plus_db": {
           "type": "string",
@@ -119,7 +131,7 @@
         },
         "antismash_db_version": {
           "type": "string",
-          "default": "7.0.1.0",
+          "default": "7.1.0",
           "description": "The antiSMASH reference database version."
         },
         "dbcan_db": {

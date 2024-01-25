@@ -190,6 +190,14 @@ workflow DOWNLOAD_DATABASES {
             rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms
         } else {
             log.info("RFam model files exists, or at least the expected folders.")
+            rfam_rrna_models = tuple(
+                rfam_rrna_models,
+                file("${rfam_rrna_models}/VERSION.txt", checkIfExists: true).text
+            )
+            rfam_ncrna_models = tuple(
+                rfam_ncrna_models,
+                file("${rfam_ncrna_models}/VERSION.txt", checkIfExists: true).text
+            )
         }
     emit:
         amrfinder_plus_db = amrfinder_plus_db
@@ -264,9 +272,14 @@ workflow METTANNOTATOR {
             params.eggnog_db_version
         )
 
-        // TODO: add the version here
-        rfam_rrna_models = file(params.rfam_rrna_models, checkIfExists: true)
-        rfam_ncrna_models = file(params.rfam_ncrna_models, checkIfExists: true)
+        rfam_rrna_models = tuple(
+            file(params.rfam_rrna_models, checkIfExists: true),
+            params.rfam_rrna_models_rfam_version
+        )
+        rfam_ncrna_models = tuple(
+            file(params.rfam_ncrna_models, checkIfExists: true),
+            params.rfam_ncrna_models_rfam_version
+        )
     }
 
     ch_versions = Channel.empty()

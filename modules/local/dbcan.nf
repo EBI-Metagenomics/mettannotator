@@ -9,11 +9,11 @@ process DBCAN {
     tuple path(dbcan_db), val(db_version)
 
     output:
-    tuple val(meta), path("dbcan/substrate.out")        , emit: substrates
-    tuple val(meta), path("dbcan/cgc_standard.out")          , emit: cgc
-    tuple val(meta), path("dbcan/overview.txt")              , emit: overview
-    tuple val(meta), path("dbcan/${meta.prefix}_dbcan.gff")  , emit: dbcan_gff
-    path "versions.yml"                                      , emit: versions
+    tuple val(meta), path("dbcan_results/substrate.out")             , emit: substrates
+    tuple val(meta), path("dbcan_results/cgc_standard.out")          , emit: cgc
+    tuple val(meta), path("dbcan_results/overview.txt")              , emit: overview
+    tuple val(meta), path("dbcan_results/${meta.prefix}_dbcan.gff")  , emit: dbcan_gff
+    path "versions.yml"                                               , emit: versions
 
     script:
     """
@@ -32,13 +32,13 @@ process DBCAN {
         --hmm_cpu ${task.cpus} \\
         --tf_cpu ${task.cpus} \\
         --db_dir ${dbcan_db} \\
-        --out_dir dbcan \\
+        --out_dir dbcan_results \\
         --cgc_substrate \\
         --cluster ${meta.prefix}_noseq.gff \\
         ${faa} \\
         protein
 
-    process_dbcan_result.py -i dbcan -o dbcan/${meta.prefix}_dbcan.gff -v 4.1.2
+    process_dbcan_result.py -i dbcan -o dbcan_results/${meta.prefix}_dbcan.gff -v 4.1.2
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

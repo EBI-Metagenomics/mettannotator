@@ -5,7 +5,7 @@ process DETECT_NCRNA {
 
     input:
     tuple val(meta), path(fasta)
-    path rfam_ncrna_models
+    tuple path(rfam_ncrna_models), val(rfam_version)
 
     output:
     tuple val(meta), path('*.ncrna.deoverlap.tbl'), emit: ncrna_tblout
@@ -31,6 +31,7 @@ process DETECT_NCRNA {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         cmsearch: \$(cmsearch -h | grep -o '^# INFERNAL [0-9.]*' | sed 's/^# INFERNAL *//')
+        Rfam version: $rfam_version
     END_VERSIONS
     """
 }
