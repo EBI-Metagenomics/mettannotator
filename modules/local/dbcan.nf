@@ -9,7 +9,7 @@ process DBCAN {
     path dbcan_db
 
     output:
-    tuple val(meta), path("dbcan/sub.prediction.out")        , emit: substrates
+    tuple val(meta), path("dbcan/substrate.out")        , emit: substrates
     tuple val(meta), path("dbcan/cgc_standard.out")          , emit: cgc
     tuple val(meta), path("dbcan/overview.txt")              , emit: overview
     tuple val(meta), path("dbcan/${meta.prefix}_dbcan.gff")  , emit: dbcan_gff
