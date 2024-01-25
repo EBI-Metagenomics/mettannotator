@@ -254,9 +254,9 @@ def get_dbcan(dbcan_file):
                 for a in annot_fields:
                     if a.startswith("ID="):
                         cgc = a.split("=")[1]
-                    elif a.startswith("substrate_dbcan_pul"):
+                    elif a.startswith("substrate_dbcan-pul"):
                         substrate_pul = a.split("=")[1]
-                    elif a.startswith("substrate_ecami"):
+                    elif a.startswith("substrate_dbcan-sub"):
                         substrate_ecami = a.split("=")[1]
                 substrates.setdefault(cgc, {})["substrate_ecami"] = substrate_ecami
                 substrates.setdefault(cgc, {})["substrate_pul"] = substrate_pul
@@ -275,7 +275,7 @@ def get_dbcan(dbcan_file):
                         elif a.startswith("Parent"):
                             parent = a.split("=")[1]
                     dbcan_annotations[acc] = \
-                    "dbcan_prot_type={};dbcan_prot_family={};dbcan_substrate_pul={};dbcan_substrate_ecami={}".format(
+                    "dbcan_prot_type={};dbcan_prot_family={};substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
                         prot_type, prot_fam, substrates[parent]["substrate_pul"], substrates[parent]["substrate_ecami"]
                     )
     return dbcan_annotations
