@@ -21,7 +21,7 @@ process UNIFIRE {
     // we are mounting unirule in this case
     """
     echo "Pre-processed UniRule input file"
-    prepare_unirule_input.py -i ${faa} -o unirule
+    prepare_unirule_input.py -i ${faa} -t ${meta.taxid} -o unirule
 
     # This is the provided docker running script
     /opt/scripts/bin/unifire-workflow.sh

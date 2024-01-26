@@ -23,9 +23,10 @@ import sys
 logging.basicConfig(level=logging.INFO)
 
 
-def main(infile, outdir):
-    taxid = assign_taxid(infile)
+def main(infile, taxid, outdir):
     check_dir(outdir)
+    if not taxid.isdigit():
+        sys.exit("Taxid must consist of digits only. Taxid {} is not valid. Exiting.".format(taxid))
     outfile = "proteins.fasta"
     outpath = os.path.join(outdir, outfile)
     with open(outpath, "w") as file_out, open(infile, "r") as file_in:
@@ -48,39 +49,9 @@ def check_dir(directory_path):
 def reformat_line(line, taxid):
     line = line.lstrip('>').strip()
     id, description = line.split(maxsplit=1)
-    if taxid == "820":
-        sp_name = "Bacteroides uniformis"
-    elif taxid == "821":
-        sp_name = "Phocaeicola vulgatus"
-    elif taxid == "46503":
-        sp_name = "Parabacteroides merdae"
-    else:
-        raise ValueError("Unknown species")
-    formatted_line = ">tr|{id}|{description} OS={sp_name} OX={taxid}\n".format(id=id, description=description,
-                                                                               sp_name=sp_name, taxid=taxid)
+    formatted_line = ">tr|{id}|{description} OX={taxid}\n".format(id=id, description=description,
+                                                                  taxid=taxid)
     return formatted_line
-
-
-def assign_taxid(infile):
-    try:
-        with open(infile, 'r') as file:
-            # Read the first line
-            first_line = file.readline().strip()
-            species_code = first_line[1:3]
-
-            # Assign taxid based on species code
-            if species_code == "BU":
-                taxid = "820"
-            elif species_code == "PV":
-                taxid = "821"
-            elif species_code == "PM":
-                taxid = "46503"
-            else:
-                raise ValueError("Unknown species")
-            return taxid
-    except Exception as e:
-        logging.error(f"Error: {e}")
-        exit(1)
 
 
 def parse_args():
@@ -94,6 +65,12 @@ def parse_args():
         dest="infile",
         required=True,
         help="Input protein fasta file.",
+    )
+    parser.add_argument(
+        "-t",
+        dest="taxid",
+        required=True,
+        help="NCBI taxid for the species or the lowest taxonomy rank known for the genome.",
     )
     parser.add_argument(
         "-o",
@@ -110,5 +87,6 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         args.infile,
+        args.taxid,
         args.outdir,
     )

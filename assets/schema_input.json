@@ -17,13 +17,22 @@
             },
             "assembly": {
                 "type": "string",
-                "pattern": "^\\S+\\.fa$",
+                "pattern": "^\\S+\\.(fa|fna|fasta)$",
                 "errorMessage": "The assembly needs to be a fasta file."
+            },
+            "taxid": {
+                "type": "string",
+                "pattern": "^\\d+$",
+                "errorMessage": "NCBI taxid should only contain digits.",
+                "meta": [
+                    "taxid"
+                ]
             }
         },
         "required": [
             "prefix",
-            "assembly"
+            "assembly",
+            "taxid"
         ]
     }
 }

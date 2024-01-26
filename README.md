@@ -30,8 +30,8 @@ First, prepare a assemblies_sheet with your input data that looks as follows:
 `assemblies_sheet.csv`:
 
 ```csv
-prefix,assembly
-BU_ATCC8492VPI0062_NT5002,BU_ATCC8492VPI0062_NT5002.fa
+prefix,assembly,taxid
+BU_ATCC8492VPI0062_NT5002,BU_ATCC8492VPI0062_NT5002.fa,820
 ...
 ```
 
