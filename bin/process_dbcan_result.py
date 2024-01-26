@@ -37,13 +37,14 @@ def load_cgcs(input_folder):
         for line in file_in:
             if not line.startswith("CGC#"):
                 cgc, _, contig, _, start, end, _, _ = line.strip().split("\t")
-                if cgc in cgc_locations:
-                    if cgc_locations[cgc]["start"] > int(start):
-                        cgc_locations[cgc]["start"] = int(start)
-                    if cgc_locations[cgc]["end"] < int(end):
-                        cgc_locations[cgc]["end"] = int(end)
+                cgc_id = "{}_{}".format(contig, cgc)
+                if cgc_id in cgc_locations:
+                    if cgc_locations[cgc_id]["start"] > int(start):
+                        cgc_locations[cgc_id]["start"] = int(start)
+                    if cgc_locations[cgc_id]["end"] < int(end):
+                        cgc_locations[cgc_id]["end"] = int(end)
                 else:
-                    cgc_locations[cgc] = {"start": int(start),
+                    cgc_locations[cgc_id] = {"start": int(start),
                                           "end": int(end),
                                           "contig": contig}
     return cgc_locations
@@ -57,24 +58,26 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
             for line in file_in:
                 if not line.startswith("CGC#"):
                     cgc, gene_type, contig, prot_id, start, end, strand, protein_fam = line.strip().split("\t")
+                    cgc_id = "{}_{}".format(contig, cgc)
                     protein_fam = protein_fam.replace(" ", "")
-                    if not cgc in cgcs_printed:
-                        substrate = substrates[cgc] if cgc in substrates else "substrate_dbcan_pul=N/A;substrate_ecami=N/A"
+                    if not cgc_id in cgcs_printed:
+                        substrate = substrates[cgc_id] if cgc_id in substrates else "substrate_dbcan-pul=N/A;substrate_dbcan-sub=N/A"
                         file_out.write("{}\tdbCAN:{}\tpredicted PUL\t{}\t{}\t.\t.\t.\tID={};{}\n".format(
-                            contig, dbcan_version, cgc_locations[cgc]["start"], cgc_locations[cgc]["end"], cgc,
+                            contig, dbcan_version, cgc_locations[cgc_id]["start"], cgc_locations[cgc_id]["end"], cgc_id,
                             substrate))
-                        cgcs_printed.append(cgc)
+                        cgcs_printed.append(cgc_id)
                     file_out.write("{}\tdbCAN:{}\t{}\t{}\t{}\t.\t{}\t.\tID={};Parent={};protein_family={}\n".format(
-                        contig, dbcan_version, gene_type, start, end, strand, prot_id, cgc, protein_fam))
+                        contig, dbcan_version, gene_type, start, end, strand, prot_id, cgc_id, protein_fam))
 
 
 def load_substrates(input_folder):
     substrates = dict()
-    with open(os.path.join(input_folder, "sub.prediction.out"), "r") as file_in:
+    with open(os.path.join(input_folder, "substrate.out"), "r") as file_in:
         for line in file_in:
             if not line.startswith("#"):
                 parts = line.strip().split("\t")
-                cgc = parts[0].split("|")[1]
+                cgc_parts = parts[0].rsplit("|", 1)
+                cgc = "_".join(cgc_parts)
                 try:
                     substrate_pul = parts[2]
                 except IndexError:
@@ -87,13 +90,14 @@ def load_substrates(input_folder):
                     substrate_pul = "N/A"
                 if not substrate_ecami:
                     substrate_ecami = "N/A"
-                substrates[cgc] = "substrate_dbcan_pul={};substrate_ecami={}".format(substrate_pul, substrate_ecami)
+                substrates[cgc] = "substrate_dbcan-pul={};substrate_dbcan-sub={}".format(substrate_pul, substrate_ecami)
+    print(substrates)
     return substrates
 
 
 def check_folder_completeness(input_folder):
     status = True
-    for file in ["cgc_standard.out", "overview.txt", "sub.prediction.out"]:
+    for file in ["cgc_standard.out", "overview.txt", "substrate.out"]:
         if not os.path.exists(os.path.join(input_folder, file)):
             logging.error("File {} does not exist.".format(file))
             status = False

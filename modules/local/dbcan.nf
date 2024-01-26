@@ -2,14 +2,14 @@ process DBCAN {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/microbiome-informatics/dbcan:4.0.0'
+    container 'quay.io/biocontainers/dbcan:4.1.2--pyhdfd78af_0'
 
     input:
     tuple val(meta), path(faa), path(gff)
     path dbcan_db
 
     output:
-    tuple val(meta), path("dbcan/sub.prediction.out")        , emit: substrates
+    tuple val(meta), path("dbcan/substrate.out")        , emit: substrates
     tuple val(meta), path("dbcan/cgc_standard.out")          , emit: cgc
     tuple val(meta), path("dbcan/overview.txt")              , emit: overview
     tuple val(meta), path("dbcan/${meta.prefix}_dbcan.gff")  , emit: dbcan_gff
@@ -38,11 +38,11 @@ process DBCAN {
         ${faa} \\
         protein
 
-    process_dbcan_result.py -i dbcan -o dbcan/${meta.prefix}_dbcan.gff -v 4.0.0
+    process_dbcan_result.py -i dbcan -o dbcan/${meta.prefix}_dbcan.gff -v 4.1.2
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        dbcan: 4.0.0
+        dbcan: 4.1.2
     END_VERSIONS
     """
 }
