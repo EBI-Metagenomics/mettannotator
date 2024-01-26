@@ -24,11 +24,11 @@ process PROKKA {
 
     identify_kingdom.py -t ${meta.taxid} -o kingdom.txt
 
-    kingdom_value="$(cat kingdom.txt)"
+    kingdom_value="\$(cat kingdom.txt)"
 
     prokka ${meta.prefix}_cleaned.fasta \
     --cpus ${task.cpus} \
-    --kingdom ${kingdom_value} \
+    --kingdom \${kingdom_value} \
     --outdir ${meta.prefix}_prokka \
     --prefix ${meta.prefix} \
     --force \
