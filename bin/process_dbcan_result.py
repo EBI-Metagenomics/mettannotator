@@ -76,7 +76,7 @@ def load_substrates(input_folder):
         for line in file_in:
             if not line.startswith("#"):
                 parts = line.strip().split("\t")
-                cgc_parts = line.rsplit("|", 1)
+                cgc_parts = parts[0].rsplit("|", 1)
                 cgc = "_".join(cgc_parts)
                 try:
                     substrate_pul = parts[2]
@@ -91,6 +91,7 @@ def load_substrates(input_folder):
                 if not substrate_ecami:
                     substrate_ecami = "N/A"
                 substrates[cgc] = "substrate_dbcan-pul={};substrate_dbcan-sub={}".format(substrate_pul, substrate_ecami)
+    print(substrates)
     return substrates
 
 
