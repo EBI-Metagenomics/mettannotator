@@ -24,7 +24,7 @@ process PROKKA {
 
     identify_kingdom.py -t ${meta.taxid} -o kingdom.txt
 
-    kingdom_value = file("kingdom.txt").text.trim()
+    kingdom_value="$(cat kingdom.txt)"
 
     prokka ${meta.prefix}_cleaned.fasta \
     --cpus ${task.cpus} \
