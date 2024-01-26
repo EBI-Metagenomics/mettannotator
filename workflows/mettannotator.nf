@@ -98,7 +98,7 @@ workflow METTANNOTATOR {
 
     assemblies = Channel.fromSamplesheet("input")
 
-    LOOKUP_KINGDOM
+    LOOKUP_KINGDOM ( )
 
     PROKKA( assemblies.join( LOOKUP_KINGDOM.detected_kingdom ))
 
