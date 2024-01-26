@@ -22,9 +22,13 @@ process PROKKA {
     """
     cat ${fasta} | tr '-' ' ' > ${meta.prefix}_cleaned.fasta
 
+    identify_kingdom.py -t ${meta.taxid} -o kingdom.txt
+
+    kingdom_value = file("kingdom.txt").text.trim()
+
     prokka ${meta.prefix}_cleaned.fasta \
     --cpus ${task.cpus} \
-    --kingdom 'Bacteria' \
+    --kingdom ${kingdom_value} \
     --outdir ${meta.prefix}_prokka \
     --prefix ${meta.prefix} \
     --force \
