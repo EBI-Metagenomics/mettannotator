@@ -7,7 +7,7 @@ process LOOKUP_KINGDOM {
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
-    tuple val(meta)
+    tuple val(meta), path(fasta)
 
     output:
     tuple val(meta), path("${meta_prefix}_kingdom.txt"), emit: detected_kingdom
