@@ -7,7 +7,7 @@ process PROKKA {
     label 'process_light'
 
     input:
-    tuple val(meta), path(fasta), path(detected_kingdom)
+    tuple val(meta), path(fasta), detected_kingdom
 
     output:
     tuple val(meta), file("${meta.prefix}_prokka/${meta.prefix}.gff"), emit: gff
@@ -22,11 +22,9 @@ process PROKKA {
     """
     cat ${fasta} | tr '-' ' ' > ${meta.prefix}_cleaned.fasta
 
-    kingdom_value="\$(cat ${detected_kingdom})"
-
     prokka ${meta.prefix}_cleaned.fasta \
     --cpus ${task.cpus} \
-    --kingdom \${kingdom_value} \
+    --kingdom ${detected_kingdom} \
     --outdir ${meta.prefix}_prokka \
     --prefix ${meta.prefix} \
     --force \
