@@ -22,7 +22,7 @@ process PROKKA {
     """
     cat ${fasta} | tr '-' ' ' > ${meta.prefix}_cleaned.fasta
 
-    kingdom_val="\$(cat \${detected_kingdom})"
+    kingdom_val="\$(cat ${detected_kingdom})"
 
     prokka ${meta.prefix}_cleaned.fasta \
     --cpus ${task.cpus} \
