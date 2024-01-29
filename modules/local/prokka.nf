@@ -7,7 +7,7 @@ process PROKKA {
     label 'process_light'
 
     input:
-    tuple val(meta), path(fasta), detected_kingdom
+    tuple val(meta), path(fasta), val(detected_kingdom)
 
     output:
     tuple val(meta), file("${meta.prefix}_prokka/${meta.prefix}.gff"), emit: gff
