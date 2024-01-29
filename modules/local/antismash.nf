@@ -22,6 +22,7 @@ process ANTISMASH {
     -c ${task.cpus} \\
     --databases ${params.antismash_db} \\
     --output-basename ${meta.prefix} \\
+    --genefinding-tool none \\
     --output-dir ${meta.prefix}_results \\
     ${gbk}
 
