@@ -42,6 +42,8 @@ def main(taxid, outfile):
             kingdom = "Archaea"
         elif lineage.startswith("Vir"):
             kingdom = "Viruses"
+        elif lineage.startswith("Bac"):
+            pass
         else:
             logging.warning("Unknown lineage {}. Reporting default kingdom instead: Bacteria.".format(lineage))
     except:
