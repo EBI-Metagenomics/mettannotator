@@ -1,38 +1,30 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/ebi-metagenomics/mettannotator/master/assets/schema_input.json",
-    "title": "ebi-metagenomics/mettannotator pipeline - params.input schema",
-    "description": "Schema for the file provided with params.input",
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "prefix": {
-                "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "Prefix, used for the gene names.",
-                "meta": [
-                    "prefix"
-                ]
-            },
-            "assembly": {
-                "type": "string",
-                "pattern": "^\\S+\\.(fa|fna|fasta)$",
-                "errorMessage": "The assembly needs to be a fasta file."
-            },
-            "taxid": {
-                "type": "string",
-                "pattern": "^\\d+$",
-                "errorMessage": "NCBI taxid should only contain digits.",
-                "meta": [
-                    "taxid"
-                ]
-            }
-        },
-        "required": [
-            "prefix",
-            "assembly",
-            "taxid"
-        ]
-    }
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://raw.githubusercontent.com/ebi-metagenomics/mettannotator/master/assets/schema_input.json",
+  "title": "ebi-metagenomics/mettannotator pipeline - params.input schema",
+  "description": "Schema for the file provided with params.input",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "prefix": {
+        "type": "string",
+        "pattern": "^\\S+$",
+        "errorMessage": "Prefix, used for the gene names.",
+        "meta": ["prefix"]
+      },
+      "assembly": {
+        "type": "string",
+        "pattern": "^\\S+\\.(fa|fna|fasta)$",
+        "errorMessage": "The assembly needs to be a fasta file."
+      },
+      "taxid": {
+        "type": "string",
+        "pattern": "^\\d+$",
+        "errorMessage": "NCBI taxid should only contain digits.",
+        "meta": ["taxid"]
+      }
+    },
+    "required": ["prefix", "assembly", "taxid"]
+  }
 }

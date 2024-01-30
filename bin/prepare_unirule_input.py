@@ -47,19 +47,14 @@ def check_dir(directory_path):
 
 
 def reformat_line(line, taxid):
-    line = line.lstrip('>').strip()
+    line = line.lstrip(">").strip()
     id, description = line.split(maxsplit=1)
-    formatted_line = ">tr|{id}|{description} OX={taxid}\n".format(id=id, description=description,
-                                                                  taxid=taxid)
+    formatted_line = ">tr|{id}|{description} OX={taxid}\n".format(id=id, description=description, taxid=taxid)
     return formatted_line
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description=(
-            "The script reformats the fasta faa file to prepare it for UniRule."
-        )
-    )
+    parser = argparse.ArgumentParser(description=("The script reformats the fasta faa file to prepare it for UniRule."))
     parser.add_argument(
         "-i",
         dest="infile",
@@ -76,9 +71,7 @@ def parse_args():
         "-o",
         dest="outdir",
         required=True,
-        help=(
-            "Path to the folder where the output will be saved to."
-        ),
+        help=("Path to the folder where the output will be saved to."),
     )
     return parser.parse_args()
 

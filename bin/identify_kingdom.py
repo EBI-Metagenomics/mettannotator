@@ -47,8 +47,9 @@ def main(taxid, outfile):
         else:
             logging.warning("Unknown lineage {}. Reporting default kingdom instead: Bacteria.".format(lineage))
     except:
-        logging.warning("Unable to identify lineage for taxid {}. "
-                        "Reporting default kingdom instead: Bacteria.".format(taxid))
+        logging.warning(
+            "Unable to identify lineage for taxid {}. " "Reporting default kingdom instead: Bacteria.".format(taxid)
+        )
     logging.info("Reporting kingdom {} for taxid {}".format(kingdom, taxid))
     if outfile:
         with open(outfile, "w") as file_out:

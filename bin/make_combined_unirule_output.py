@@ -27,7 +27,7 @@ def main(indir, outfile):
     inputs = {
         "ARBA": "predictions_arba.out",
         "UniRule": "predictions_unirule.out",
-        "UniRule-PIRSR": "predictions_unirule-pirsr.out"
+        "UniRule-PIRSR": "predictions_unirule-pirsr.out",
     }
     header = "Source\tEvidence\tProteinId\tAnnotationType\tValue\tStart\tEnd\n"
     result = dict()
@@ -55,11 +55,7 @@ def load_file(dbname, indir, filename, result):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description=(
-            "The script combines UniFIRE output files into one."
-        )
-    )
+    parser = argparse.ArgumentParser(description=("The script combines UniFIRE output files into one."))
     parser.add_argument(
         "-i",
         dest="infolder",
@@ -70,9 +66,7 @@ def parse_args():
         "-o",
         dest="outfile",
         required=True,
-        help=(
-            "Path to the output file."
-        ),
+        help=("Path to the output file."),
     )
     return parser.parse_args()
 

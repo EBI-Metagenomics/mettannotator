@@ -6,22 +6,22 @@
 
 **ebi-metagenomics/mettannotator** is a bioinformatics pipeline use to annotate assemblies using the following tools:
 
-| Tool/Database      | Version | Purpose |
-| ----------- | ----------- |----------- |
-| Prokka   | 1.14.6        | Protein annotation       |
-| eggNOG-mapper  | 2.1.11        | Protein annotation (eggNOG, KEGG, COG,  CAZy)       |
-| eggNOG DB  | 5.0       | Database for eggNOG-mapper       |
-| Diamond    | 2.0.11       | Protein annotation (eggNOG)       |
-| InterProScan   | 5.62-94.0      | Protein annotation (InterPro, Pfam)       |
-| CRISPRCasFinder   | 4.3.2        | Annotation of CRISPR arrays       |
-| AMRFinderPlus   | 3.11.4        |   Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation     |
-| AMRFinderPlus DB   | 3.11 2023-02-23.1        | Database for AMRFinderPlus      |
-| SanntiS   | 0.9.3.2        | Biosynthetic gene cluster annotation       |
-| Infernal   | 1.1.4        | RNA predictions       |
-| tRNAscan-SE   | 2.0.9       | tRNA predictions       |
-| Rfam   | 14.9        | Identification of SSU/LSU rRNA and other ncRNAs       |
-| VIRify   | -        | Viral sequence annotation       |
-| MoMofy   | 1.0.0        | Mobilome annotation       |
+| Tool/Database    | Version           | Purpose                                                                                                                |
+| ---------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Prokka           | 1.14.6            | Protein annotation                                                                                                     |
+| eggNOG-mapper    | 2.1.11            | Protein annotation (eggNOG, KEGG, COG, CAZy)                                                                           |
+| eggNOG DB        | 5.0               | Database for eggNOG-mapper                                                                                             |
+| Diamond          | 2.0.11            | Protein annotation (eggNOG)                                                                                            |
+| InterProScan     | 5.62-94.0         | Protein annotation (InterPro, Pfam)                                                                                    |
+| CRISPRCasFinder  | 4.3.2             | Annotation of CRISPR arrays                                                                                            |
+| AMRFinderPlus    | 3.11.4            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
+| AMRFinderPlus DB | 3.11 2023-02-23.1 | Database for AMRFinderPlus                                                                                             |
+| SanntiS          | 0.9.3.2           | Biosynthetic gene cluster annotation                                                                                   |
+| Infernal         | 1.1.4             | RNA predictions                                                                                                        |
+| tRNAscan-SE      | 2.0.9             | tRNA predictions                                                                                                       |
+| Rfam             | 14.9              | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
+| VIRify           | -                 | Viral sequence annotation                                                                                              |
+| MoMofy           | 1.0.0             | Mobilome annotation                                                                                                    |
 
 ## Usage
 
@@ -54,6 +54,7 @@ nextflow run ebi-metagenomics/mettannotator \
 ebi-metagenomics/mettannotator was originally written by @mberacochea.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
+
 - @KateSakharova
 - @tgurbich
 

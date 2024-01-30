@@ -44,9 +44,7 @@ def load_cgcs(input_folder):
                     if cgc_locations[cgc_id]["end"] < int(end):
                         cgc_locations[cgc_id]["end"] = int(end)
                 else:
-                    cgc_locations[cgc_id] = {"start": int(start),
-                                          "end": int(end),
-                                          "contig": contig}
+                    cgc_locations[cgc_id] = {"start": int(start), "end": int(end), "contig": contig}
     return cgc_locations
 
 
@@ -61,13 +59,27 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
                     cgc_id = "{}_{}".format(contig, cgc)
                     protein_fam = protein_fam.replace(" ", "")
                     if not cgc_id in cgcs_printed:
-                        substrate = substrates[cgc_id] if cgc_id in substrates else "substrate_dbcan-pul=N/A;substrate_dbcan-sub=N/A"
-                        file_out.write("{}\tdbCAN:{}\tpredicted PUL\t{}\t{}\t.\t.\t.\tID={};{}\n".format(
-                            contig, dbcan_version, cgc_locations[cgc_id]["start"], cgc_locations[cgc_id]["end"], cgc_id,
-                            substrate))
+                        substrate = (
+                            substrates[cgc_id]
+                            if cgc_id in substrates
+                            else "substrate_dbcan-pul=N/A;substrate_dbcan-sub=N/A"
+                        )
+                        file_out.write(
+                            "{}\tdbCAN:{}\tpredicted PUL\t{}\t{}\t.\t.\t.\tID={};{}\n".format(
+                                contig,
+                                dbcan_version,
+                                cgc_locations[cgc_id]["start"],
+                                cgc_locations[cgc_id]["end"],
+                                cgc_id,
+                                substrate,
+                            )
+                        )
                         cgcs_printed.append(cgc_id)
-                    file_out.write("{}\tdbCAN:{}\t{}\t{}\t{}\t.\t{}\t.\tID={};Parent={};protein_family={}\n".format(
-                        contig, dbcan_version, gene_type, start, end, strand, prot_id, cgc_id, protein_fam))
+                    file_out.write(
+                        "{}\tdbCAN:{}\t{}\t{}\t{}\t.\t{}\t.\tID={};Parent={};protein_family={}\n".format(
+                            contig, dbcan_version, gene_type, start, end, strand, prot_id, cgc_id, protein_fam
+                        )
+                    )
 
 
 def load_substrates(input_folder):
@@ -106,9 +118,7 @@ def check_folder_completeness(input_folder):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=(
-            "The script takes dbCAN output and parses it to create a standalone GFF."
-        )
+        description=("The script takes dbCAN output and parses it to create a standalone GFF.")
     )
     parser.add_argument(
         "-i",
@@ -120,25 +130,17 @@ def parse_args():
         "-o",
         dest="outfile",
         required=True,
-        help=(
-            "Path to the output file."
-        ),
+        help=("Path to the output file."),
     )
     parser.add_argument(
         "-v",
         dest="dbcan_ver",
         required=True,
-        help=(
-            "dbCAN version used."
-        ),
+        help=("dbCAN version used."),
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(
-        args.input_folder,
-        args.outfile,
-        args.dbcan_ver
-    )
+    main(args.input_folder, args.outfile, args.dbcan_ver)
