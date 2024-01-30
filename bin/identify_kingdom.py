@@ -16,7 +16,6 @@
 #
 
 import argparse
-import json
 import logging
 import sys
 
@@ -33,7 +32,7 @@ def main(taxid, outfile):
     try:
         url = "https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/{}".format(taxid)
         r = run_request(url)
-        res = json.loads(r.text)
+        res = r.json()
         lineage = res.get("lineage", "")
         rank = res.get("rank", "")
         if rank == "superkingdom":
