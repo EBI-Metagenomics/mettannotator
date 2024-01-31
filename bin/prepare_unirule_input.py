@@ -26,7 +26,11 @@ logging.basicConfig(level=logging.INFO)
 def main(infile, taxid, outdir):
     check_dir(outdir)
     if not taxid.isdigit():
-        sys.exit("Taxid must consist of digits only. Taxid {} is not valid. Exiting.".format(taxid))
+        sys.exit(
+            "Taxid must consist of digits only. Taxid {} is not valid. Exiting.".format(
+                taxid
+            )
+        )
     outfile = "proteins.fasta"
     outpath = os.path.join(outdir, outfile)
     with open(outpath, "w") as file_out, open(infile, "r") as file_in:
@@ -49,12 +53,18 @@ def check_dir(directory_path):
 def reformat_line(line, taxid):
     line = line.lstrip(">").strip()
     id, description = line.split(maxsplit=1)
-    formatted_line = ">tr|{id}|{description} OX={taxid}\n".format(id=id, description=description, taxid=taxid)
+    formatted_line = ">tr|{id}|{description} OX={taxid}\n".format(
+        id=id, description=description, taxid=taxid
+    )
     return formatted_line
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description=("The script reformats the fasta faa file to prepare it for UniRule."))
+    parser = argparse.ArgumentParser(
+        description=(
+            "The script reformats the fasta faa file to prepare it for UniRule."
+        )
+    )
     parser.add_argument(
         "-i",
         dest="infile",

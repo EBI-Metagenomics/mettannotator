@@ -13,9 +13,7 @@ process EGGNOG_MAPPER {
     tuple val(meta), file(fasta), file(annotation_hit_table)
     // on mode "mapper" will be ignored, submit an empty path (channel.path("NO_FILE"))
     val mode // mapper or annotations
-    path eggnog_db
-    path eggnog_diamond_db
-    path eggnog_data_dir
+    tuple path(eggnog_db_dir), val(db_version)
 
     output:
     tuple val(meta), path("*annotations*"), emit: annotations, optional: true
@@ -28,9 +26,9 @@ process EGGNOG_MAPPER {
     if ( mode == "mapper" )
         """
         emapper.py -i ${fasta} \
-        --database ${eggnog_db} \
-        --dmnd_db ${eggnog_diamond_db} \
-        --data_dir ${eggnog_data_dir} \
+        --database ${eggnog_db_dir}/eggnog.db \
+        --dmnd_db ${eggnog_db_dir}/eggnog_proteins.dmnd \
+        --data_dir ${eggnog_db_dir} \
         -m diamond \
         --no_file_comments \
         --cpu ${task.cpus} \
@@ -40,12 +38,13 @@ process EGGNOG_MAPPER {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             eggnog-mapper: \$(echo \$(emapper.py --version) | grep -o "emapper-[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+" | sed "s/emapper-//")
+            eggnog-mapper database: $db_version
         END_VERSIONS
         """
     else if ( mode == "annotations" )
         """
         emapper.py \
-        --data_dir ${eggnog_data_dir} \
+        --data_dir ${eggnog_db_dir} \
         --no_file_comments \
         --cpu ${task.cpus} \
         --annotate_hits_table ${annotation_hit_table} \
@@ -54,6 +53,7 @@ process EGGNOG_MAPPER {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             eggnog-mapper: \$(echo \$(emapper.py --version) | grep -o "emapper-[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+" | sed "s/emapper-//")
+            eggnog-mapper database: $db_version
         END_VERSIONS
         """
     else

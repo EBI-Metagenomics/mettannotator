@@ -6,10 +6,11 @@ process AMRFINDER_PLUS {
 
     input:
     tuple val(meta), path(fna), path(faa), path(gff)
+    tuple path(amrfinder_plus_db), val(db_version)
 
     output:
     tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv"), emit: amrfinder_tsv
-    path "versions.yml", emit: versions
+    path "versions.yml"                                      , emit: versions
 
     script:
     """
@@ -17,7 +18,7 @@ process AMRFINDER_PLUS {
     -n ${fna} \
     -p ${faa} \
     -g ${gff} \
-    -d ${params.amrfinder_plus_db} \
+    -d ${amrfinder_plus_db} \
     -a prokka \
     --output ${meta.prefix}_amrfinderplus.tsv \
     --threads ${task.cpus}
@@ -25,6 +26,7 @@ process AMRFINDER_PLUS {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         amrfinderplus: \$(amrfinder --version)
+        amdfinderplus database: $db_version
     END_VERSIONS
     """
 }
