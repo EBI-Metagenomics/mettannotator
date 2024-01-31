@@ -29,6 +29,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { LOOKUP_KINGDOM } from '../modules/local/lookup_kingdom'
 include { PROKKA } from '../modules/local/prokka'
 include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF } from '../modules/local/amrfinder_plus'
 include { DEFENSE_FINDER } from '../modules/local/defense_finder'
@@ -97,7 +98,9 @@ workflow METTANNOTATOR {
 
     assemblies = Channel.fromSamplesheet("input")
 
-    PROKKA( assemblies )
+    LOOKUP_KINGDOM( assemblies )
+
+    PROKKA( assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ))
 
     ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 

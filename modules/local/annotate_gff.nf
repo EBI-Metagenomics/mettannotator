@@ -24,7 +24,7 @@ process ANNOTATE_GFF {
           file(pirsr)
 
     output:
-    tuple val(meta), path("*_unirule_merged.gff"), emit: annotated_gff
+    tuple val(meta), path("*_annotations.gff"), emit: annotated_gff
     path "versions.yml", emit: versions
 
     // For the version, I'm using the latest stable the genomes-annotation pipeline
@@ -75,7 +75,7 @@ process ANNOTATE_GFF {
     -a ${arba} \\
     -u ${unirule} \\
     -p ${pirsr} \\
-    -o ${meta.prefix}_unirule_merged.gff
+    -o ${meta.prefix}_annotations.gff
 
 
     cat <<-END_VERSIONS > versions.yml

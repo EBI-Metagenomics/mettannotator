@@ -116,18 +116,13 @@ def build_gff(regions_json, antismash_version):
                 bgc.contig_name,
                 f"antiSMASH:{antismash_version}",
                 "CDS",
-                orf.start, # FIXME, shoud we correct offset (gff are +1)?
+                orf.start,  # FIXME, shoud we correct offset (gff are +1)?
                 orf.end,
                 ".",  # TODO, it should be possible to get the confidence score from the antismash gbk result file
                 "+" if orf.strand == 1 else "-",
                 ".",
                 ";".join(
-                    [
-                        f"ID={orf.locus_tag}",
-                        f"Parent={bgc.bgc_name}",
-                        f"product={orf.product}",
-                        f"function={orf.type}"
-                    ]
+                    [f"ID={orf.locus_tag}", f"Parent={bgc.bgc_name}", f"product={orf.product}", f"function={orf.type}"]
                 ),
             ]
 

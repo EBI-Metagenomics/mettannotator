@@ -30,13 +30,9 @@ def main(tsv_report, gffs, tsv_output, gff_output, gff_output_hq, fasta):
     create_gff(gffs, gff_output, hits, fasta, hq_hits, gff_output_hq, evidence_levels)
 
 
-def create_gff(
-    gffs, gff_output, hits, fasta, high_qual_hits, gff_output_high_qual, evidence_levels
-):
+def create_gff(gffs, gff_output, hits, fasta, high_qual_hits, gff_output_high_qual, evidence_levels):
     # generate 2 gffs: one with all hits, one with high-quality hits only
-    with open(gff_output, "w") as gff_out, open(
-        gff_output_high_qual, "w"
-    ) as hq_gff_out:
+    with open(gff_output, "w") as gff_out, open(gff_output_high_qual, "w") as hq_gff_out:
         gff_out.write("##gff-version 3\n")
         hq_gff_out.write("##gff-version 3\n")
         for gff in gffs:
@@ -49,10 +45,7 @@ def create_gff(
 
                         parts = line.strip().split("\t")
                         # fix the GFF feature if it extends outside a contig (CRISPRCasFinder bug)
-                        if (
-                            not all(x > 0 for x in [int(parts[3]), int(parts[4])])
-                            or "sequence=UNKNOWN" in line
-                        ):
+                        if not all(x > 0 for x in [int(parts[3]), int(parts[4])]) or "sequence=UNKNOWN" in line:
                             line = fix_gff_line(line, fasta)
                             if not line:
                                 continue
@@ -68,8 +61,8 @@ def create_gff(
 
 def remove_parent(line):
     if "Parent" in line:
-        pattern = r'Parent=[^;]*;'
-        line = re.sub(pattern, '', line)
+        pattern = r"Parent=[^;]*;"
+        line = re.sub(pattern, "", line)
     return line
 
 
@@ -159,9 +152,7 @@ def fix_gff_line(line, fasta):
 
 def fix_annotation(feature_seq, at_percentage, annotation):
     annotation = annotation.replace("at%=0;", "at%={};".format(at_percentage))
-    annotation = annotation.replace(
-        "sequence=UNKNOWN", "sequence={}".format(feature_seq)
-    )
+    annotation = annotation.replace("sequence=UNKNOWN", "sequence={}".format(feature_seq))
     return annotation
 
 
@@ -214,8 +205,7 @@ def process_tsv(tsv_report, tsv_output):
 def parse_args():
     parser = argparse.ArgumentParser(
         description=(
-            "Script processes the results of CRISPRCasFinder to produce files"
-            "for genomes pipeline output directory."
+            "Script processes the results of CRISPRCasFinder to produce files" "for genomes pipeline output directory."
         )
     )
     parser.add_argument(

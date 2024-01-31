@@ -96,32 +96,24 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                     annotations,
                 ) = line.strip().split("\t")
                 if tool == "sanntis":
-                    for a in annotations.split(
-                        ";"
-                    ):  # go through all parts of the annotation field
+                    for a in annotations.split(";"):  # go through all parts of the annotation field
                         if a.startswith("nearest_MiBIG_class="):
                             class_value = a.split("=")[1]
                         elif a.startswith("nearest_MiBIG="):
                             mibig_value = a.split("=")[1]
                 elif tool == "gecco":
-                    for a in annotations.split(
-                        ";"
-                    ):  # go through all parts of the annotation field
+                    for a in annotations.split(";"):  # go through all parts of the annotation field
                         if a.startswith("Type="):
                             type_value = a.split("=")[1]
                 elif tool == "antismash":
                     if feature != "CDS":
                         continue
-                    for a in annotations.split(
-                        ";"
-                    ):  # go through all parts of the annotation field
+                    for a in annotations.split(";"):  # go through all parts of the annotation field
                         if a.startswith("function="):
                             type_value = a.split("=")[1]
                 # save cluster positions to a dictionary where key = contig name,
                 # value = list of position pairs (list of lists)
-                cluster_positions.setdefault(contig, list()).append(
-                    [int(start_pos), int(end_pos)]
-                )
+                cluster_positions.setdefault(contig, list()).append([int(start_pos), int(end_pos)])
                 # save BGC annotations to dictionary where key = contig, value = dictionary, where
                 # key = 'start_end' of BGC, value = dictionary, where key = feature type, value = description
                 if tool == "sanntis":
@@ -157,9 +149,7 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                 ) = line.strip().split("\t")
                 if contig in cluster_positions:
                     for i in cluster_positions[contig]:
-                        if int(start_pos) in range(i[0], i[1] + 1) and int(
-                            end_pos
-                        ) in range(i[0], i[1] + 1):
+                        if int(start_pos) in range(i[0], i[1] + 1) and int(end_pos) in range(i[0], i[1] + 1):
                             matching_interval = "_".join([str(i[0]), str(i[1])])
                             break
                 # if the CDS is in an interval, save cluster's annotation to this CDS
@@ -169,30 +159,22 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         bgc_annotations.setdefault(
                             cds_id,
                             {
-                                "nearest_MiBIG": tool_result[contig][matching_interval][
-                                    "nearest_MiBIG"
-                                ],
-                                "nearest_MiBIG_class": tool_result[contig][
-                                    matching_interval
-                                ]["nearest_MiBIG_class"],
+                                "nearest_MiBIG": tool_result[contig][matching_interval]["nearest_MiBIG"],
+                                "nearest_MiBIG_class": tool_result[contig][matching_interval]["nearest_MiBIG_class"],
                             },
                         )
                     elif tool == "gecco":
                         bgc_annotations.setdefault(
                             cds_id,
                             {
-                                "gecco_bgc_type": tool_result[contig][matching_interval][
-                                    "bgc_type"
-                                ],
+                                "gecco_bgc_type": tool_result[contig][matching_interval]["bgc_type"],
                             },
                         )
                     elif tool == "antismash":
                         bgc_annotations.setdefault(
                             cds_id,
                             {
-                                "antismash_bgc_function": tool_result[contig][matching_interval][
-                                    "bgc_function"
-                                ],
+                                "antismash_bgc_function": tool_result[contig][matching_interval]["bgc_function"],
                             },
                         )
             elif line.startswith("##FASTA"):
@@ -247,7 +229,7 @@ def get_amr(amr_file):
 def get_dbcan(dbcan_file):
     dbcan_annotations = dict()
     substrates = dict()
-    with (open(dbcan_file, "r") as f):
+    with open(dbcan_file, "r") as f:
         for line in f:
             if "predicted PUL" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
@@ -274,9 +256,13 @@ def get_dbcan(dbcan_file):
                             prot_fam = a.split("=")[1]
                         elif a.startswith("Parent"):
                             parent = a.split("=")[1]
-                    dbcan_annotations[acc] = \
-                    "dbcan_prot_type={};dbcan_prot_family={};substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
-                        prot_type, prot_fam, substrates[parent]["substrate_pul"], substrates[parent]["substrate_ecami"]
+                    dbcan_annotations[acc] = (
+                        "dbcan_prot_type={};dbcan_prot_family={};substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
+                            prot_type,
+                            prot_fam,
+                            substrates[parent]["substrate_pul"],
+                            substrates[parent]["substrate_ecami"],
+                        )
                     )
     return dbcan_annotations
 
@@ -284,7 +270,7 @@ def get_dbcan(dbcan_file):
 def get_defense_finder(df_file):
     defense_finder_annotations = dict()
     type_info = dict()
-    with (open(df_file, "r") as f):
+    with open(df_file, "r") as f:
         for line in f:
             if "Anti-phage system" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
@@ -310,8 +296,9 @@ def get_defense_finder(df_file):
     return defense_finder_annotations
 
 
-def add_gff(in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, antismash_file, gecco_file, dbcan_file,
-            defense_finder_file):
+def add_gff(
+    in_gff, eggnog_file, ipr_file, sanntis_file, amr_file, antismash_file, gecco_file, dbcan_file, defense_finder_file
+):
     eggnogs = get_eggnog(eggnog_file)
     iprs = get_iprs(ipr_file)
     sanntis_bgcs = get_bgcs(sanntis_file, in_gff, tool="sanntis")
@@ -428,9 +415,7 @@ def get_rnas(ncrnas_file):
                 else:
                     start = int(cols[10])
                     end = int(cols[9])
-                ncrnas.setdefault(contig, list()).append(
-                    [locus, start, end, product, model, strand]
-                )
+                ncrnas.setdefault(contig, list()).append([locus, start, end, product, model, strand])
                 # if contig not in ncrnas:
                 #    ncrnas[contig] = [[locus, start, end, product, model, strand]]
                 # else:
@@ -491,17 +476,8 @@ def add_ncrnas_and_crispr_to_gff(gff_outfile, ncrnas, crispr_annotations, res):
                 if contig in crispr_annotations:
                     for crispr_line in crispr_annotations[contig]:
                         crispr_parts = crispr_line.strip().split("\t")
-                        if (
-                            "{}_{}_{}".format(
-                                crispr_parts[2], crispr_parts[3], crispr_parts[4]
-                            )
-                            not in added_crisprs
-                        ):
-                            added_crisprs.add(
-                                "{}_{}_{}".format(
-                                    crispr_parts[2], crispr_parts[3], crispr_parts[4]
-                                )
-                            )
+                        if "{}_{}_{}".format(crispr_parts[2], crispr_parts[3], crispr_parts[4]) not in added_crisprs:
+                            added_crisprs.add("{}_{}_{}".format(crispr_parts[2], crispr_parts[3], crispr_parts[4]))
                             gff_out.write(crispr_line)
                 gff_out.write("{}\n".format(line))
         #            else:

@@ -44,18 +44,27 @@ def main(amr_file, outfile, version):
                 drug_subclass,
                 _,
             ) = line.strip().split("\t", 12)
-            writer.writerow([contig, f"AMRFinderPlus:{version}", "gene", start, end,
-                             ".", strand, ".", f"ID={protein_id};gene_name={gene_name};sequence_name={seq_name};"
-                                               f"scope={scope};element_type={element_type};"
-                                               f"element_subtype={element_subtype};drug_class={drug_class};"
-                                               f"drug_subclass={drug_subclass}"])
+            writer.writerow(
+                [
+                    contig,
+                    f"AMRFinderPlus:{version}",
+                    "gene",
+                    start,
+                    end,
+                    ".",
+                    strand,
+                    ".",
+                    f"ID={protein_id};gene_name={gene_name};sequence_name={seq_name};"
+                    f"scope={scope};element_type={element_type};"
+                    f"element_subtype={element_subtype};drug_class={drug_class};"
+                    f"drug_subclass={drug_subclass}",
+                ]
+            )
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=(
-            "The script takes AMRFinderPlus output and parses it to create a standalone GFF."
-        )
+        description=("The script takes AMRFinderPlus output and parses it to create a standalone GFF.")
     )
     parser.add_argument(
         "-i",
@@ -67,25 +76,17 @@ def parse_args():
         "-o",
         dest="outfile",
         required=True,
-        help=(
-            "Path to the output file."
-        ),
+        help=("Path to the output file."),
     )
     parser.add_argument(
         "-v",
         dest="version",
         required=True,
-        help=(
-            "AMRFinderPlus version."
-        ),
+        help=("AMRFinderPlus version."),
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(
-        args.amr_in,
-        args.outfile,
-        args.version
-    )
+    main(args.amr_in, args.outfile, args.version)

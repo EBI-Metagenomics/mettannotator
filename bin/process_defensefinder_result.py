@@ -43,38 +43,58 @@ def load_prokka(prokka_gff):
                 else:
                     contig, _, _, start, end, _, strand, _, col9 = line.strip().split("\t")
                     prot_name = col9.split(";")[0].split("=")[1]
-                    prokka_data[prot_name] = {"contig": contig,
-                                              "start": start,
-                                              "end": end,
-                                              "strand": strand}
+                    prokka_data[prot_name] = {"contig": contig, "start": start, "end": end, "strand": strand}
     return prokka_data
 
 
 def print_systems_to_file(system_path, gene_results, outfile, df_version, prokka_data):
-    with (open(system_path, "r") as file_in, open(outfile, "w") as file_out):
+    with open(system_path, "r") as file_in, open(outfile, "w") as file_out:
         writer = csv.writer(file_out, delimiter="\t")
         writer.writerow(["##gff-version 3"])
         for line in file_in:
             if line.lower().startswith("sys_id"):
-                sys_id_index, type_index, subtype_index, sys_beg_index, sys_end_index, protein_in_syst_index = \
-                [line.strip().split().index(field) for field in
-                 ["sys_id", "type", "subtype", "sys_beg", "sys_end", "protein_in_syst"]]
+                sys_id_index, type_index, subtype_index, sys_beg_index, sys_end_index, protein_in_syst_index = [
+                    line.strip().split().index(field)
+                    for field in ["sys_id", "type", "subtype", "sys_beg", "sys_end", "protein_in_syst"]
+                ]
             else:
                 cols = line.strip().split("\t")
                 start = prokka_data[cols[sys_beg_index]]["start"]
                 end = prokka_data[cols[sys_end_index]]["end"]
                 contig = prokka_data[cols[sys_beg_index]]["contig"]
-                writer.writerow([contig, f"DefenseFinder:{df_version}", "Anti-phage system", start, end, ".", ".", ".",
-                                 f"ID={cols[sys_id_index]};type={cols[type_index]};subtype={cols[subtype_index]}"])
+                writer.writerow(
+                    [
+                        contig,
+                        f"DefenseFinder:{df_version}",
+                        "Anti-phage system",
+                        start,
+                        end,
+                        ".",
+                        ".",
+                        ".",
+                        f"ID={cols[sys_id_index]};type={cols[type_index]};subtype={cols[subtype_index]}",
+                    ]
+                )
                 proteins = cols[protein_in_syst_index].split(",")
                 for protein in proteins:
                     prot_start = prokka_data[protein]["start"]
                     prot_end = prokka_data[protein]["end"]
                     prot_strand = prokka_data[protein]["strand"]
-                    writer.writerow([contig, f"DefenseFinder:{df_version}", "gene", prot_start, prot_end,
-                                     ".", prot_strand, ".", f"ID={protein};Parent={cols[sys_id_index]};"
-                                                            f"gene_name={gene_results[protein]['gene_name']};"
-                                                            f"hit_status={gene_results[protein]['hit_status']}"])
+                    writer.writerow(
+                        [
+                            contig,
+                            f"DefenseFinder:{df_version}",
+                            "gene",
+                            prot_start,
+                            prot_end,
+                            ".",
+                            prot_strand,
+                            ".",
+                            f"ID={protein};Parent={cols[sys_id_index]};"
+                            f"gene_name={gene_results[protein]['gene_name']};"
+                            f"hit_status={gene_results[protein]['hit_status']}",
+                        ]
+                    )
 
 
 def load_genes(gene_path):
@@ -83,8 +103,9 @@ def load_genes(gene_path):
         for line in file_in:
             if line.lower().startswith("replicon"):
                 # get indices of fields
-                acc_index, gene_index, hit_status = [line.strip().split().index(field) for field in
-                                                     ["hit_id", "gene_name", "hit_status"]]
+                acc_index, gene_index, hit_status = [
+                    line.strip().split().index(field) for field in ["hit_id", "gene_name", "hit_status"]
+                ]
             else:
                 fields = line.strip().split()
                 gene_results.setdefault(fields[acc_index], dict())
@@ -106,9 +127,7 @@ def get_files(input_folder):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=(
-            "The script takes Defense Finder output and parses it to create a standalone GFF."
-        )
+        description=("The script takes Defense Finder output and parses it to create a standalone GFF.")
     )
     parser.add_argument(
         "-i",
@@ -120,34 +139,23 @@ def parse_args():
         "-p",
         dest="prokka_gff",
         required=True,
-        help=(
-            "Path to the Prokka GFF file."
-        ),
+        help=("Path to the Prokka GFF file."),
     )
     parser.add_argument(
         "-o",
         dest="outfile",
         required=True,
-        help=(
-            "Path to the output file."
-        ),
+        help=("Path to the output file."),
     )
     parser.add_argument(
         "-v",
         dest="df_ver",
         required=True,
-        help=(
-            "DefenseFinder version used."
-        ),
+        help=("DefenseFinder version used."),
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(
-        args.input_folder,
-        args.prokka_gff,
-        args.outfile,
-        args.df_ver
-    )
+    main(args.input_folder, args.prokka_gff, args.outfile, args.df_ver)

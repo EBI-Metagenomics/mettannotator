@@ -48,12 +48,14 @@ def main(arba, unirule, pirsr, gff, outfile):
             print("PIRSR:", pirsr_dict[record])
     """
 
+
 # unifire_ec_number=
 # unifire_ontology_term=
 # unifire_chebi=
 # unifire_keywords=
 # unifire_recommended_name=
 # unifire_alternative_name=
+
 
 def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
     fields_dict = {
@@ -88,7 +90,7 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                     contig, tool, feature, start, end, blank1, strand, blank2, col9 = line.strip().split("\t")
                     if feature == "CDS":
                         id = get_id(col9)
-                        #print("\n{}".format(id))
+                        # print("\n{}".format(id))
                         combined_dict = dict()
                         for db_dict in list_of_dicts:
                             if id in db_dict:
@@ -100,17 +102,17 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                         if len(combined_dict) > 0:
                             combined_dict = condense_dict(combined_dict)
                             combined_dict = escape_reserved_characters(combined_dict)
-                            #if combined_dict and "xref.GO" in combined_dict:
+                            # if combined_dict and "xref.GO" in combined_dict:
                             #    #print("YES", combined_dict)
                             #    combined_dict["xref.GO"] = ",".join(combined_dict["xref.GO"])
                             #    #print(combined_dict)
                             added_annot = ""
-                            #print(id, combined_dict)
+                            # print(id, combined_dict)
                             for key, value in combined_dict.items():
                                 if key in fields_dict:
                                     added_annot += ";{}={}".format(fields_dict[key], ",".join(value))
-                            #print(added_annot)
-                            #print("\n\n")
+                            # print(added_annot)
+                            # print("\n\n")
                             new_col_9 = col9 + added_annot
                             writer.writerow([contig, tool, feature, start, end, blank1, strand, blank2, new_col_9])
                         else:
@@ -128,7 +130,7 @@ def escape_reserved_characters(combined_dict):
             for ch in reserved_characters:
                 if ch in value:
                     remove_values.append(value)
-                    value = value.replace(ch, '\{}'.format(ch))
+                    value = value.replace(ch, "\{}".format(ch))
                     add_values.append(value)
         for v in remove_values:
             list_of_values.remove(v)
@@ -141,12 +143,12 @@ def escape_reserved_characters(combined_dict):
 
 def condense_dict(combined_dict):
     for key, list_to_condense in combined_dict.items():
-        #print("Before: {}{}".format(key, list_to_condense))
+        # print("Before: {}{}".format(key, list_to_condense))
         list_to_condense = list(set(list_to_condense))
         if key == "keyword":
             list_to_condense = collapse_keywords(list_to_condense)
         combined_dict[key] = list_to_condense
-        #print("After: {}{}".format(key, list_to_condense))
+        # print("After: {}{}".format(key, list_to_condense))
     return combined_dict
 
 
@@ -196,8 +198,11 @@ def load_unirule_arba(file):
                     pass
                 else:
                     evidence, protein_id, annot_type, value = line.strip().split("\t")
-                if not annot_type.startswith("comment") and not annot_type.startswith("protein.domain") and not \
-                    annot_type.startswith("protein.component"):
+                if (
+                    not annot_type.startswith("comment")
+                    and not annot_type.startswith("protein.domain")
+                    and not annot_type.startswith("protein.component")
+                ):
                     results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
     for record in results_dict:
         if "keyword" in results_dict[record]:
@@ -207,7 +212,7 @@ def load_unirule_arba(file):
 
 
 def collapse_keywords(keyword_list):
-    #print("\nKeywords before", keyword_list)
+    # print("\nKeywords before", keyword_list)
     collapsed_list = list()
 
     for keyword in keyword_list:
@@ -218,16 +223,12 @@ def collapse_keywords(keyword_list):
         if not redundant:
             collapsed_list.append(keyword)
     collapsed_list = list(set(collapsed_list))
-    #print("Keywords after", collapsed_list)
+    # print("Keywords after", collapsed_list)
     return collapsed_list
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description=(
-            "Placeholder"
-        )
-    )
+    parser = argparse.ArgumentParser(description=("Placeholder"))
     parser.add_argument(
         "-a",
         dest="arba",
@@ -238,43 +239,29 @@ def parse_args():
         "-u",
         dest="unirule",
         required=True,
-        help=(
-            "Unirule."
-        ),
+        help=("Unirule."),
     )
     parser.add_argument(
         "-p",
         dest="pirsr",
         required=True,
-        help=(
-            "Pirsr."
-        ),
+        help=("Pirsr."),
     )
     parser.add_argument(
         "-g",
         dest="gff",
         required=True,
-        help=(
-            "gff."
-        ),
+        help=("gff."),
     )
     parser.add_argument(
         "-o",
         dest="outfile",
         required=True,
-        help=(
-            "outfile"
-        ),
+        help=("outfile"),
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(
-        args.arba,
-        args.unirule,
-        args.pirsr,
-        args.gff,
-        args.outfile
-    )
+    main(args.arba, args.unirule, args.pirsr, args.gff, args.outfile)
