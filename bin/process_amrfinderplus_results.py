@@ -64,7 +64,9 @@ def main(amr_file, outfile, version):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=("The script takes AMRFinderPlus output and parses it to create a standalone GFF.")
+        description=(
+            "The script takes AMRFinderPlus output and parses it to create a standalone GFF."
+        )
     )
     parser.add_argument(
         "-i",

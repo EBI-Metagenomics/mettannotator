@@ -43,7 +43,9 @@ def main(indir, outfile):
 
 def load_file(dbname, indir, filename, result):
     if not os.path.exists(os.path.join(indir, filename)):
-        logging.error("File {} does not exist in folder {}. Aborting.".format(filename, indir))
+        logging.error(
+            "File {} does not exist in folder {}. Aborting.".format(filename, indir)
+        )
         sys.exit()
     with open(os.path.join(indir, filename), "r") as file_in:
         for line in file_in:
@@ -55,7 +57,9 @@ def load_file(dbname, indir, filename, result):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description=("The script combines UniFIRE output files into one."))
+    parser = argparse.ArgumentParser(
+        description=("The script combines UniFIRE output files into one.")
+    )
     parser.add_argument(
         "-i",
         dest="infolder",

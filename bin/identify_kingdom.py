@@ -44,10 +44,15 @@ def main(taxid, outfile):
         elif lineage.startswith("Bac"):
             pass
         else:
-            logging.error("Unknown lineage {}. Reporting default kingdom instead: Bacteria.".format(lineage))
+            logging.error(
+                "Unknown lineage {}. Reporting default kingdom instead: Bacteria.".format(
+                    lineage
+                )
+            )
     except:
         logging.error(
-            "Unable to identify lineage for taxid {}. " "Reporting default kingdom instead: Bacteria.".format(taxid)
+            "Unable to identify lineage for taxid {}. "
+            "Reporting default kingdom instead: Bacteria.".format(taxid)
         )
     logging.info("Reporting kingdom {} for taxid {}".format(kingdom, taxid))
     if outfile:

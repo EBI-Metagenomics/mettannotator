@@ -87,7 +87,9 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                     file_out.write(line)
                     fasta_flag = True
                 else:
-                    contig, tool, feature, start, end, blank1, strand, blank2, col9 = line.strip().split("\t")
+                    contig, tool, feature, start, end, blank1, strand, blank2, col9 = (
+                        line.strip().split("\t")
+                    )
                     if feature == "CDS":
                         id = get_id(col9)
                         # print("\n{}".format(id))
@@ -110,11 +112,25 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                             # print(id, combined_dict)
                             for key, value in combined_dict.items():
                                 if key in fields_dict:
-                                    added_annot += ";{}={}".format(fields_dict[key], ",".join(value))
+                                    added_annot += ";{}={}".format(
+                                        fields_dict[key], ",".join(value)
+                                    )
                             # print(added_annot)
                             # print("\n\n")
                             new_col_9 = col9 + added_annot
-                            writer.writerow([contig, tool, feature, start, end, blank1, strand, blank2, new_col_9])
+                            writer.writerow(
+                                [
+                                    contig,
+                                    tool,
+                                    feature,
+                                    start,
+                                    end,
+                                    blank1,
+                                    strand,
+                                    blank2,
+                                    new_col_9,
+                                ]
+                            )
                         else:
                             file_out.write(line)
                     else:
@@ -171,17 +187,25 @@ def load_pirsr(pirsr):
                             if element.lstrip().startswith("Xref"):
                                 value = element.split("=")[1]
                                 annot_type = "chebi"
-                                results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
+                                results_dict.setdefault(protein_id, dict()).setdefault(
+                                    annot_type, list()
+                                ).append(value)
                             elif element.lstrip().startswith("Name"):
                                 value = element.split("=")[1]
                                 annot_type = "pirsr_name"
-                                results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
+                                results_dict.setdefault(protein_id, dict()).setdefault(
+                                    annot_type, list()
+                                ).append(value)
                     else:
-                        results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
+                        results_dict.setdefault(protein_id, dict()).setdefault(
+                            annot_type, list()
+                        ).append(value)
     for record in results_dict:
         if "keyword" in results_dict[record]:
             if len(results_dict[record]["keyword"]) > 1:
-                results_dict[record]["keyword"] = collapse_keywords(list(results_dict[record]["keyword"]))
+                results_dict[record]["keyword"] = collapse_keywords(
+                    list(results_dict[record]["keyword"])
+                )
         if "chebi" in results_dict[record]:
             if len(results_dict[record]["chebi"]) > 1:
                 results_dict[record]["chebi"] = list(set(results_dict[record]["chebi"]))
@@ -203,11 +227,15 @@ def load_unirule_arba(file):
                     and not annot_type.startswith("protein.domain")
                     and not annot_type.startswith("protein.component")
                 ):
-                    results_dict.setdefault(protein_id, dict()).setdefault(annot_type, list()).append(value)
+                    results_dict.setdefault(protein_id, dict()).setdefault(
+                        annot_type, list()
+                    ).append(value)
     for record in results_dict:
         if "keyword" in results_dict[record]:
             if len(results_dict[record]["keyword"]) > 1:
-                results_dict[record]["keyword"] = collapse_keywords(list(results_dict[record]["keyword"]))
+                results_dict[record]["keyword"] = collapse_keywords(
+                    list(results_dict[record]["keyword"])
+                )
     return results_dict
 
 
