@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Copyright 2023 EMBL - European Bioinformatics Institute
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,11 @@ def load_cgcs(input_folder):
                     if cgc_locations[cgc_id]["end"] < int(end):
                         cgc_locations[cgc_id]["end"] = int(end)
                 else:
-                    cgc_locations[cgc_id] = {"start": int(start), "end": int(end), "contig": contig}
+                    cgc_locations[cgc_id] = {
+                        "start": int(start),
+                        "end": int(end),
+                        "contig": contig,
+                    }
     return cgc_locations
 
 
@@ -55,7 +59,9 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
         with open(os.path.join(input_folder, "cgc_standard.out")) as file_in:
             for line in file_in:
                 if not line.startswith("CGC#"):
-                    cgc, gene_type, contig, prot_id, start, end, strand, protein_fam = line.strip().split("\t")
+                    cgc, gene_type, contig, prot_id, start, end, strand, protein_fam = (
+                        line.strip().split("\t")
+                    )
                     cgc_id = "{}_{}".format(contig, cgc)
                     protein_fam = protein_fam.replace(" ", "")
                     if not cgc_id in cgcs_printed:
@@ -77,7 +83,15 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
                         cgcs_printed.append(cgc_id)
                     file_out.write(
                         "{}\tdbCAN:{}\t{}\t{}\t{}\t.\t{}\t.\tID={};Parent={};protein_family={}\n".format(
-                            contig, dbcan_version, gene_type, start, end, strand, prot_id, cgc_id, protein_fam
+                            contig,
+                            dbcan_version,
+                            gene_type,
+                            start,
+                            end,
+                            strand,
+                            prot_id,
+                            cgc_id,
+                            protein_fam,
                         )
                     )
 
@@ -102,7 +116,11 @@ def load_substrates(input_folder):
                     substrate_pul = "N/A"
                 if not substrate_ecami:
                     substrate_ecami = "N/A"
-                substrates[cgc] = "substrate_dbcan-pul={};substrate_dbcan-sub={}".format(substrate_pul, substrate_ecami)
+                substrates[cgc] = (
+                    "substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
+                        substrate_pul, substrate_ecami
+                    )
+                )
     print(substrates)
     return substrates
 
@@ -118,7 +136,9 @@ def check_folder_completeness(input_folder):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=("The script takes dbCAN output and parses it to create a standalone GFF.")
+        description=(
+            "The script takes dbCAN output and parses it to create a standalone GFF."
+        )
     )
     parser.add_argument(
         "-i",

@@ -41,9 +41,16 @@ def load_prokka(prokka_gff):
                 if line.startswith(">"):
                     break
                 else:
-                    contig, _, _, start, end, _, strand, _, col9 = line.strip().split("\t")
+                    contig, _, _, start, end, _, strand, _, col9 = line.strip().split(
+                        "\t"
+                    )
                     prot_name = col9.split(";")[0].split("=")[1]
-                    prokka_data[prot_name] = {"contig": contig, "start": start, "end": end, "strand": strand}
+                    prokka_data[prot_name] = {
+                        "contig": contig,
+                        "start": start,
+                        "end": end,
+                        "strand": strand,
+                    }
     return prokka_data
 
 
@@ -53,9 +60,23 @@ def print_systems_to_file(system_path, gene_results, outfile, df_version, prokka
         writer.writerow(["##gff-version 3"])
         for line in file_in:
             if line.lower().startswith("sys_id"):
-                sys_id_index, type_index, subtype_index, sys_beg_index, sys_end_index, protein_in_syst_index = [
+                (
+                    sys_id_index,
+                    type_index,
+                    subtype_index,
+                    sys_beg_index,
+                    sys_end_index,
+                    protein_in_syst_index,
+                ) = [
                     line.strip().split().index(field)
-                    for field in ["sys_id", "type", "subtype", "sys_beg", "sys_end", "protein_in_syst"]
+                    for field in [
+                        "sys_id",
+                        "type",
+                        "subtype",
+                        "sys_beg",
+                        "sys_end",
+                        "protein_in_syst",
+                    ]
                 ]
             else:
                 cols = line.strip().split("\t")
@@ -104,7 +125,8 @@ def load_genes(gene_path):
             if line.lower().startswith("replicon"):
                 # get indices of fields
                 acc_index, gene_index, hit_status = [
-                    line.strip().split().index(field) for field in ["hit_id", "gene_name", "hit_status"]
+                    line.strip().split().index(field)
+                    for field in ["hit_id", "gene_name", "hit_status"]
                 ]
             else:
                 fields = line.strip().split()
@@ -127,7 +149,9 @@ def get_files(input_folder):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=("The script takes Defense Finder output and parses it to create a standalone GFF.")
+        description=(
+            "The script takes Defense Finder output and parses it to create a standalone GFF."
+        )
     )
     parser.add_argument(
         "-i",

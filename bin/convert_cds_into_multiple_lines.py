@@ -40,9 +40,15 @@ def split_cds_to_gene_exon_mrna(entry):
             gene_id = attributes_dict["ID"]  # use the cds ID as the gene ID
 
         gene_entry[8] = edit_id_add_parent(attributes_dict, gene_id)
-        mrna_entry[8] = edit_id_add_parent(attributes_dict, f"transcript:{gene_id}", gene_id)
-        exon_entry[8] = edit_id_add_parent(attributes_dict, f"exon:{gene_id}", f"transcript:{gene_id}")
-        cds_entry[8] = edit_id_add_parent(attributes_dict, f"CDS:{gene_id}", f"transcript:{gene_id}")
+        mrna_entry[8] = edit_id_add_parent(
+            attributes_dict, f"transcript:{gene_id}", gene_id
+        )
+        exon_entry[8] = edit_id_add_parent(
+            attributes_dict, f"exon:{gene_id}", f"transcript:{gene_id}"
+        )
+        cds_entry[8] = edit_id_add_parent(
+            attributes_dict, f"CDS:{gene_id}", f"transcript:{gene_id}"
+        )
 
         return [gene_entry, mrna_entry, exon_entry, cds_entry]
     else:
@@ -58,7 +64,9 @@ def edit_id_add_parent(attributes_dict, id, parent=None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Split CDS entries in a GFF file into gene, exon, and mRNA entries")
+    parser = argparse.ArgumentParser(
+        description="Split CDS entries in a GFF file into gene, exon, and mRNA entries"
+    )
     parser.add_argument("-i", dest="input_file", required=True, help="Input GFF file")
     parser.add_argument("-o", dest="output_file", required=True, help="Output GFF file")
     args = parser.parse_args()

@@ -9,7 +9,7 @@ process DETECT_RRNA {
 
     input:
     tuple val(meta), path(fasta)
-    path cm_models
+    tuple path(cm_models), val(rfam_version)
 
     output:
     path "results_folder/*.out", type: "file", emit: rrna_out_results
@@ -85,6 +85,7 @@ process DETECT_RRNA {
         tRNAscan-SE: \$(echo \$(tRNAscan-SE -h 2>&1) | grep -o "tRNAscan-SE [0-9].[0-9].[0-9]" | sed 's/tRNAscan-SE //')
         cmsearch: \$(cmsearch -h | grep -o '^# INFERNAL [0-9.]*' | sed 's/^# INFERNAL *//')
         cmsearch_tblout_deoverlap: 465b5026271
+        Rfam version: $rfam_version
     END_VERSIONS
     """
 }

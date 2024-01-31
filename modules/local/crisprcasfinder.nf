@@ -15,7 +15,7 @@ process CRISPRCAS_FINDER {
 
     script:
     """
-    # CRISPRCasFinder doesn't like it if the folder is there already, which could happen 
+    # CRISPRCasFinder doesn't like it if the folder is there already, which could happen
     # when retrying this process
     rm -rf crisprcasfinder_results || true
 

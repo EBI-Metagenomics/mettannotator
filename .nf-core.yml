@@ -14,7 +14,7 @@ lint:
     - conf/igenomes.config
     - .github/workflows/awstest.yml
     - .github/workflows/awsfulltest.yml
-    - ci.yml
+    - .github/workflows/ci.yml
   files_unchanged:
     - LICENSE
     - CODE_OF_CONDUCT.md

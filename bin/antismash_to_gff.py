@@ -122,13 +122,20 @@ def build_gff(regions_json, antismash_version):
                 "+" if orf.strand == 1 else "-",
                 ".",
                 ";".join(
-                    [f"ID={orf.locus_tag}", f"Parent={bgc.bgc_name}", f"product={orf.product}", f"function={orf.type}"]
+                    [
+                        f"ID={orf.locus_tag}",
+                        f"Parent={bgc.bgc_name}",
+                        f"product={orf.product}",
+                        f"function={orf.type}",
+                    ]
                 ),
             ]
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Build an antiSMASH gff from the gbk and regionsjs json~fied file")
+    parser = argparse.ArgumentParser(
+        description="Build an antiSMASH gff from the gbk and regionsjs json~fied file"
+    )
     parser.add_argument(
         "-r",
         dest="regions",
