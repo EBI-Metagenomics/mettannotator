@@ -142,7 +142,7 @@
         },
         "dbcan_db_version": {
           "type": "string",
-          "default": "4.0",
+          "default": "4.1.3_V12",
           "description": "The dbCAN reference database version."
         }
       }
