@@ -29,21 +29,30 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { LOOKUP_KINGDOM } from '../modules/local/lookup_kingdom'
-include { PROKKA } from '../modules/local/prokka'
-include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF } from '../modules/local/amrfinder_plus'
-include { DEFENSE_FINDER } from '../modules/local/defense_finder'
-include { CRISPRCAS_FINDER } from '../modules/local/crisprcasfinder'
-include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS } from '../modules/local/eggnog'
+include { LOOKUP_KINGDOM                             } from '../modules/local/lookup_kingdom'
+include { PROKKA                                     } from '../modules/local/prokka'
+include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
+include { DEFENSE_FINDER                             } from '../modules/local/defense_finder'
+include { CRISPRCAS_FINDER                           } from '../modules/local/crisprcasfinder'
+include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
-include { INTERPROSCAN } from '../modules/local/interproscan'
-include { DETECT_RRNA } from '../modules/local/detect_rrna'
-include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
-include { SANNTIS } from '../modules/local/sanntis'
-include { UNIFIRE } from '../modules/local/unifire'
-include { ANNOTATE_GFF } from '../modules/local/annotate_gff'
-include { ANTISMASH } from '../modules/local/antismash'
-include { DBCAN } from '../modules/local/dbcan'
+include { INTERPROSCAN                               } from '../modules/local/interproscan'
+include { DETECT_RRNA                                } from '../modules/local/detect_rrna'
+include { DETECT_NCRNA                               } from '../modules/local/detect_ncrna'
+include { SANNTIS                                    } from '../modules/local/sanntis'
+include { UNIFIRE                                    } from '../modules/local/unifire'
+include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
+include { ANTISMASH                                  } from '../modules/local/antismash'
+include { DBCAN                                      } from '../modules/local/dbcan'
+
+include { AMRFINDER_PLUS_GETDB                       } from '../modules/local/amrfinder_plus_getdb'
+include { ANTISMASH_GETDB                            } from '../modules/local/antismash_getdb'
+include { DBCAN_GETDB                                } from '../modules/local/dbcan_getdb'
+include { DEFENSE_FINDER_GETDB                       } from '../modules/local/defense_finder_getdb'
+include { EGGNOG_MAPPER_GETDB                        } from '../modules/local/eggnog_getdb'
+include { INTEPROSCAN_GETDB                          } from '../modules/local/interproscan_getdb'
+include { RFAM_GETMODELS                             } from '../modules/local/rfam_getmodels'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -68,20 +77,82 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 /* --  Create channels for reference databases  -- */
 /////////////////////////////////////////////////////
 
-ch_interproscan_db = file(params.interproscan_db)
+amrfinder_plus_db = channel.empty()
 
-ch_eggnog_db = file(params.eggnog_db)
-ch_eggnog_diamond_db = file(params.eggnong_diamond_db)
-ch_eggnog_data_dir = file(params.eggnong_data_dir)
+defense_finder_db = channel.empty()
+dbcan_db = channel.empty()
 
-ch_rfam_rrna_models = file(params.rfam_rrna_models)
-ch_rfam_ncrna_models = file(params.rfam_ncrna_models)
+interproscan_db = channel.empty()
 
-ch_amrfinder_plus_db = file(params.amrfinder_plus_db)
+eggnog_db = channel.empty()
+eggnog_diamond_db = channel.empty()
+eggnog_data_dir = channel.empty()
 
-ch_defense_finder_db = file(params.defense_finder_db)
+rfam_rrna_models = channel.empty()
+rfam_ncrna_models = channel.empty()
 
-ch_dbcan_db = file(params.dbcan_db)
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    DOWNLOAD DATABASES AUX WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow DOWNLOAD_DATABASES {
+
+    main:
+        amrfinder_plus_db = file("$params.dbs/amrfinder_db")
+
+        defense_finder_db = file("$params.dbs/defense_finder_db")
+
+        dbcan_db = file("$params.dbs/dbcan_db")
+
+        interproscan_db = file("$params.dbs/interproscan_db")
+
+        eggnog_data_dir = file("$params.dbs/eggng_db")
+        eggnog_db = file("$params.dbs/eggng_db/eggng.db")
+        eggnog_diamond_db = file("$params.dbs/eggng_db/eggnog_proteins.dmnd")
+
+        rfam_rrna_models = file("$params.dbs/rfam_rrna_models")
+        rfam_ncrna_models = file("$params.dbs/rfam_ncrna_models")
+
+        if (!amrfinder_plus_db.exists()) {
+            AMRFINDER_PLUS_GETDB()
+            amrfinder_plus_db = AMRFINDER_PLUS_GETDB.out.amrfinder_plus_db
+        }
+        if (!defense_finder_db.exists()) {
+            DEFENSE_FINDER_GETDB()
+            defense_finder_db = DEFENSE_FINDER_GETDB.out.defense_finder_db
+        }
+        if (!dbcan_db.exists()) {
+            DBCAN_GETDB()
+            dbcan_db = DBCAN_GETDB.out.dbcan_db
+        }
+        if (!interproscan_db.exists()) {
+            INTEPROSCAN_GETDB()
+            interproscan_db = INTEPROSCAN_GETDB.out.interproscan_db
+        }
+        if (!eggnog_data_dir.exists()) {
+            EGGNOG_MAPPER_GETDB()
+            eggnog_data_dir = EGGNOG_MAPPER_GETDB.out.eggnog_data_dir
+            eggnog_db = EGGNOG_MAPPER_GETDB.out.eggng_db
+            eggnog_diamond_db = EGGNOG_MAPPER_GETDB.out.eggnog_diamond_db
+        }
+        if (!rfam_rrna_models.exists() || !rfam_ncrna_models.exists()) {
+            rfam_rrna_models = file("$params.dbs/rfam_rrna_models")
+            rfam_ncrna_models = file("$params.dbs/rfam_ncrna_models")
+        }
+    emit:
+        amrfinder_plus_db = amrfinder_plus_db
+        defense_finder_db = defense_finder_db
+        dbcan_db = dbcan_db
+        interproscan_db = interproscan_db
+        eggnog_data_dir = eggnog_data_dir
+        eggnog_db = eggnog_db
+        eggnog_diamond_db = eggnog_diamond_db
+        rfam_rrna_models = rfam_rrna_models
+        rfam_ncrna_models = rfam_ncrna_models
+
+}
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,6 +164,41 @@ ch_dbcan_db = file(params.dbcan_db)
 def multiqc_report = []
 
 workflow METTANNOTATOR {
+
+    if (params.dbs) {
+        // Download databases (if needed) //
+        DOWNLOAD_DATABASES()
+
+        amrfinder_plus_db = DOWNLOAD_DATABASES.out.amrfinder_plus_db
+
+        defense_finder_db = DOWNLOAD_DATABASES.out.defense_finder_db
+
+        dbcan_db = DOWNLOAD_DATABASES.out.dbcan_db
+
+        interproscan_db = DOWNLOAD_DATABASES.out.interproscan_db
+
+        eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
+        eggnog_diamond_db = DOWNLOAD_DATABASES.out.eggnog_diamond_db
+        eggnog_data_dir = DOWNLOAD_DATABASES.out.eggnog_data_dir
+
+        rfam_rrna_models = DOWNLOAD_DATABASES.out.rfam_rrna_models
+        rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
+    } else {
+        // Use the parametrized folders and files for the databases //
+        amrfinder_plus_db = file(params.amrfinder_plus_db, checkIfExists: true)
+
+        defense_finder_db = file(params.defense_finder_db, checkIfExists: true)
+        dbcan_db = file(params.dbcan_db, checkIfExists: true)
+
+        interproscan_db = file(params.interproscan_db, checkIfExists: true)
+
+        eggnog_db = file(params.eggnog_db, checkIfExists: true)
+        eggnog_diamond_db = file(params.eggnong_diamond_db, checkIfExists: true)
+        eggnog_data_dir = file(params.eggnong_data_dir, checkIfExists: true)
+
+        rfam_rrna_models = file(params.rfam_rrna_models, checkIfExists: true)
+        rfam_ncrna_models = file(params.rfam_ncrna_models, checkIfExists: true)
+    }
 
     ch_versions = Channel.empty()
 
@@ -125,9 +231,9 @@ workflow METTANNOTATOR {
     EGGNOG_MAPPER_ORTHOLOGS(
         proteins_for_emapper_orth,
         Channel.value("mapper"),
-        ch_eggnog_db,
-        ch_eggnog_diamond_db,
-        ch_eggnog_data_dir
+        eggnog_db,
+        eggnog_diamond_db,
+        eggnog_data_dir
     )
 
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ORTHOLOGS.out.versions.first())
@@ -142,16 +248,16 @@ workflow METTANNOTATOR {
     EGGNOG_MAPPER_ANNOTATIONS(
         orthologs_for_annotations,
         Channel.value("annotations"),
-        ch_eggnog_db,
-        ch_eggnog_diamond_db,
-        ch_eggnog_data_dir
+        eggnog_db,
+        eggnog_diamond_db,
+        eggnog_data_dir
     )
 
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
     INTERPROSCAN(
         PROKKA.out.faa,
-        ch_interproscan_db
+        interproscan_db
     )
 
     ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
@@ -172,7 +278,7 @@ workflow METTANNOTATOR {
 
     DEFENSE_FINDER (
         PROKKA.out.faa.join( PROKKA.out.gff ),
-        ch_defense_finder_db
+        defense_finder_db
     )
 
     ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
@@ -183,14 +289,14 @@ workflow METTANNOTATOR {
 
     DETECT_RRNA(
         PROKKA.out.fna,
-        ch_rfam_rrna_models
+        rfam_rrna_models
     )
 
     ch_versions = ch_versions.mix(DETECT_RRNA.out.versions.first())
 
     DETECT_NCRNA(
         PROKKA.out.fna,
-        ch_rfam_ncrna_models
+        rfam_ncrna_models
     )
 
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
@@ -215,7 +321,7 @@ workflow METTANNOTATOR {
 
     DBCAN(
         PROKKA.out.faa.join( PROKKA.out.gff ),
-        ch_dbcan_db
+        dbcan_db
     )
 
     ch_versions = ch_versions.mix(DBCAN.out.versions.first())

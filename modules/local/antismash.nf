@@ -2,8 +2,6 @@ process ANTISMASH {
 
     tag "${meta.prefix}"
 
-    label "process_low"
-
     container 'quay.io/microbiome-informatics/antismash:7.1.0.1_2'
 
     input:
@@ -12,7 +10,7 @@ process ANTISMASH {
     output:
     tuple val(meta), path("${meta.prefix}_results/${meta.prefix}.gbk"), emit: gbk
     tuple val(meta), path("${meta.prefix}_antismash.tar.gz")          , emit: results_tarball
-    tuple val(meta), path("${meta.prefix}_antismash.gff")                       , emit: gff
+    tuple val(meta), path("${meta.prefix}_antismash.gff")             , emit: gff
     path "versions.yml"                                               , emit: versions
 
     script:
