@@ -51,12 +51,7 @@ nextflow run ebi-metagenomics/mettannotator \
 
 ## Credits
 
-ebi-metagenomics/mettannotator was originally written by @mberacochea.
-
-We thank the following people for their extensive assistance in the development of this pipeline:
-
-- @KateSakharova
-- @tgurbich
+ebi-metagenomics/mettannotator was originally written by the Microbiome Informatics Team at [EMBL-EBI](https://www.ebi.ac.uk/about/teams/microbiome-informatics/)
 
 ## Contributions and Support
 
