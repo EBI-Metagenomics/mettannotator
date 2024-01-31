@@ -58,9 +58,9 @@ include { RFAM_GETMODELS                             } from '../modules/local/rf
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { GECCO_RUN } from '../modules/nf-core/gecco/run/main'
-include { QUAST } from '../modules/nf-core/quast/main'
-include { MULTIQC } from '../modules/nf-core/multiqc/main'
+include { GECCO_RUN                   } from '../modules/nf-core/gecco/run/main'
+include { QUAST                       } from '../modules/nf-core/quast/main'
+include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
