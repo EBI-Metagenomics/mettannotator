@@ -4,8 +4,6 @@ process PROKKA {
 
     container "quay.io/biocontainers/prokka:1.14.6--pl526_0"
 
-    label 'process_light'
-
     input:
     tuple val(meta), path(fasta), path(detected_kingdom)
 

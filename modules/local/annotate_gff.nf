@@ -2,7 +2,7 @@ process ANNOTATE_GFF {
 
     tag "${meta.prefix}"
 
-    label 'process_light'
+    label 'process_nano'
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 

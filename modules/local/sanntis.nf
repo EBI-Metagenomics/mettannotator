@@ -21,6 +21,7 @@ process SANNTIS {
         sanntis \
         --ip-file interproscan.tsv \
         --outfile ${meta.prefix}_sanntis.gff \
+        --cpu ${task.cpus} \
         ${prokka_gbk}
 
         cat <<-END_VERSIONS > versions.yml
