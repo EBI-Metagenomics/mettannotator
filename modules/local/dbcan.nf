@@ -6,14 +6,14 @@ process DBCAN {
 
     input:
     tuple val(meta), path(faa), path(gff)
-    tuple path(dbcan_db), val(db_version)
+    tuple path(dbcan_db, stageAs: "dbcan_db"), val(db_version)
 
     output:
-    tuple val(meta), path("dbcan_results/substrate.out")             , emit: substrates
-    tuple val(meta), path("dbcan_results/cgc_standard.out")          , emit: cgc
-    tuple val(meta), path("dbcan_results/overview.txt")              , emit: overview
-    tuple val(meta), path("dbcan_results/${meta.prefix}_dbcan.gff")  , emit: dbcan_gff
-    path "versions.yml"                                               , emit: versions
+    tuple val(meta), path("dbcan/substrate.out")             , emit: substrates
+    tuple val(meta), path("dbcan/cgc_standard.out")          , emit: cgc
+    tuple val(meta), path("dbcan/overview.txt")              , emit: overview
+    tuple val(meta), path("dbcan/${meta.prefix}_dbcan.gff")  , emit: dbcan_gff
+    path "versions.yml"                                      , emit: versions
 
     script:
     """
@@ -31,14 +31,14 @@ process DBCAN {
         --dia_cpu ${task.cpus} \\
         --hmm_cpu ${task.cpus} \\
         --tf_cpu ${task.cpus} \\
-        --db_dir ${dbcan_db} \\
-        --out_dir dbcan_results \\
+        --db_dir dbcan_db \\
+        --out_dir dbcan \\
         --cgc_substrate \\
         --cluster ${meta.prefix}_noseq.gff \\
         ${faa} \\
         protein
 
-    process_dbcan_result.py -i dbcan_results -o dbcan_results/${meta.prefix}_dbcan.gff -v 4.1.2
+    process_dbcan_result.py -i dbcan -o dbcan/${meta.prefix}_dbcan.gff -v 4.1.2
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
