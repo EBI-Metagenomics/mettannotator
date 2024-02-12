@@ -49,14 +49,6 @@ def main(arba, unirule, pirsr, gff, outfile):
     """
 
 
-# unifire_ec_number=
-# unifire_ontology_term=
-# unifire_chebi=
-# unifire_keywords=
-# unifire_recommended_name=
-# unifire_alternative_name=
-
-
 def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
     fields_dict = {
         "protein.recommendedName.fullName": "uf_prot_rec_fullname",
@@ -103,10 +95,6 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                         if len(combined_dict) > 0:
                             combined_dict = condense_dict(combined_dict)
                             combined_dict = escape_reserved_characters(combined_dict)
-                            # if combined_dict and "xref.GO" in combined_dict:
-                            #    #print("YES", combined_dict)
-                            #    combined_dict["xref.GO"] = ",".join(combined_dict["xref.GO"])
-                            #    #print(combined_dict)
                             added_annot = ""
                             for key, value in combined_dict.items():
                                 if key in fields_dict:
