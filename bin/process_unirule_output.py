@@ -260,31 +260,31 @@ def parse_args():
         "-a",
         dest="arba",
         required=True,
-        help="Arba.",
+        help="Arba predictions output file.",
     )
     parser.add_argument(
         "-u",
         dest="unirule",
         required=True,
-        help=("Unirule."),
+        help=("Unirule predictions output file."),
     )
     parser.add_argument(
         "-p",
         dest="pirsr",
         required=True,
-        help=("Pirsr."),
+        help=("Pirsr predictions output file."),
     )
     parser.add_argument(
         "-g",
         dest="gff",
         required=True,
-        help=("gff."),
+        help=("GFF file to take existing annotations from."),
     )
     parser.add_argument(
         "-o",
         dest="outfile",
         required=True,
-        help=("outfile"),
+        help=("Outfile where the script will print existing annotations with added UniFIRE information"),
     )
     return parser.parse_args()
 
