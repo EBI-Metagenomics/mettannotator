@@ -62,7 +62,7 @@ def reformat_line(line, taxid):
 def parse_args():
     parser = argparse.ArgumentParser(
         description=(
-            "The script reformats the fasta faa file to prepare it for UniRule."
+            "The script reformats the fasta faa file to prepare it for UniFIRE."
         )
     )
     parser.add_argument(
