@@ -64,7 +64,7 @@ def parse_args():
         "-i",
         dest="infolder",
         required=True,
-        help="Folder with uniFIRE outputs.",
+        help="Folder with UniFIRE outputs.",
     )
     parser.add_argument(
         "-o",
