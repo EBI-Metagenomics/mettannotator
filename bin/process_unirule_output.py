@@ -139,13 +139,18 @@ def escape_reserved_characters(combined_dict):
         remove_values = list()
         add_values = list()
         for value in list_of_values:
+            changes_flag = False
+            old_value = value
             if value.endswith(";"):
                 value = value[:-1]
+                changes_flag = True
             for ch in reserved_characters:
                 if ch in value:
-                    remove_values.append(value)
+                    changes_flag = True
                     value = value.replace(ch, "\{}".format(ch))
-                    add_values.append(value)
+            if changes_flag:
+                remove_values.append(old_value)
+                add_values.append(value)
         for v in remove_values:
             list_of_values.remove(v)
         for v in add_values:
