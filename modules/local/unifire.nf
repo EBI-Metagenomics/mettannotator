@@ -3,7 +3,7 @@ process UNIFIRE {
     tag "${meta.prefix}"
 
     container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2023.4"
-    containerOptions "--bind unirule:/volume"
+    containerOptions "--bind unifire:/volume"
 
     input:
     tuple val(meta), path(faa, stageAs: "unifire/*")
