@@ -37,7 +37,7 @@ include { CRISPRCAS_FINDER                           } from '../modules/local/cr
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
 include { INTERPROSCAN                               } from '../modules/local/interproscan'
-include { DETECT_RRNA                                } from '../modules/local/detect_rrna'
+include { DETECT_TRNA                                } from '../modules/local/detect_trna'
 include { DETECT_NCRNA                               } from '../modules/local/detect_ncrna'
 include { SANNTIS                                    } from '../modules/local/sanntis'
 include { UNIFIRE                                    } from '../modules/local/unifire'
@@ -368,12 +368,12 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
-    DETECT_RRNA(
+    DETECT_TRNA(
         PROKKA.out.fna,
         rfam_rrna_models
     )
 
-    ch_versions = ch_versions.mix(DETECT_RRNA.out.versions.first())
+    ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
 
     DETECT_NCRNA(
         PROKKA.out.fna,

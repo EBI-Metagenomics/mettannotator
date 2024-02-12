@@ -1,7 +1,7 @@
 /*
  * Predict bacterial 5S, 16S, 23S rRNA and tRNA genes
 */
-process DETECT_RRNA {
+process DETECT_TRNA {
 
     tag "${meta.prefix}"
 
