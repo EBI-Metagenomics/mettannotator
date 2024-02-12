@@ -220,7 +220,7 @@ def load_unirule_arba(file):
             if not line.startswith("Evidence"):
                 parts = line.strip().split("\t")
                 if len(parts) == 6:
-                    pass
+                    pass  # skip feature lines with start and end coordinates
                 else:
                     evidence, protein_id, annot_type, value = line.strip().split("\t")
                 if (
