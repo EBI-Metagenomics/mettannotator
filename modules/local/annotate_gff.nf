@@ -70,7 +70,7 @@ process ANNOTATE_GFF {
     ${eggnog_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} \
     ${antismash_flag} ${gecco_flag} ${dbcan_flag} ${df_flag}
 
-    process_unirule_output.py \\
+    process_unifire_output.py \\
     -g ${meta.prefix}_temp.gff \\
     -a ${arba} \\
     -u ${unirule} \\
