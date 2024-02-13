@@ -49,14 +49,6 @@ def main(arba, unirule, pirsr, gff, outfile):
     """
 
 
-# unifire_ec_number=
-# unifire_ontology_term=
-# unifire_chebi=
-# unifire_keywords=
-# unifire_recommended_name=
-# unifire_alternative_name=
-
-
 def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
     fields_dict = {
         "protein.recommendedName.fullName": "uf_prot_rec_fullname",
@@ -92,7 +84,6 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                     )
                     if feature == "CDS":
                         id = get_id(col9)
-                        # print("\n{}".format(id))
                         combined_dict = dict()
                         for db_dict in list_of_dicts:
                             if id in db_dict:
@@ -104,19 +95,12 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
                         if len(combined_dict) > 0:
                             combined_dict = condense_dict(combined_dict)
                             combined_dict = escape_reserved_characters(combined_dict)
-                            # if combined_dict and "xref.GO" in combined_dict:
-                            #    #print("YES", combined_dict)
-                            #    combined_dict["xref.GO"] = ",".join(combined_dict["xref.GO"])
-                            #    #print(combined_dict)
                             added_annot = ""
-                            # print(id, combined_dict)
                             for key, value in combined_dict.items():
                                 if key in fields_dict:
                                     added_annot += ";{}={}".format(
                                         fields_dict[key], ",".join(value)
                                     )
-                            # print(added_annot)
-                            # print("\n\n")
                             new_col_9 = col9 + added_annot
                             writer.writerow(
                                 [
@@ -143,11 +127,18 @@ def escape_reserved_characters(combined_dict):
         remove_values = list()
         add_values = list()
         for value in list_of_values:
+            changes_flag = False
+            old_value = value
+            if value.endswith(";"):
+                value = value[:-1]
+                changes_flag = True
             for ch in reserved_characters:
                 if ch in value:
-                    remove_values.append(value)
+                    changes_flag = True
                     value = value.replace(ch, "\{}".format(ch))
-                    add_values.append(value)
+            if changes_flag:
+                remove_values.append(old_value)
+                add_values.append(value)
         for v in remove_values:
             list_of_values.remove(v)
         for v in add_values:
@@ -159,12 +150,10 @@ def escape_reserved_characters(combined_dict):
 
 def condense_dict(combined_dict):
     for key, list_to_condense in combined_dict.items():
-        # print("Before: {}{}".format(key, list_to_condense))
         list_to_condense = list(set(list_to_condense))
         if key == "keyword":
             list_to_condense = collapse_keywords(list_to_condense)
         combined_dict[key] = list_to_condense
-        # print("After: {}{}".format(key, list_to_condense))
     return combined_dict
 
 
@@ -219,7 +208,7 @@ def load_unirule_arba(file):
             if not line.startswith("Evidence"):
                 parts = line.strip().split("\t")
                 if len(parts) == 6:
-                    pass
+                    pass  # skip feature lines with start and end coordinates
                 else:
                     evidence, protein_id, annot_type, value = line.strip().split("\t")
                 if (
@@ -240,7 +229,6 @@ def load_unirule_arba(file):
 
 
 def collapse_keywords(keyword_list):
-    # print("\nKeywords before", keyword_list)
     collapsed_list = list()
 
     for keyword in keyword_list:
@@ -251,41 +239,40 @@ def collapse_keywords(keyword_list):
         if not redundant:
             collapsed_list.append(keyword)
     collapsed_list = list(set(collapsed_list))
-    # print("Keywords after", collapsed_list)
     return collapsed_list
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description=("Placeholder"))
+    parser = argparse.ArgumentParser(description=("A script that processes UniFIRE outputs."))
     parser.add_argument(
         "-a",
         dest="arba",
         required=True,
-        help="Arba.",
+        help="Arba predictions output file.",
     )
     parser.add_argument(
         "-u",
         dest="unirule",
         required=True,
-        help=("Unirule."),
+        help=("Unirule predictions output file."),
     )
     parser.add_argument(
         "-p",
         dest="pirsr",
         required=True,
-        help=("Pirsr."),
+        help=("Pirsr predictions output file."),
     )
     parser.add_argument(
         "-g",
         dest="gff",
         required=True,
-        help=("gff."),
+        help=("GFF file to take existing annotations from."),
     )
     parser.add_argument(
         "-o",
         dest="outfile",
         required=True,
-        help=("outfile"),
+        help=("Outfile where the script will print existing annotations with added UniFIRE information"),
     )
     return parser.parse_args()
 
