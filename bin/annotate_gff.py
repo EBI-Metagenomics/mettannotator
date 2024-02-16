@@ -24,6 +24,12 @@ def get_iprs(ipr_annot):
         for line in f:
             cols = line.strip().split("\t")
             protein = cols[0]
+            try:
+                evalue = float(cols[8])
+            except:
+                continue
+            if evalue > 1e-10:
+                continue
             if protein not in iprs:
                 iprs[protein] = [set(), set()]
             if cols[3] == "Pfam":
