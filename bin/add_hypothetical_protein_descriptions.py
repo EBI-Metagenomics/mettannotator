@@ -124,13 +124,15 @@ def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only
 
 def get_description_and_source(my_dict, ipr_type):
     if "NCBIfam" in my_dict[ipr_type]:
-        func_description = pull_out_description(my_dict[ipr_type]["NCBIfam"], "sig_desc", "ipr_desc")
-        return func_description, "NCBIfam"
+        func_description, source = pull_out_description(my_dict[ipr_type]["NCBIfam"], "sig_desc", "ipr_desc")
+        source_description = format_source("NCBIfam", source)
+        return func_description, source_description
     elif any(key.lower() not in {'superfamily', 'gene3d'} for key in my_dict[ipr_type]):
         highest_match = get_best_match(my_dict[ipr_type])
         db = next(iter(highest_match))
-        func_description = pull_out_description(highest_match[db], "ipr_desc", "sig_desc")
-        return func_description, "{}".format(db)
+        func_description, source = pull_out_description(highest_match[db], "ipr_desc", "sig_desc")
+        source_description = format_source(db, source)
+        return func_description, source_description
     else:
         return "", ""
 
@@ -138,11 +140,20 @@ def get_description_and_source(my_dict, ipr_type):
 def get_superfamily_info(my_dict):
     if len(my_dict.keys()) == 1:
         db = next(iter(my_dict.keys()))
-        description = pull_out_description(my_dict[db], "ipr_desc", "sig_desc")
+        description, source = pull_out_description(my_dict[db], "ipr_desc", "sig_desc")
+        source_description = format_source(db, source)
     else:
         db = find_higher_match(my_dict)
-        description = pull_out_description(my_dict[db], "ipr_desc", "sig_desc")
-    return description, db
+        description, source = pull_out_description(my_dict[db], "ipr_desc", "sig_desc")
+        source_description = format_source(db, source)
+    return description, source_description
+
+
+def format_source(db, source):
+    if source == "ipr_desc":
+        return "InterPro({})".format(db)
+    else:
+        return db
 
 
 def get_best_match(ipr_dict):
@@ -179,9 +190,9 @@ def find_higher_match(my_dict):
 
 def pull_out_description(my_dict, first_priority, second_priority):
     if not my_dict[first_priority] == "-":
-        return my_dict[first_priority]
+        return my_dict[first_priority], first_priority
     else:
-        return my_dict[second_priority]
+        return my_dict[second_priority], second_priority
 
 
 def load_eggnog(file):
@@ -276,11 +287,38 @@ def save_to_dict(res_dict, acc, db, perc_match, ipr_description, sig_description
 
 
 def escape_reserved_characters(string):
-    reserved_characters = [";", "=", "&", ","]
+    string = replace_commas(string)
+    reserved_characters = [";", "=", "&"]
     for ch in reserved_characters:
         if ch in string:
             string = string.replace(ch, "\{}".format(ch))
     return string
+
+
+def is_comma_surrounded_by_digits(text):
+    for i in range(1, len(text) - 1):
+        if text[i] == ',' and text[i - 1].isdigit() and text[i + 1].isdigit():
+            return True
+    return False
+
+
+def replace_commas(input_string):
+    if ',' not in input_string:
+        # If there are no commas, do nothing
+        return input_string
+    result = ""
+    i = 0
+    while i < len(input_string):
+        if input_string[i] == ',':
+            if is_comma_surrounded_by_digits(input_string[i - 1:i + 2]):
+                result += '%2C'
+            else:
+                result += '/'
+            i += 1  # Skip the next character as it's already processed
+        else:
+            result += input_string[i]
+            i += 1
+    return result
 
 
 def reformat_domain(string):
