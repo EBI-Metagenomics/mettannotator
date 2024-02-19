@@ -51,6 +51,7 @@ include { DBCAN_GETDB                                } from '../modules/local/db
 include { DEFENSE_FINDER_GETDB                       } from '../modules/local/defense_finder_getdb'
 include { EGGNOG_MAPPER_GETDB                        } from '../modules/local/eggnog_getdb'
 include { INTEPROSCAN_GETDB                          } from '../modules/local/interproscan_getdb'
+include { INTEPRO_ENTRY_LIST_GETDB                   } from '../modules/local/interpro_list_getdb'
 include { RFAM_GETMODELS                             } from '../modules/local/rfam_getmodels'
 
 /*
@@ -83,6 +84,7 @@ defense_finder_db = channel.empty()
 dbcan_db = channel.empty()
 
 interproscan_db = channel.empty()
+interpro_entry_list = channel.empty()
 
 eggnog_db = channel.empty()
 eggnog_diamond_db = channel.empty()
@@ -106,6 +108,7 @@ workflow DOWNLOAD_DATABASES {
         defense_finder_db = channel.empty()
         dbcan_db = channel.empty()
         interproscan_db = channel.empty()
+        interpro_entry_list = channel.empty()
         eggnog_db = channel.empty()
 
         amrfinder_plus_dir = file("$params.dbs/amrfinder/")
@@ -113,6 +116,7 @@ workflow DOWNLOAD_DATABASES {
         defense_finder_dir = file("$params.dbs/defense_finder/")
         dbcan_dir = file("$params.dbs/dbcan/")
         interproscan_dir = file("$params.dbs/interproscan")
+        interpro_entry_list_dir = file("$params.dbs/ipr-entry-lists/")
         eggnog_data_dir = file("$params.dbs/eggnog")
         rfam_rrna_models = file("$params.dbs/rfam_models/rfam_rrna_cms")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
@@ -173,6 +177,17 @@ workflow DOWNLOAD_DATABASES {
             interproscan_db = INTEPROSCAN_GETDB.out.interproscan_db.first()
         }
 
+        if (interpro_entry_list_dir.exists()) {
+            log.info("InterPro entry list file exists, or at least the expected folder.")
+            interpro_entry_list = tuple(
+                interpro_entry_list_dir,
+                file("${interpro_entry_list_dir}/VERSION.txt", checkIfExists: true).text // the DB version
+            )
+        } else {
+            INTEPRO_ENTRY_LIST_GETDB()
+            interpro_entry_list = INTEPRO_ENTRY_LIST_GETDB.out.interpro_entry_list.first()
+        }
+
         if (eggnog_data_dir.exists()) {
             log.info("EggNOG mapper database exists, or at least the expected folder.")
             eggnog_data = tuple(
@@ -181,13 +196,13 @@ workflow DOWNLOAD_DATABASES {
             )
         } else {
             EGGNOG_MAPPER_GETDB()
-            eggnog_db = EGGNOG_MAPPER_GETDB.out.eggnog_db
+            eggnog_db = EGGNOG_MAPPER_GETDB.out.eggnog_db.first()
         }
 
         if (!rfam_rrna_models.exists() || !rfam_ncrna_models.exists()) {
             RFAM_GETMODELS()
-            rfam_rrna_models = RFAM_GETMODELS.out.rfam_rrna_cms
-            rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms
+            rfam_rrna_models = RFAM_GETMODELS.out.rfam_rrna_cms.first()
+            rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms.first()
         } else {
             log.info("RFam model files exists, or at least the expected folders.")
             rfam_rrna_models = tuple(
@@ -205,6 +220,7 @@ workflow DOWNLOAD_DATABASES {
         defense_finder_db = defense_finder_db
         dbcan_db = dbcan_db
         interproscan_db = interproscan_db
+        interpro_entry_list = interpro_entry_list
         eggnog_db = eggnog_db
         rfam_rrna_models = rfam_rrna_models
         rfam_ncrna_models = rfam_ncrna_models
@@ -235,6 +251,8 @@ workflow METTANNOTATOR {
         dbcan_db = DOWNLOAD_DATABASES.out.dbcan_db
 
         interproscan_db = DOWNLOAD_DATABASES.out.interproscan_db
+
+        interpro_entry_list = DOWNLOAD_DATABASES.out.interpro_entry_list
 
         eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
 
@@ -435,7 +453,8 @@ workflow METTANNOTATOR {
             UNIFIRE.out.unirule, remainder: true
         ).join(
             UNIFIRE.out.pirsr, remainder: true
-        )
+        ),
+        interpro_entry_list
     )
 
     ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())

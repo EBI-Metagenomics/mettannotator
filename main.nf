@@ -39,6 +39,7 @@ if (params.dbs == null && (
     params.defense_finder_db == null ||
     params.dbcan_db == null ||
     params.interproscan_db == null ||
+    params.interpro_entry_list == null ||
     params.eggnog_db == null ||
     params.rfam_rrna_models == null ||
     params.rfam_ncrna_models == null
