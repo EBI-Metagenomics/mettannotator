@@ -1,4 +1,4 @@
-process INTEPRO_LIST_GETDB {
+process INTEPRO_ENTRY_LIST_GETDB {
 
     tag "InterPro Entry List 94.0"
 
