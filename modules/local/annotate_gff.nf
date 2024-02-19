@@ -94,7 +94,7 @@ process ANNOTATE_GFF {
 
     stub:
     """
-    touch ${meta.prefix}_annotated.gff
+    touch ${meta.prefix}_annotations.gff
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
