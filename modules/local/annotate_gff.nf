@@ -22,6 +22,7 @@ process ANNOTATE_GFF {
         file(arba),
         file(unirule),
         file(pirsr)
+    tuple path(interpro_entry_list), val(db_version)
 
     output:
     tuple val(meta), path("*_annotations.gff"), emit: annotated_gff
@@ -75,6 +76,13 @@ process ANNOTATE_GFF {
     -a ${arba} \\
     -u ${unirule} \\
     -p ${pirsr} \\
+    -o ${meta.prefix}_temp_with_unifire.gff
+
+    add_hypothetical_protein_descriptions.py \\
+    --ipr-entries ${interpro_entry_list}/entry.list \\
+    --ipr-output ${ips_annotations_tsv} \\
+    --eggnog-output ${eggnog_annotations_tsv} \\
+    -i ${meta.prefix}_temp_with_unifire.gff \\
     -o ${meta.prefix}_annotations.gff
 
 
