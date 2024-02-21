@@ -31,23 +31,50 @@ def main(ipr_types_file, ipr_file, eggnog_file, infile, outfile):
                     fasta_flag = True
                     file_out.write(line)
                 elif not line.startswith("#"):
-                    contig, tool, feature, start, end, blank1, strand, blank2, col9 = line.strip().split("\t")
+                    contig, tool, feature, start, end, blank1, strand, blank2, col9 = (
+                        line.strip().split("\t")
+                    )
                     if feature == "CDS":
                         attributes_dict = dict(
-                            re.split(r'(?<!\\)=', item) for item in re.split(r'(?<!\\);', col9))
+                            re.split(r"(?<!\\)=", item)
+                            for item in re.split(r"(?<!\\);", col9)
+                        )
                         if attributes_dict["product"] == "hypothetical protein":
-                            found_function, function_source = get_function(attributes_dict["ID"], attributes_dict,
-                                                                           eggnog_info, ipr_info, ipr_memberdb_only)
+                            found_function, function_source = get_function(
+                                attributes_dict["ID"],
+                                attributes_dict,
+                                eggnog_info,
+                                ipr_info,
+                                ipr_memberdb_only,
+                            )
                             found_function = escape_reserved_characters(found_function)
                             if "domain" in found_function.lower():
                                 found_function = reformat_domain(found_function)
                             attributes_dict["product"] = found_function
-                            attributes_dict = insert_product_source(attributes_dict, function_source)
+                            attributes_dict = insert_product_source(
+                                attributes_dict, function_source
+                            )
                         else:
-                            attributes_dict = insert_product_source(attributes_dict, "Prokka")
+                            attributes_dict = insert_product_source(
+                                attributes_dict, "Prokka"
+                            )
                         col9_updated = update_col9(attributes_dict)
-                        file_out.write("\t".join([contig, tool, feature, start, end, blank1, strand, blank2,
-                                                 col9_updated]) + "\n")
+                        file_out.write(
+                            "\t".join(
+                                [
+                                    contig,
+                                    tool,
+                                    feature,
+                                    start,
+                                    end,
+                                    blank1,
+                                    strand,
+                                    blank2,
+                                    col9_updated,
+                                ]
+                            )
+                            + "\n"
+                        )
                     else:
                         file_out.write(line)
                 else:
@@ -57,18 +84,21 @@ def main(ipr_types_file, ipr_file, eggnog_file, infile, outfile):
 
 
 def update_col9(attributes_dict):
-    return ';'.join([f'{key}={value}' for key, value in attributes_dict.items()])
+    return ";".join([f"{key}={value}" for key, value in attributes_dict.items()])
 
 
 def insert_product_source(my_dict, source):
     keys_list = list(my_dict.keys())
-    product_index = keys_list.index('product')
-    return {k: my_dict[k] for k in keys_list[:product_index + 1]} | {"product_source": source} | \
-           {k: my_dict[k] for k in keys_list[product_index + 1:]}
+    product_index = keys_list.index("product")
+    return (
+        {k: my_dict[k] for k in keys_list[: product_index + 1]}
+        | {"product_source": source}
+        | {k: my_dict[k] for k in keys_list[product_index + 1 :]}
+    )
 
 
 def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only):
-    '''
+    """
     Identify function by carrying it over from a db match. The following priority is used:
     Priority 1: UniFIRE protein recommended full name
     Priority 2: InterPro Family (NCBIfam)
@@ -87,7 +117,7 @@ def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only
     :param ipr_info: InterPro annotation
     :param ipr_memberdb_only: annotations that don't have IPR accessions but are from InterPro member databases
     :return: function, source db
-    '''
+    """
 
     if "uf_prot_rec_fullname" in attributes_dict:
         return attributes_dict["uf_prot_rec_fullname"], "UniFIRE"
@@ -100,16 +130,22 @@ def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only
         if func_description:
             return func_description, source
     if acc in ipr_memberdb_only:
-        func_description, source = get_description_and_source(ipr_memberdb_only[acc], "no_type")
+        func_description, source = get_description_and_source(
+            ipr_memberdb_only[acc], "no_type"
+        )
         if func_description:
             return func_description, source
     if acc in ipr_info and "Homologous_superfamily" in ipr_info[acc]:
-        func_description, source = get_superfamily_info(ipr_info[acc]["Homologous_superfamily"])
+        func_description, source = get_superfamily_info(
+            ipr_info[acc]["Homologous_superfamily"]
+        )
         if func_description:
             return func_description, source
-    if acc in ipr_memberdb_only and \
-            any(db in {"SUPERFAMILY", "Gene3D"} for db in ipr_memberdb_only[acc]["no_type"].keys()):
-        selected_keys = ['SUPERFAMILY', 'Gene3D']
+    if acc in ipr_memberdb_only and any(
+        db in {"SUPERFAMILY", "Gene3D"}
+        for db in ipr_memberdb_only[acc]["no_type"].keys()
+    ):
+        selected_keys = ["SUPERFAMILY", "Gene3D"]
         subset_dict = dict()
         for key in selected_keys:
             if key in ipr_memberdb_only[acc]["no_type"]:
@@ -124,13 +160,17 @@ def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only
 
 def get_description_and_source(my_dict, ipr_type):
     if "NCBIfam" in my_dict[ipr_type]:
-        func_description, source = pull_out_description(my_dict[ipr_type]["NCBIfam"], "sig_desc", "ipr_desc")
+        func_description, source = pull_out_description(
+            my_dict[ipr_type]["NCBIfam"], "sig_desc", "ipr_desc"
+        )
         source_description = format_source("NCBIfam", source)
         return func_description, source_description
-    elif any(key.lower() not in {'superfamily', 'gene3d'} for key in my_dict[ipr_type]):
+    elif any(key.lower() not in {"superfamily", "gene3d"} for key in my_dict[ipr_type]):
         highest_match = get_best_match(my_dict[ipr_type])
         db = next(iter(highest_match))
-        func_description, source = pull_out_description(highest_match[db], "ipr_desc", "sig_desc")
+        func_description, source = pull_out_description(
+            highest_match[db], "ipr_desc", "sig_desc"
+        )
         source_description = format_source(db, source)
         return func_description, source_description
     else:
@@ -160,8 +200,11 @@ def get_best_match(ipr_dict):
     best_fraction = 0
     highest_match = dict()
     for db in ipr_dict:
-        if not db.lower() in ["superfamily", "gene3d"] and ipr_dict[db]["match"] > best_fraction and \
-                (ipr_dict[db]["sig_desc"] != "-" or ipr_dict[db]["ipr_desc"] != "-"):
+        if (
+            not db.lower() in ["superfamily", "gene3d"]
+            and ipr_dict[db]["match"] > best_fraction
+            and (ipr_dict[db]["sig_desc"] != "-" or ipr_dict[db]["ipr_desc"] != "-")
+        ):
             best_fraction = ipr_dict[db]["match"]
             highest_match = dict()
             highest_match[db] = ipr_dict[db]
@@ -177,8 +220,8 @@ def find_higher_match(my_dict):
         raise ValueError("The superfamily dictionary should have exactly 2 keys.")
 
     key1, key2 = keys
-    match1 = my_dict[key1]['match']
-    match2 = my_dict[key2]['match']
+    match1 = my_dict[key1]["match"]
+    match2 = my_dict[key2]["match"]
 
     if match1 > match2:
         return key1
@@ -207,9 +250,13 @@ def load_eggnog(file):
                     continue
                 if evalue > 1e-10:
                     continue
-                if not cols[7] == "-" and "of unknown function" not in cols[7] and \
-                        "non supervised orthologous group" not in cols[7] and "Psort location" not in cols[7] and \
-                        not cols[7].lower() == "domain, protein":
+                if (
+                    not cols[7] == "-"
+                    and "of unknown function" not in cols[7]
+                    and "non supervised orthologous group" not in cols[7]
+                    and "Psort location" not in cols[7]
+                    and not cols[7].lower() == "domain, protein"
+                ):
                     function = cols[7]
                     # trim function from the left if it doesn't start with a letter or a digit
                     for i, char in enumerate(function):
@@ -237,8 +284,27 @@ def load_ipr(file, ipr_types):
     with open(file, "r") as file_in:
         for line in file_in:
             cols = line.strip().split("\t")
-            acc, len, db, sig_description, start, end, evalue, ipr_acc, ipr_description = \
-            cols[0], cols[2], cols[3], cols[5], cols[6], cols[7], cols[8], cols[11], cols[12]
+            (
+                acc,
+                len,
+                db,
+                sig_description,
+                start,
+                end,
+                evalue,
+                ipr_acc,
+                ipr_description,
+            ) = (
+                cols[0],
+                cols[2],
+                cols[3],
+                cols[5],
+                cols[6],
+                cols[7],
+                cols[8],
+                cols[11],
+                cols[12],
+            )
             if evalue == "-":
                 evalue = 1
             else:
@@ -253,7 +319,7 @@ def load_ipr(file, ipr_types):
                 ipr_description = "-"
             if sig_description == "-" and ipr_description == "-":
                 continue
-            perc_match = (int(end) - int(start))/int(len)
+            perc_match = (int(end) - int(start)) / int(len)
             if perc_match < 0.10:
                 continue
             if not ipr_acc == "-":
@@ -263,14 +329,31 @@ def load_ipr(file, ipr_types):
                     continue  # entry is no longer in InterPro
                 if ipr_type not in ["Domain", "Family", "Homologous_superfamily"]:
                     continue
-                ipr_info = save_to_dict(ipr_info, acc, db, perc_match, ipr_description, sig_description, ipr_type)
+                ipr_info = save_to_dict(
+                    ipr_info,
+                    acc,
+                    db,
+                    perc_match,
+                    ipr_description,
+                    sig_description,
+                    ipr_type,
+                )
             else:
-                ipr_memberdb_only = save_to_dict(ipr_memberdb_only, acc, db, perc_match, ipr_description,
-                                                 sig_description, "no_type")
+                ipr_memberdb_only = save_to_dict(
+                    ipr_memberdb_only,
+                    acc,
+                    db,
+                    perc_match,
+                    ipr_description,
+                    sig_description,
+                    "no_type",
+                )
     return ipr_info, ipr_memberdb_only
 
 
-def save_to_dict(res_dict, acc, db, perc_match, ipr_description, sig_description, ipr_type):
+def save_to_dict(
+    res_dict, acc, db, perc_match, ipr_description, sig_description, ipr_type
+):
     if acc in res_dict and ipr_type in res_dict[acc] and db in res_dict[acc][ipr_type]:
         if perc_match > res_dict[acc][ipr_type][db]["match"]:
             res_dict[acc][ipr_type][db]["match"] = perc_match
@@ -297,23 +380,23 @@ def escape_reserved_characters(string):
 
 def is_comma_surrounded_by_digits(text):
     for i in range(1, len(text) - 1):
-        if text[i] == ',' and text[i - 1].isdigit() and text[i + 1].isdigit():
+        if text[i] == "," and text[i - 1].isdigit() and text[i + 1].isdigit():
             return True
     return False
 
 
 def replace_commas(input_string):
-    if ',' not in input_string:
+    if "," not in input_string:
         # If there are no commas, do nothing
         return input_string
     result = ""
     i = 0
     while i < len(input_string):
-        if input_string[i] == ',':
-            if is_comma_surrounded_by_digits(input_string[i - 1:i + 2]):
-                result += '%2C'
+        if input_string[i] == ",":
+            if is_comma_surrounded_by_digits(input_string[i - 1 : i + 2]):
+                result += "%2C"
             else:
-                result += '/'
+                result += "/"
             i += 1  # Skip the next character as it's already processed
         else:
             result += input_string[i]
@@ -322,8 +405,15 @@ def replace_commas(input_string):
 
 
 def reformat_domain(string):
-    substrings_to_exclude = ["domain-containing", "domain contain", "domain protein",
-                             "domain-related", "domain related", "domain superfamily", "domain family"]
+    substrings_to_exclude = [
+        "domain-containing",
+        "domain contain",
+        "domain protein",
+        "domain-related",
+        "domain related",
+        "domain superfamily",
+        "domain family",
+    ]
     if all(substring not in string.lower() for substring in substrings_to_exclude):
         return string.replace("domain", "domain-containing protein")
     else:
@@ -362,9 +452,7 @@ def parse_args():
         "-o",
         dest="outfile",
         required=True,
-        help=(
-            "Path to the output file where the result will be saved."
-        ),
+        help=("Path to the output file where the result will be saved."),
     )
     return parser.parse_args()
 
@@ -372,9 +460,5 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     main(
-        args.ipr_entries,
-        args.ipr_output,
-        args.eggnog_output,
-        args.infile,
-        args.outfile
+        args.ipr_entries, args.ipr_output, args.eggnog_output, args.infile, args.outfile
     )
