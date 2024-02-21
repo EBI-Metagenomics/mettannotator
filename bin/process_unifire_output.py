@@ -243,7 +243,9 @@ def collapse_keywords(keyword_list):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description=("A script that processes UniFIRE outputs."))
+    parser = argparse.ArgumentParser(
+        description=("A script that processes UniFIRE outputs.")
+    )
     parser.add_argument(
         "-a",
         dest="arba",
@@ -272,7 +274,9 @@ def parse_args():
         "-o",
         dest="outfile",
         required=True,
-        help=("Outfile where the script will print existing annotations with added UniFIRE information"),
+        help=(
+            "Outfile where the script will print existing annotations with added UniFIRE information"
+        ),
     )
     return parser.parse_args()
 
