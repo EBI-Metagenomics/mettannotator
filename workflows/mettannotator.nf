@@ -116,7 +116,7 @@ workflow DOWNLOAD_DATABASES {
         defense_finder_dir = file("$params.dbs/defense_finder/")
         dbcan_dir = file("$params.dbs/dbcan/")
         interproscan_dir = file("$params.dbs/interproscan")
-        interpro_entry_list_dir = file("$params.dbs/ipr-entry-lists/")
+        interpro_entry_list_dir = file("$params.dbs/interproscan_entry_list/")
         eggnog_data_dir = file("$params.dbs/eggnog")
         rfam_rrna_models = file("$params.dbs/rfam_models/rfam_rrna_cms")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
@@ -283,6 +283,11 @@ workflow METTANNOTATOR {
         interproscan_db = tuple(
             file(params.interproscan_db, checkIfExists: true),
             params.interproscan_db_version
+        )
+
+        interpro_entry_list = tuple(
+            file(params.interpro_entry_list, checkIfExists: true),
+            params.interpro_entry_list_version
         )
 
         eggnog_db = tuple(
