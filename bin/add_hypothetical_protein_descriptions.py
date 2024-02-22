@@ -384,7 +384,7 @@ def load_ipr(file, ipr_types, ipr_levels):
                     ipr_description,
                     sig_description,
                     ipr_type,
-                    level
+                    level,
                 )
             else:
                 ipr_memberdb_only = save_to_dict(
@@ -395,7 +395,7 @@ def load_ipr(file, ipr_types, ipr_levels):
                     ipr_description,
                     sig_description,
                     "no_type",
-                    None
+                    None,
                 )
     return ipr_info, ipr_memberdb_only, ipr_leveled_info
 
