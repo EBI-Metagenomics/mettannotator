@@ -68,7 +68,7 @@
         },
         "interpro_entry_list": {
           "type": "string",
-          "format": "file-path",
+          "format": "directory-path",
           "description": "TSV file listing basic InterPro entry information - the accessions, types and names, ftp://ftp.ebi.ac.uk/pub/databases/interpro/releases/94.0/entry.list",
           "help_text": "Set this variable to the path of the uncompressed tarball for the database (obtained from the EBI FTP server)."
         },
