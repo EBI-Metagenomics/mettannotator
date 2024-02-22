@@ -408,35 +408,33 @@ def generate_random_string(length):
 def save_to_dict(
     res_dict, acc, db, perc_match, ipr_description, sig_description, ipr_type, level
 ):
-    if acc in res_dict and ipr_type in res_dict[acc] and db in res_dict[acc][ipr_type]:
-        replace_flag = False
-        # For Family entries, prioritise replacement with a lower level
-        # term rather than a better percent match. Lower level has a higher numerical value (level 2 is lower than 0).
-        # Only replace with a better percent match if the level is not better.
-        if ipr_type in ["Family", "Domain"] and type(level) == int:
-            if level > res_dict[acc][ipr_type][db]["level"]:
-                replace_flag = True
-            else:
-                if perc_match > res_dict[acc][ipr_type][db]["match"]:
-                    replace_flag = True
-        else:
-            if perc_match > res_dict[acc][ipr_type][db]["match"]:
-                replace_flag = True
-        if replace_flag:
-            res_dict[acc][ipr_type][db]["match"] = perc_match
-            res_dict[acc][ipr_type][db]["ipr_desc"] = ipr_description
-            res_dict[acc][ipr_type][db]["sig_desc"] = sig_description
-            if type(level) == int:
-                res_dict[acc][ipr_type][db]["level"] = level
+    entry = res_dict.setdefault(acc, {}).setdefault(ipr_type, {}).setdefault(db, {})
+
+    if "level" in entry and type(level) == int:
+        # For Family and Domain entries, prioritise replacement with a lower level term rather than a better percent
+        # match. Lower level has a higher numerical value (level 2 is lower than 0). Only replace with a better
+        # percent match of the level is not lower.
+        if (
+            ipr_type in ["Family", "Domain"] and level > entry["level"]
+        ) or perc_match > entry["match"]:
+            entry.update(
+                {
+                    "match": perc_match,
+                    "ipr_desc": ipr_description,
+                    "sig_desc": sig_description,
+                    "level": level,
+                }
+            )
     else:
-        res_dict.setdefault(acc, dict())
-        res_dict[acc].setdefault(ipr_type, dict())
-        res_dict[acc][ipr_type].setdefault(db, dict())
-        res_dict[acc][ipr_type][db]["match"] = perc_match
-        res_dict[acc][ipr_type][db]["ipr_desc"] = ipr_description
-        res_dict[acc][ipr_type][db]["sig_desc"] = sig_description
-        if ipr_type in ["Family", "Domain"] and type(level) == int:
-            res_dict[acc][ipr_type][db]["level"] = level
+        entry.update(
+            {
+                "match": perc_match,
+                "ipr_desc": ipr_description,
+                "sig_desc": sig_description,
+                "level": level,
+            }
+        )
+
     return res_dict
 
 
