@@ -54,9 +54,6 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                 ipr_info,
                                 ipr_memberdb_only,
                             )
-                            try_hierarchy(
-                                attributes_dict["ID"], attributes_dict, ipr_leveled_info
-                            )
                             found_function = escape_reserved_characters(found_function)
                             if "domain" in found_function.lower():
                                 found_function = reformat_domain(found_function)
@@ -91,21 +88,6 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                     file_out.write(line)
             else:
                 file_out.write(line)
-
-
-def try_hierarchy(acc, attributes_dict, ipr_leveled_info):
-    if acc in ipr_leveled_info:
-        for db_scope in ipr_leveled_info[acc].keys():
-            for db in ipr_leveled_info[acc][db_scope]:
-                if (
-                    len(ipr_leveled_info[acc][db_scope][db]) > 1
-                    and db_scope.lower() == "family"
-                ):
-                    print("================= {} ===================".format(acc))
-                    print("----------->", db_scope)
-                    print("--->", db)
-                    for rand_key in ipr_leveled_info[acc][db_scope][db]:
-                        print(ipr_leveled_info[acc][db_scope][db][rand_key])
 
 
 def update_col9(attributes_dict):
@@ -394,17 +376,6 @@ def load_ipr(file, ipr_types, ipr_levels):
                     continue  # entry is no longer in InterPro
                 if ipr_type not in ["Domain", "Family", "Homologous_superfamily"]:
                     continue
-                ipr_leveled_info = save_to_leveled_dict(
-                    ipr_leveled_info,
-                    acc,
-                    db,
-                    perc_match,
-                    ipr_description,
-                    sig_description,
-                    ipr_type,
-                    level,
-                    ipr_acc,
-                )
                 ipr_info = save_to_dict(
                     ipr_info,
                     acc,
@@ -427,38 +398,6 @@ def load_ipr(file, ipr_types, ipr_levels):
                     None
                 )
     return ipr_info, ipr_memberdb_only, ipr_leveled_info
-
-
-def save_to_leveled_dict(
-    res_dict,
-    acc,
-    db,
-    perc_match,
-    ipr_description,
-    sig_description,
-    ipr_type,
-    level,
-    ipr_acc,
-):
-    random_string = generate_random_string(5)
-    if acc in res_dict and ipr_type in res_dict[acc] and db in res_dict[acc][ipr_type]:
-        res_dict[acc][ipr_type][db].setdefault(random_string, dict())
-        res_dict[acc][ipr_type][db][random_string]["match"] = perc_match
-        res_dict[acc][ipr_type][db][random_string]["ipr_desc"] = ipr_description
-        res_dict[acc][ipr_type][db][random_string]["sig_desc"] = sig_description
-        res_dict[acc][ipr_type][db][random_string]["level"] = level
-        res_dict[acc][ipr_type][db][random_string]["ipr"] = ipr_acc
-    else:
-        res_dict.setdefault(acc, dict())
-        res_dict[acc].setdefault(ipr_type, dict())
-        res_dict[acc][ipr_type].setdefault(db, dict())
-        res_dict[acc][ipr_type][db].setdefault(random_string, dict())
-        res_dict[acc][ipr_type][db][random_string]["match"] = perc_match
-        res_dict[acc][ipr_type][db][random_string]["ipr_desc"] = ipr_description
-        res_dict[acc][ipr_type][db][random_string]["sig_desc"] = sig_description
-        res_dict[acc][ipr_type][db][random_string]["level"] = level
-        res_dict[acc][ipr_type][db][random_string]["ipr"] = ipr_acc
-    return res_dict
 
 
 def generate_random_string(length):
