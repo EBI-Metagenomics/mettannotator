@@ -413,7 +413,7 @@ def save_to_dict(
         # For Family entries, prioritise replacement with a lower level
         # term rather than a better percent match. Lower level has a higher numerical value (level 2 is lower than 0).
         # Only replace with a better percent match if the level is not better.
-        if ipr_type == "Family" and type(level) == int:
+        if ipr_type in ["Family", "Domain"] and type(level) == int:
             if level > res_dict[acc][ipr_type][db]["level"]:
                 replace_flag = True
             else:
@@ -435,7 +435,7 @@ def save_to_dict(
         res_dict[acc][ipr_type][db]["match"] = perc_match
         res_dict[acc][ipr_type][db]["ipr_desc"] = ipr_description
         res_dict[acc][ipr_type][db]["sig_desc"] = sig_description
-        if ipr_type == "Family" and type(level) == int:
+        if ipr_type in ["Family", "Domain"] and type(level) == int:
             res_dict[acc][ipr_type][db]["level"] = level
     return res_dict
 
