@@ -416,7 +416,8 @@ def save_to_dict(
         # percent match of the level is not lower.
         if (
             ipr_type in ["Family", "Domain"] and level > entry["level"]
-        ) or perc_match > entry["match"]:
+        ) or (perc_match > entry["match"] and level == entry["level"]):
+            print("Replacing", entry)
             entry.update(
                 {
                     "match": perc_match,
@@ -425,6 +426,7 @@ def save_to_dict(
                     "level": level,
                 }
             )
+            print("with", entry, "\n")
     else:
         entry.update(
             {
