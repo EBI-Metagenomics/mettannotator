@@ -18,11 +18,18 @@
 import argparse
 import re
 
+import random
+import string
 
-def main(ipr_types_file, ipr_file, eggnog_file, infile, outfile):
+
+def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile):
     eggnog_info = load_eggnog(eggnog_file)
+    levels = load_hierarchy(hierarchy_file)
     ipr_types = load_ipr_types(ipr_types_file)
-    ipr_info, ipr_memberdb_only = load_ipr(ipr_file, ipr_types)
+    ipr_info, ipr_memberdb_only, ipr_leveled_info = load_ipr(
+        ipr_file, ipr_types, levels
+    )
+
     fasta_flag = False
     with open(infile, "r") as file_in, open(outfile, "w") as file_out:
         for line in file_in:
@@ -46,6 +53,9 @@ def main(ipr_types_file, ipr_file, eggnog_file, infile, outfile):
                                 eggnog_info,
                                 ipr_info,
                                 ipr_memberdb_only,
+                            )
+                            try_hierarchy(
+                                attributes_dict["ID"], attributes_dict, ipr_leveled_info
                             )
                             found_function = escape_reserved_characters(found_function)
                             if "domain" in found_function.lower():
@@ -83,8 +93,43 @@ def main(ipr_types_file, ipr_file, eggnog_file, infile, outfile):
                 file_out.write(line)
 
 
+def try_hierarchy(acc, attributes_dict, ipr_leveled_info):
+    if acc in ipr_leveled_info:
+        for db_scope in ipr_leveled_info[acc].keys():
+            for db in ipr_leveled_info[acc][db_scope]:
+                if (
+                    len(ipr_leveled_info[acc][db_scope][db]) > 1
+                    and db_scope.lower() == "family"
+                ):
+                    print("================= {} ===================".format(acc))
+                    print("----------->", db_scope)
+                    print("--->", db)
+                    for rand_key in ipr_leveled_info[acc][db_scope][db]:
+                        print(ipr_leveled_info[acc][db_scope][db][rand_key])
+
+
 def update_col9(attributes_dict):
     return ";".join([f"{key}={value}" for key, value in attributes_dict.items()])
+
+
+def count_initial_dashes(s):
+    return len(s) - len(s.lstrip("-"))
+
+
+def load_hierarchy(parent_child_file):
+    counter = dict()
+    levels = dict()
+    with open(parent_child_file, "r") as file_in:
+        for line in file_in:
+            depth = count_initial_dashes(line)
+            term = line.lstrip("-").strip().split("::")[0]
+            if term in levels:
+                if depth > levels[term]:
+                    levels[term] = depth
+            else:
+                levels[term] = depth
+            counter[term] = counter.get(term, 0) + 1
+    return levels
 
 
 def insert_product_source(my_dict, source):
@@ -256,15 +301,29 @@ def load_eggnog(file):
                     and "non supervised orthologous group" not in cols[7]
                     and "Psort location" not in cols[7]
                     and not cols[7].lower() == "domain, protein"
+                    and "may contain a frame shift" not in cols[7].lower()
                 ):
                     function = cols[7]
                     # trim function from the left if it doesn't start with a letter or a digit
+                    function = clean_up_eggnog_function(function)
                     for i, char in enumerate(function):
                         if char.isalnum():
                             function = function[i:]
                             break
                     eggnog_info[cols[0]] = function
     return eggnog_info
+
+
+def clean_up_eggnog_function(string):
+    for i, char in enumerate(string):
+        if char.isalnum():
+            string = string[i:]
+            break
+    if string.lower().startswith("belongs to the"):
+        words = string.split()
+        string = " ".join(words[3:])
+    string = string.replace("'phage'", "phage").replace('"phage"', "phage")
+    return string
 
 
 def load_ipr_types(ipr_types_file):
@@ -277,8 +336,9 @@ def load_ipr_types(ipr_types_file):
     return ipr_types
 
 
-def load_ipr(file, ipr_types):
+def load_ipr(file, ipr_types, ipr_levels):
     ipr_info = dict()  # hit is assigned an interpro id
+    ipr_leveled_info = dict()
     ipr_memberdb_only = dict()  # hit only exists in a member database
 
     with open(file, "r") as file_in:
@@ -323,12 +383,28 @@ def load_ipr(file, ipr_types):
             if perc_match < 0.10:
                 continue
             if not ipr_acc == "-":
+                if not ipr_acc in ipr_levels:
+                    level = 0
+                else:
+                    level = ipr_levels[ipr_acc]
+            if not ipr_acc == "-":
                 try:
                     ipr_type = ipr_types[ipr_acc]
                 except:
                     continue  # entry is no longer in InterPro
                 if ipr_type not in ["Domain", "Family", "Homologous_superfamily"]:
                     continue
+                ipr_leveled_info = save_to_leveled_dict(
+                    ipr_leveled_info,
+                    acc,
+                    db,
+                    perc_match,
+                    ipr_description,
+                    sig_description,
+                    ipr_type,
+                    level,
+                    ipr_acc,
+                )
                 ipr_info = save_to_dict(
                     ipr_info,
                     acc,
@@ -348,7 +424,44 @@ def load_ipr(file, ipr_types):
                     sig_description,
                     "no_type",
                 )
-    return ipr_info, ipr_memberdb_only
+    return ipr_info, ipr_memberdb_only, ipr_leveled_info
+
+
+def save_to_leveled_dict(
+    res_dict,
+    acc,
+    db,
+    perc_match,
+    ipr_description,
+    sig_description,
+    ipr_type,
+    level,
+    ipr_acc,
+):
+    random_string = generate_random_string(5)
+    if acc in res_dict and ipr_type in res_dict[acc] and db in res_dict[acc][ipr_type]:
+        res_dict[acc][ipr_type][db].setdefault(random_string, dict())
+        res_dict[acc][ipr_type][db][random_string]["match"] = perc_match
+        res_dict[acc][ipr_type][db][random_string]["ipr_desc"] = ipr_description
+        res_dict[acc][ipr_type][db][random_string]["sig_desc"] = sig_description
+        res_dict[acc][ipr_type][db][random_string]["level"] = level
+        res_dict[acc][ipr_type][db][random_string]["ipr"] = ipr_acc
+    else:
+        res_dict.setdefault(acc, dict())
+        res_dict[acc].setdefault(ipr_type, dict())
+        res_dict[acc][ipr_type].setdefault(db, dict())
+        res_dict[acc][ipr_type][db].setdefault(random_string, dict())
+        res_dict[acc][ipr_type][db][random_string]["match"] = perc_match
+        res_dict[acc][ipr_type][db][random_string]["ipr_desc"] = ipr_description
+        res_dict[acc][ipr_type][db][random_string]["sig_desc"] = sig_description
+        res_dict[acc][ipr_type][db][random_string]["level"] = level
+        res_dict[acc][ipr_type][db][random_string]["ipr"] = ipr_acc
+    return res_dict
+
+
+def generate_random_string(length):
+    letters = string.ascii_letters
+    return "".join(random.choice(letters) for _ in range(length))
 
 
 def save_to_dict(
@@ -433,6 +546,11 @@ def parse_args():
         help="The path to the entries.list file from InterPro.",
     )
     parser.add_argument(
+        "--ipr-hierarchy",
+        required=True,
+        help="The path to the ParentChildTreeFile.txt file from InterPro.",
+    )
+    parser.add_argument(
         "--ipr-output",
         required=True,
         help="The path to the TSV file produced by InterProScan.",
@@ -452,7 +570,7 @@ def parse_args():
         "-o",
         dest="outfile",
         required=True,
-        help=("Path to the output file where the result will be saved."),
+        help="Path to the output file where the result will be saved.",
     )
     return parser.parse_args()
 
@@ -460,5 +578,10 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     main(
-        args.ipr_entries, args.ipr_output, args.eggnog_output, args.infile, args.outfile
+        args.ipr_entries,
+        args.ipr_output,
+        args.ipr_hierarchy,
+        args.eggnog_output,
+        args.infile,
+        args.outfile,
     )
