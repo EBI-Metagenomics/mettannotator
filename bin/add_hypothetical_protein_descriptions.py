@@ -383,14 +383,14 @@ def load_ipr(file, ipr_types, ipr_levels):
             if perc_match < 0.10:
                 continue
             if not ipr_acc == "-":
-                if not ipr_acc in ipr_levels:
+                if ipr_acc not in ipr_levels:
                     level = 0
                 else:
                     level = ipr_levels[ipr_acc]
             if not ipr_acc == "-":
                 try:
                     ipr_type = ipr_types[ipr_acc]
-                except:
+                except ValueError:
                     continue  # entry is no longer in InterPro
                 if ipr_type not in ["Domain", "Family", "Homologous_superfamily"]:
                     continue
@@ -413,6 +413,7 @@ def load_ipr(file, ipr_types, ipr_levels):
                     ipr_description,
                     sig_description,
                     ipr_type,
+                    level
                 )
             else:
                 ipr_memberdb_only = save_to_dict(
@@ -423,6 +424,7 @@ def load_ipr(file, ipr_types, ipr_levels):
                     ipr_description,
                     sig_description,
                     "no_type",
+                    None
                 )
     return ipr_info, ipr_memberdb_only, ipr_leveled_info
 
@@ -465,13 +467,28 @@ def generate_random_string(length):
 
 
 def save_to_dict(
-    res_dict, acc, db, perc_match, ipr_description, sig_description, ipr_type
+    res_dict, acc, db, perc_match, ipr_description, sig_description, ipr_type, level
 ):
     if acc in res_dict and ipr_type in res_dict[acc] and db in res_dict[acc][ipr_type]:
-        if perc_match > res_dict[acc][ipr_type][db]["match"]:
+        replace_flag = False
+        # For Family entries, prioritise replacement with a lower level
+        # term rather than a better percent match. Lower level has a higher numerical value (level 2 is lower than 0).
+        # Only replace with a better percent match if the level is not better.
+        if ipr_type == "Family" and type(level) == int:
+            if level > res_dict[acc][ipr_type][db]["level"]:
+                replace_flag = True
+            else:
+                if perc_match > res_dict[acc][ipr_type][db]["match"]:
+                    replace_flag = True
+        else:
+            if perc_match > res_dict[acc][ipr_type][db]["match"]:
+                replace_flag = True
+        if replace_flag:
             res_dict[acc][ipr_type][db]["match"] = perc_match
             res_dict[acc][ipr_type][db]["ipr_desc"] = ipr_description
             res_dict[acc][ipr_type][db]["sig_desc"] = sig_description
+            if type(level) == int:
+                res_dict[acc][ipr_type][db]["level"] = level
     else:
         res_dict.setdefault(acc, dict())
         res_dict[acc].setdefault(ipr_type, dict())
@@ -479,6 +496,8 @@ def save_to_dict(
         res_dict[acc][ipr_type][db]["match"] = perc_match
         res_dict[acc][ipr_type][db]["ipr_desc"] = ipr_description
         res_dict[acc][ipr_type][db]["sig_desc"] = sig_description
+        if ipr_type == "Family" and type(level) == int:
+            res_dict[acc][ipr_type][db]["level"] = level
     return res_dict
 
 
