@@ -225,18 +225,28 @@ def format_source(db, source):
 
 def get_best_match(ipr_dict):
     best_fraction = 0
+    best_level = 0
     highest_match = dict()
     for db in ipr_dict:
-        if (
-            not db.lower() in ["superfamily", "gene3d"]
-            and ipr_dict[db]["match"] > best_fraction
-            and (ipr_dict[db]["sig_desc"] != "-" or ipr_dict[db]["ipr_desc"] != "-")
+        if ipr_dict[db]["level"] is None:
+            ipr_dict[db]["level"] = 0
+        if not db.lower() in ["superfamily", "gene3d"] and (
+            ipr_dict[db]["sig_desc"] != "-" or ipr_dict[db]["ipr_desc"] != "-"
         ):
-            best_fraction = ipr_dict[db]["match"]
-            highest_match = dict()
-            highest_match[db] = ipr_dict[db]
+            if ipr_dict[db]["level"] > best_level or (
+                ipr_dict[db]["level"] == best_level
+                and ipr_dict[db]["match"] > best_fraction
+            ):
+                best_fraction = ipr_dict[db]["match"]
+                best_level = ipr_dict[db]["level"]
+                highest_match = dict()
+                highest_match[db] = ipr_dict[db]
     if "Pfam" not in highest_match and best_fraction > 0.30:
-        if "Pfam" in ipr_dict and best_fraction - ipr_dict["Pfam"]["match"] < 0.10:
+        if (
+            "Pfam" in ipr_dict
+            and best_fraction - ipr_dict["Pfam"]["match"] < 0.10
+            and ipr_dict["Pfam"]["level"] >= best_level
+        ):
             return {"Pfam": ipr_dict["Pfam"]}
     return highest_match
 
