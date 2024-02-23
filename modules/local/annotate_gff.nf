@@ -80,6 +80,7 @@ process ANNOTATE_GFF {
 
     add_hypothetical_protein_descriptions.py \\
     --ipr-entries ${interpro_entry_list}/entry.list \\
+    --ipr-hierarchy ${interpro_entry_list}/ParentChildTreeFile.txt \\
     --ipr-output ${ips_annotations_tsv} \\
     --eggnog-output ${eggnog_annotations_tsv} \\
     -i ${meta.prefix}_temp_with_unifire.gff \\
