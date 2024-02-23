@@ -13,9 +13,13 @@ process INTEPRO_ENTRY_LIST_GETDB {
     """
     wget https://ftp.ebi.ac.uk/pub/databases/interpro/releases/94.0/entry.list
 
+    wget https://ftp.ebi.ac.uk/pub/databases/interpro/releases/94.0/ParentChildTreeFile.txt
+
     mkdir -p ipr-entry-lists
 
     mv entry.list ipr-entry-lists/
+
+    mv ParentChildTreeFile.txt ipr-entry-lists/
 
     echo '94.0' > ipr-entry-lists/VERSION.txt
 
