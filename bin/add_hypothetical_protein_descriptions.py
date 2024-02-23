@@ -315,6 +315,10 @@ def clean_up_eggnog_function(string):
         words = string.split()
         string = " ".join(words[3:])
     string = string.replace("'phage'", "phage").replace('"phage"', "phage")
+    if string.endswith("ase activity") and len(string.split()) < 5:
+        print("Before", string)
+        string = string.replace("ase activity", "ase-like protein")
+        print("After", string)
     return string
 
 
@@ -427,7 +431,6 @@ def save_to_dict(
         if (
             ipr_type in ["Family", "Domain"] and level > entry["level"]
         ) or (perc_match > entry["match"] and level == entry["level"]):
-            print("Replacing", entry)
             entry.update(
                 {
                     "match": perc_match,
@@ -436,7 +439,6 @@ def save_to_dict(
                     "level": level,
                 }
             )
-            print("with", entry, "\n")
     else:
         entry.update(
             {
