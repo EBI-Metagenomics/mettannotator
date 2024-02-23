@@ -412,11 +412,6 @@ def load_ipr(file, ipr_types, ipr_levels):
     return ipr_info, ipr_memberdb_only, ipr_leveled_info
 
 
-def generate_random_string(length):
-    letters = string.ascii_letters
-    return "".join(random.choice(letters) for _ in range(length))
-
-
 def save_to_dict(
     res_dict, acc, db, perc_match, ipr_description, sig_description, ipr_type, level
 ):
