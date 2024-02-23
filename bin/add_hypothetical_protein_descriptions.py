@@ -306,20 +306,18 @@ def load_eggnog(file):
     return eggnog_info
 
 
-def clean_up_eggnog_function(string):
-    for i, char in enumerate(string):
+def clean_up_eggnog_function(func_description):
+    for i, char in enumerate(func_description):
         if char.isalnum():
-            string = string[i:]
+            func_description = func_description[i:]
             break
-    if string.lower().startswith("belongs to the"):
-        words = string.split()
-        string = " ".join(words[3:])
-    string = string.replace("'phage'", "phage").replace('"phage"', "phage")
-    if string.endswith("ase activity") and len(string.split()) < 5:
-        print("Before", string)
-        string = string.replace("ase activity", "ase-like protein")
-        print("After", string)
-    return string
+    if func_description.lower().startswith("belongs to the"):
+        words = func_description.split()
+        func_description = " ".join(words[3:])
+    func_description = func_description.replace("'phage'", "phage").replace('"phage"', "phage")
+    if func_description.endswith("ase activity") and len(func_description.split()) < 5:
+        func_description = func_description.replace("ase activity", "ase-like protein")
+    return func_description
 
 
 def load_ipr_types(ipr_types_file):
