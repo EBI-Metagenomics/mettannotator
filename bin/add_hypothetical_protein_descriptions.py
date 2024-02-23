@@ -18,9 +18,6 @@
 import argparse
 import re
 
-import random
-import string
-
 
 def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile):
     eggnog_info = load_eggnog(eggnog_file)
