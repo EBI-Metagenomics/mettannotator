@@ -514,7 +514,7 @@ def clean_panther(sig_description):
     starts_to_exclude = [
         "meiotically up-regulated gene",
     ]
-    full_strings_to_exlude = [
+    full_strings_to_exclude = [
         "family protein, putative-related",
         "putative-related",
         "protein, putative-related",
@@ -526,7 +526,7 @@ def clean_panther(sig_description):
     for start in starts_to_exclude:
         if sig_description.lower().startswith(start):
             return "-"
-    for full_string in full_strings_to_exlude:
+    for full_string in full_strings_to_exclude:
         if sig_description.lower() == full_string:
             return "-"
     return sig_description
