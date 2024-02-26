@@ -54,7 +54,9 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
 
                             if not function_source == "UniFIRE":
                                 old_func = found_function
-                                found_function = clean_up_function(found_function, function_source)
+                                found_function = clean_up_function(
+                                    found_function, function_source
+                                )
                                 if not old_func == found_function:
                                     print(old_func, "\t", function_source)
                                     print(found_function, "\n")
@@ -95,7 +97,10 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
 def clean_up_function(found_function, function_source):
     if "domain" in found_function.lower():
         found_function = reformat_domain(found_function)
-    if found_function.lower().endswith("family") and "protein" not in found_function.lower():
+    if (
+        found_function.lower().endswith("family")
+        and "protein" not in found_function.lower()
+    ):
         found_function = found_function + " protein"
     return found_function
 
@@ -324,7 +329,9 @@ def clean_up_eggnog_function(func_description):
     if func_description.lower().startswith("belongs to the"):
         words = func_description.split()
         func_description = " ".join(words[3:])
-    func_description = func_description.replace("'phage'", "phage").replace('"phage"', "phage")
+    func_description = func_description.replace("'phage'", "phage").replace(
+        '"phage"', "phage"
+    )
     if func_description.endswith("ase activity") and len(func_description.split()) < 5:
         func_description = func_description.replace("ase activity", "ase-like protein")
     return func_description
@@ -433,9 +440,9 @@ def save_to_dict(
         # For Family and Domain entries, prioritise replacement with a lower level term rather than a better percent
         # match. Lower level has a higher numerical value (level 2 is lower than 0). Only replace with a better
         # percent match of the level is not lower.
-        if (
-            ipr_type in ["Family", "Domain"] and level > entry["level"]
-        ) or (perc_match > entry["match"] and level == entry["level"]):
+        if (ipr_type in ["Family", "Domain"] and level > entry["level"]) or (
+            perc_match > entry["match"] and level == entry["level"]
+        ):
             entry.update(
                 {
                     "match": perc_match,
@@ -502,7 +509,7 @@ def reformat_domain(string):
         "domain superfamily",
         "domain family",
         "domain-",
-        "protein"
+        "protein",
     ]
     if all(substring not in string.lower() for substring in substrings_to_exclude):
         return string.replace("domain", "domain-containing protein")
@@ -521,7 +528,7 @@ def clean_panther(sig_description):
         "conserved protein",
         "domain-containing protein, putative-related",
         "unnamed product",
-        "unnamed product-related"
+        "unnamed product-related",
     ]
     for start in starts_to_exclude:
         if sig_description.lower().startswith(start):
