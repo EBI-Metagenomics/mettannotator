@@ -51,9 +51,14 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                 ipr_info,
                                 ipr_memberdb_only,
                             )
+
+                            if not function_source == "UniFIRE":
+                                old_func = found_function
+                                found_function = clean_up_function(found_function, function_source)
+                                if not old_func == found_function:
+                                    print(old_func, "\t", function_source)
+                                    print(found_function, "\n")
                             found_function = escape_reserved_characters(found_function)
-                            if "domain" in found_function.lower():
-                                found_function = reformat_domain(found_function)
                             attributes_dict["product"] = found_function
                             attributes_dict = insert_product_source(
                                 attributes_dict, function_source
@@ -85,6 +90,14 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                     file_out.write(line)
             else:
                 file_out.write(line)
+
+
+def clean_up_function(found_function, function_source):
+    if "domain" in found_function.lower():
+        found_function = reformat_domain(found_function)
+    if found_function.lower().endswith("family") and "protein" not in found_function.lower():
+        found_function = found_function + " protein"
+    return found_function
 
 
 def update_col9(attributes_dict):
@@ -368,6 +381,8 @@ def load_ipr(file, ipr_types, ipr_levels):
                 sig_description = "-"
             if ipr_description.lower == "uncharacterized":
                 ipr_description = "-"
+            if db == "PANTHER":
+                sig_description = clean_panther(sig_description)
             if sig_description == "-" and ipr_description == "-":
                 continue
             perc_match = (int(end) - int(start)) / int(len)
@@ -486,11 +501,35 @@ def reformat_domain(string):
         "domain related",
         "domain superfamily",
         "domain family",
+        "domain-",
+        "protein"
     ]
     if all(substring not in string.lower() for substring in substrings_to_exclude):
         return string.replace("domain", "domain-containing protein")
     else:
         return string
+
+
+def clean_panther(sig_description):
+    starts_to_exclude = [
+        "meiotically up-regulated gene",
+    ]
+    full_strings_to_exlude = [
+        "family protein, putative-related",
+        "putative-related",
+        "protein, putative-related",
+        "conserved protein",
+        "domain-containing protein, putative-related",
+        "unnamed product",
+        "unnamed product-related"
+    ]
+    for start in starts_to_exclude:
+        if sig_description.lower().startswith(start):
+            return "-"
+    for full_string in full_strings_to_exlude:
+        if sig_description.lower() == full_string:
+            return "-"
+    return sig_description
 
 
 def parse_args():
