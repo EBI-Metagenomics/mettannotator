@@ -100,8 +100,8 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
 
 def keep_or_move_to_note(found_function, function_source, col9_dict):
     description_length = len(found_function.split())
-    if description_length < 10:
-        print(description_length)
+    if description_length < 12:
+        print(description_length, found_function)
     return found_function, function_source, col9_dict
 
 
@@ -112,7 +112,13 @@ def clean_up_function(found_function):
         found_function.lower().endswith("family")
         and "protein" not in found_function.lower()
     ):
-        found_function = found_function + " protein"
+        found_function += " protein"
+    if (
+        found_function.lower().endswith("binding")
+        and "protein" not in found_function.lower()
+        and "domain" not in found_function.lower()
+    ):
+        found_function += " protein"
     return found_function
 
 
@@ -353,7 +359,7 @@ def clean_up_eggnog_function(func_description):
         if char.isalnum():
             func_description = func_description[i:]
             break
-    if func_description.lower().startswith("belongs to the"):
+    if func_description.lower().startswith("belongs to the") and len(func_description.split()) < 12:
         words = func_description.split()
         func_description = " ".join(words[3:])
     func_description = func_description.replace("'phage'", "phage").replace(
