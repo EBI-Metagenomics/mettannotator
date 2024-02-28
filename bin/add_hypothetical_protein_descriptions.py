@@ -53,7 +53,6 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                             )
 
                             if not function_source == "UniFIRE":
-                                old_func = found_function
                                 found_function = clean_up_function(
                                     found_function
                                 )
@@ -61,9 +60,6 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                     found_function, function_source, attributes_dict = (
                                         keep_or_move_to_note(found_function, function_source, attributes_dict)
                                     )
-                                #if not old_func == found_function:
-                                #    print(old_func, "\t", function_source)
-                                #    print(found_function, "\n")
                             found_function = escape_reserved_characters(found_function)
                             attributes_dict["product"] = found_function
                             attributes_dict = insert_product_source(
