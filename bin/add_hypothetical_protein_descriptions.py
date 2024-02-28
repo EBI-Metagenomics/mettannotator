@@ -99,9 +99,73 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
 
 
 def keep_or_move_to_note(found_function, function_source, col9_dict):
+    """
+    Function aims to identify if a description is likely to be a sentence/paragraph rather than
+    a succinct function description. If it's the former, move it to note and revert function to
+    "hypothetical protein".
+    """
+    move_to_note = False
     description_length = len(found_function.split())
-    if description_length < 12:
-        print(description_length, found_function)
+    if description_length < 12:  # likely to be a proper description
+        text_to_avoid = [
+            " is ",
+            "catalyzes",
+            "catalyses",
+            "functions as a",
+            " also ",
+            "plays ",
+            "important",
+            "could",
+            "may ",
+            " but ",
+            "belongs to ",
+            " to be ",
+            " does ",
+            "probably ",
+            "might be ",
+            "in addition to",
+            "evidence by homology",
+            " that ",
+        ]
+        starts_to_avoid = [
+            "mediates ",
+            "converts ",
+            "reduces ",
+            "located ",
+            "controls ",
+            "contacts ",
+            "conducts ",
+            "binds ",
+            "transfers ",
+            "this ",
+            "makes ",
+            "introduces ",
+            "involved ",
+            "hydrolyzes ",
+            "hydrolyses ",
+            "initiates ",
+            "required for ",
+            "recognizes ",
+            "recognises ",
+            "has ",
+            "functions ",
+            "enhances ",
+            "confers ",
+            "acts ",
+            "responsible for ",
+            "similarity to ",
+            "evidence ",
+            "represses ",
+            "related to",
+        ]
+        if any(phrase.lower() in found_function.lower() for phrase in text_to_avoid):
+            move_to_note = True
+        if any(found_function.lower().startswith(phrase.lower()) for phrase in starts_to_avoid):
+            move_to_note = True
+        if move_to_note:
+            col9_dict = move_function_to_note(found_function, col9_dict)
+            found_function = "hypothetical protein"
+            function_source = "Prokka"
     return found_function, function_source, col9_dict
 
 
@@ -324,6 +388,7 @@ def load_eggnog(file):
                     "non supervised orthologous group",
                     "psort location",
                     "may contain a frame shift",
+                    "annotation was generated",
                 ]
                 exclude_eggnog_full = [
                     "-",
@@ -331,6 +396,8 @@ def load_eggnog(file):
                     "Family of unknown function",
                     "Domain of unknown function",
                     "Protein of unknown function",
+                    "Uncharacterised protein family",
+                    "Uncharacterized protein family"
                 ]
                 if (
                     all(
@@ -417,9 +484,9 @@ def load_ipr(file, ipr_types, ipr_levels):
                 continue
             if db in ["ProSiteProfiles", "Coils", "MobiDBLite", "PRINTS"]:
                 continue
-            if sig_description.lower == "uncharacterized":
+            if sig_description.lower == "uncharacterized" or sig_description.lower == "uncharacterised":
                 sig_description = "-"
-            if ipr_description.lower == "uncharacterized":
+            if ipr_description.lower == "uncharacterized" or ipr_description.lower == "uncharacterised":
                 ipr_description = "-"
             if db == "PANTHER":
                 sig_description = clean_panther(sig_description)
