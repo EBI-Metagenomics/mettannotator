@@ -169,6 +169,21 @@ def keep_or_move_to_note(found_function, function_source, col9_dict):
     return found_function, function_source, col9_dict
 
 
+def move_function_to_note(found_function, col9_dict):
+    if "note" in col9_dict.keys():
+        col9_dict["note"] = col9_dict["note"] + ", eggNOG:" + found_function
+        return col9_dict
+    else:
+        # insert note after locus tag
+        keys_list = list(col9_dict.keys())
+        locus_tag_index = keys_list.index("locus_tag")
+        return (
+            {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]}
+            | {"note": "eggNOG:" + found_function}
+            | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
+        )
+
+
 def clean_up_function(found_function):
     if "domain" in found_function.lower():
         found_function = reformat_domain(found_function)
