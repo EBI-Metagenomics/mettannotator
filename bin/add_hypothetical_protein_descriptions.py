@@ -55,11 +55,15 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                             if not function_source == "UniFIRE":
                                 old_func = found_function
                                 found_function = clean_up_function(
-                                    found_function, function_source
+                                    found_function
                                 )
-                                if not old_func == found_function:
-                                    print(old_func, "\t", function_source)
-                                    print(found_function, "\n")
+                                if function_source == "eggNOG":
+                                    found_function, function_source, attributes_dict = (
+                                        keep_or_move_to_note(found_function, function_source, attributes_dict)
+                                    )
+                                #if not old_func == found_function:
+                                #    print(old_func, "\t", function_source)
+                                #    print(found_function, "\n")
                             found_function = escape_reserved_characters(found_function)
                             attributes_dict["product"] = found_function
                             attributes_dict = insert_product_source(
@@ -94,7 +98,14 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                 file_out.write(line)
 
 
-def clean_up_function(found_function, function_source):
+def keep_or_move_to_note(found_function, function_source, col9_dict):
+    description_length = len(found_function.split())
+    if description_length < 10:
+        print(description_length)
+    return found_function, function_source, col9_dict
+
+
+def clean_up_function(found_function):
     if "domain" in found_function.lower():
         found_function = reformat_domain(found_function)
     if (
@@ -302,19 +313,28 @@ def load_eggnog(file):
                     continue
                 if evalue > 1e-10:
                     continue
-                excluded_eggnog_text = [
-                    "of unknown function",
+                exclude_eggnog_partial = [
+                    "proteins of unknown function",
                     "non supervised orthologous group",
                     "psort location",
                     "may contain a frame shift",
                 ]
+                exclude_eggnog_full = [
+                    "-",
+                    "domain, protein",
+                    "Family of unknown function",
+                    "Domain of unknown function",
+                    "Protein of unknown function",
+                ]
                 if (
                     all(
                         phrase.lower() not in cols[7].lower()
-                        for phrase in excluded_eggnog_text
+                        for phrase in exclude_eggnog_partial
                     )
-                    and not cols[7] == "-"
-                    and not cols[7].lower() == "domain, protein"
+                    and all(
+                        phrase.lower() != cols[7].lower()
+                        for phrase in exclude_eggnog_full
+                    )
                 ):
                     function = cols[7]
                     # trim function from the left if it doesn't start with a letter or a digit
@@ -328,6 +348,7 @@ def load_eggnog(file):
 
 
 def clean_up_eggnog_function(func_description):
+    # remove initial non-alphanumeric characters
     for i, char in enumerate(func_description):
         if char.isalnum():
             func_description = func_description[i:]
