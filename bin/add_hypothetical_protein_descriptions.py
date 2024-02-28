@@ -53,12 +53,14 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                             )
 
                             if not function_source == "UniFIRE":
-                                found_function = clean_up_function(
-                                    found_function
-                                )
+                                found_function = clean_up_function(found_function)
                                 if function_source == "eggNOG":
                                     found_function, function_source, attributes_dict = (
-                                        keep_or_move_to_note(found_function, function_source, attributes_dict)
+                                        keep_or_move_to_note(
+                                            found_function,
+                                            function_source,
+                                            attributes_dict,
+                                        )
                                     )
                             found_function = escape_reserved_characters(found_function)
                             attributes_dict["product"] = found_function
@@ -156,7 +158,10 @@ def keep_or_move_to_note(found_function, function_source, col9_dict):
         ]
         if any(phrase.lower() in found_function.lower() for phrase in text_to_avoid):
             move_to_note = True
-        if any(found_function.lower().startswith(phrase.lower()) for phrase in starts_to_avoid):
+        if any(
+            found_function.lower().startswith(phrase.lower())
+            for phrase in starts_to_avoid
+        ):
             move_to_note = True
         if move_to_note:
             col9_dict = move_function_to_note(found_function, col9_dict)
@@ -408,17 +413,13 @@ def load_eggnog(file):
                     "Domain of unknown function",
                     "Protein of unknown function",
                     "Uncharacterised protein family",
-                    "Uncharacterized protein family"
+                    "Uncharacterized protein family",
                 ]
-                if (
-                    all(
-                        phrase.lower() not in cols[7].lower()
-                        for phrase in exclude_eggnog_partial
-                    )
-                    and all(
-                        phrase.lower() != cols[7].lower()
-                        for phrase in exclude_eggnog_full
-                    )
+                if all(
+                    phrase.lower() not in cols[7].lower()
+                    for phrase in exclude_eggnog_partial
+                ) and all(
+                    phrase.lower() != cols[7].lower() for phrase in exclude_eggnog_full
                 ):
                     function = cols[7]
                     # trim function from the left if it doesn't start with a letter or a digit
@@ -437,7 +438,10 @@ def clean_up_eggnog_function(func_description):
         if char.isalnum():
             func_description = func_description[i:]
             break
-    if func_description.lower().startswith("belongs to the") and len(func_description.split()) < 12:
+    if (
+        func_description.lower().startswith("belongs to the")
+        and len(func_description.split()) < 12
+    ):
         words = func_description.split()
         func_description = " ".join(words[3:])
     func_description = func_description.replace("'phage'", "phage").replace(
@@ -495,9 +499,15 @@ def load_ipr(file, ipr_types, ipr_levels):
                 continue
             if db in ["ProSiteProfiles", "Coils", "MobiDBLite", "PRINTS"]:
                 continue
-            if sig_description.lower == "uncharacterized" or sig_description.lower == "uncharacterised":
+            if (
+                sig_description.lower == "uncharacterized"
+                or sig_description.lower == "uncharacterised"
+            ):
                 sig_description = "-"
-            if ipr_description.lower == "uncharacterized" or ipr_description.lower == "uncharacterised":
+            if (
+                ipr_description.lower == "uncharacterized"
+                or ipr_description.lower == "uncharacterised"
+            ):
                 ipr_description = "-"
             if db == "PANTHER":
                 sig_description = clean_panther(sig_description)
