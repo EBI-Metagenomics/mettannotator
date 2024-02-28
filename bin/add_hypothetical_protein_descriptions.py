@@ -302,13 +302,19 @@ def load_eggnog(file):
                     continue
                 if evalue > 1e-10:
                     continue
+                excluded_eggnog_text = [
+                    "of unknown function",
+                    "non supervised orthologous group",
+                    "psort location",
+                    "may contain a frame shift",
+                ]
                 if (
-                    not cols[7] == "-"
-                    and "of unknown function" not in cols[7]
-                    and "non supervised orthologous group" not in cols[7]
-                    and "Psort location" not in cols[7]
+                    all(
+                        phrase.lower() not in cols[7].lower()
+                        for phrase in excluded_eggnog_text
+                    )
+                    and not cols[7] == "-"
                     and not cols[7].lower() == "domain, protein"
-                    and "may contain a frame shift" not in cols[7].lower()
                 ):
                     function = cols[7]
                     # trim function from the left if it doesn't start with a letter or a digit
