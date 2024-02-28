@@ -26,7 +26,7 @@ def get_iprs(ipr_annot):
             protein = cols[0]
             try:
                 evalue = float(cols[8])
-            except:
+            except ValueError:
                 continue
             if evalue > 1e-10:
                 continue
