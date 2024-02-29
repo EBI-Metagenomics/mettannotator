@@ -14,6 +14,7 @@ process DETECT_TRNA {
     tuple val(meta), path('*_trna.out'), emit: trna_out
     tuple val(meta), path('*_stats.out'), emit: trna_stats
     tuple val(meta), path('*_tRNA_20aa.out'), emit: trna_count
+    tuple val(meta), path('*_tRNA.gff'), emit: trna_gff
     path "versions.yml", emit: versions
 
     script:
@@ -32,6 +33,7 @@ process DETECT_TRNA {
     tRNAscan-SE -B -Q \
     -m ${meta.prefix}_stats.out \
     -o ${meta.prefix}_trna.out \
+    --gff ${meta.prefix}_trna.gff \
     ${fasta}
 
     parse_tRNA.py -i ${meta.prefix}_stats.out -o ${meta.prefix}_tRNA_20aa.out
