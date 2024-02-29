@@ -9,28 +9,16 @@ process DETECT_TRNA {
 
     input:
     tuple val(meta), path(fasta)
-    tuple path(cm_models), val(rfam_version)
 
     output:
-    path "results_folder/*.out", type: "file", emit: rrna_out_results
-    path "results_folder/*.fasta", type: "file", emit: rrna_fasta_results
-    path "results_folder/*.tblout.deoverlapped", emit: rrna_tblout_deoverlapped
+    tuple val(meta), path('*_trna.out'), emit: trna_out
+    tuple val(meta), path('*_stats.out'), emit: trna_stats
+    tuple val(meta), path('*_tRNA_20aa.out'), emit: trna_count
     path "versions.yml", emit: versions
 
-
-    // cmsearch_tblout_deoverlap version was taken from the container
-    // it's using the same version that mgnify uses
     script:
     """
     shopt -s extglob
-
-    RESULTS_FOLDER=results_folder
-    FASTA=${fasta}
-    CM_DB=${cm_models}
-
-    FILENAME="${meta.prefix}"
-
-    mkdir "\${RESULTS_FOLDER}"
 
     # tRNAscan-SE needs a tmp folder otherwise it will use the base TMPDIR (with no subfolder)
     # and that causes issues as other detect_rrna process will crash when the files are cleaned
@@ -42,10 +30,11 @@ process DETECT_TRNA {
 
     echo "[ Detecting tRNAs ]"
     tRNAscan-SE -B -Q \
-    -m "\${RESULTS_FOLDER}/\${FILENAME}_stats.out" \
-    -o "\${RESULTS_FOLDER}/\${FILENAME}_trna.out" "\${FASTA}"
+    -m ${meta.prefix}_stats.out \
+    -o ${meta.prefix}_trna.out \
+    ${fasta}
 
-    parse_tRNA.py -i "\${RESULTS_FOLDER}/\${FILENAME}_stats.out" 1> "\${RESULTS_FOLDER}/\${FILENAME}_tRNA_20aa.out"
+    parse_tRNA.py -i ${meta.prefix}_stats.out -o ${meta.prefix}_tRNA_20aa.out
 
     echo "Completed"
 
