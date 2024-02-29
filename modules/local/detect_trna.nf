@@ -14,7 +14,7 @@ process DETECT_TRNA {
     tuple val(meta), path('*_trna.out'), emit: trna_out
     tuple val(meta), path('*_stats.out'), emit: trna_stats
     tuple val(meta), path('*_tRNA_20aa.out'), emit: trna_count
-    tuple val(meta), path('*_tRNA.gff'), emit: trna_gff
+    tuple val(meta), path('*_trna.gff'), emit: trna_gff
     path "versions.yml", emit: versions
 
     script:
