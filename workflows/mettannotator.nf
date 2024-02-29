@@ -90,7 +90,6 @@ eggnog_db = channel.empty()
 eggnog_diamond_db = channel.empty()
 eggnog_data = channel.empty()
 
-rfam_rrna_models = channel.empty()
 rfam_ncrna_models = channel.empty()
 
 /*
@@ -118,7 +117,6 @@ workflow DOWNLOAD_DATABASES {
         interproscan_dir = file("$params.dbs/interproscan")
         interpro_entry_list_dir = file("$params.dbs/interproscan_entry_list/")
         eggnog_data_dir = file("$params.dbs/eggnog")
-        rfam_rrna_models = file("$params.dbs/rfam_models/rfam_rrna_cms")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
 
         if (amrfinder_plus_dir.exists()) {
@@ -199,16 +197,11 @@ workflow DOWNLOAD_DATABASES {
             eggnog_db = EGGNOG_MAPPER_GETDB.out.eggnog_db.first()
         }
 
-        if (!rfam_rrna_models.exists() || !rfam_ncrna_models.exists()) {
+        if (!rfam_ncrna_models.exists()) {
             RFAM_GETMODELS()
-            rfam_rrna_models = RFAM_GETMODELS.out.rfam_rrna_cms.first()
             rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms.first()
         } else {
             log.info("RFam model files exists, or at least the expected folders.")
-            rfam_rrna_models = tuple(
-                rfam_rrna_models,
-                file("${rfam_rrna_models}/VERSION.txt", checkIfExists: true).text
-            )
             rfam_ncrna_models = tuple(
                 rfam_ncrna_models,
                 file("${rfam_ncrna_models}/VERSION.txt", checkIfExists: true).text
@@ -222,7 +215,6 @@ workflow DOWNLOAD_DATABASES {
         interproscan_db = interproscan_db
         interpro_entry_list = interpro_entry_list
         eggnog_db = eggnog_db
-        rfam_rrna_models = rfam_rrna_models
         rfam_ncrna_models = rfam_ncrna_models
 
 }
@@ -256,7 +248,6 @@ workflow METTANNOTATOR {
 
         eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
 
-        rfam_rrna_models = DOWNLOAD_DATABASES.out.rfam_rrna_models
         rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
     } else {
         // Use the parametrized folders and files for the databases //
@@ -295,10 +286,6 @@ workflow METTANNOTATOR {
             params.eggnog_db_version
         )
 
-        rfam_rrna_models = tuple(
-            file(params.rfam_rrna_models, checkIfExists: true),
-            params.rfam_rrna_models_rfam_version
-        )
         rfam_ncrna_models = tuple(
             file(params.rfam_ncrna_models, checkIfExists: true),
             params.rfam_ncrna_models_rfam_version
@@ -393,7 +380,6 @@ workflow METTANNOTATOR {
 
     DETECT_TRNA(
         PROKKA.out.fna,
-        rfam_rrna_models
     )
 
     ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
