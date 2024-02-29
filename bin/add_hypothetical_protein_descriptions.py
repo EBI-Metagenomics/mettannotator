@@ -18,6 +18,9 @@
 import argparse
 import re
 
+EVALUE_CUTOFF = 1e-10
+EGGNOG_DESCRIPTION_LENGTH_LIMIT = 12
+
 
 def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile):
     eggnog_info = load_eggnog(eggnog_file)
@@ -104,7 +107,9 @@ def keep_or_move_to_note(found_function, function_source, col9_dict):
     """
     move_to_note = False
     description_length = len(found_function.split())
-    if description_length < 12:  # likely to be a proper description
+    if (
+        description_length < EGGNOG_DESCRIPTION_LENGTH_LIMIT
+    ):  # likely to be a proper description
         text_to_avoid = [
             " is ",
             "catalyzes",
@@ -397,7 +402,7 @@ def load_eggnog(file):
                     evalue = float(cols[2])
                 except:
                     continue
-                if evalue > 1e-10:
+                if evalue > EVALUE_CUTOFF:
                     continue
                 exclude_eggnog_partial = [
                     "proteins of unknown function",
@@ -440,7 +445,7 @@ def clean_up_eggnog_function(func_description):
             break
     if (
         func_description.lower().startswith("belongs to the")
-        and len(func_description.split()) < 12
+        and len(func_description.split()) < EGGNOG_DESCRIPTION_LENGTH_LIMIT
     ):
         words = func_description.split()
         func_description = " ".join(words[3:])
@@ -495,7 +500,7 @@ def load_ipr(file, ipr_types, ipr_levels):
                 evalue = 1
             else:
                 evalue = float(evalue)
-            if evalue > 1e-10:
+            if evalue > EVALUE_CUTOFF:
                 continue
             if db in ["ProSiteProfiles", "Coils", "MobiDBLite", "PRINTS"]:
                 continue
