@@ -20,6 +20,7 @@ import re
 
 EVALUE_CUTOFF = 1e-10
 EGGNOG_DESCRIPTION_LENGTH_LIMIT = 12
+MINIMUM_IPR_MATCH = 0.10
 
 
 def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile):
@@ -358,7 +359,7 @@ def get_best_match(ipr_dict):
                 best_level = ipr_dict[db]["level"]
                 highest_match = dict()
                 highest_match[db] = ipr_dict[db]
-    if "Pfam" not in highest_match and best_fraction > 0.30:
+    if "Pfam" not in highest_match and best_fraction > 0.20:  # there is room to reduce best match
         if (
             "Pfam" in ipr_dict
             and best_fraction - ipr_dict["Pfam"]["match"] < 0.10
@@ -519,7 +520,7 @@ def load_ipr(file, ipr_types, ipr_levels):
             if sig_description == "-" and ipr_description == "-":
                 continue
             perc_match = (int(end) - int(start)) / int(len)
-            if perc_match < 0.10:
+            if perc_match < MINIMUM_IPR_MATCH:
                 continue
             if not ipr_acc == "-":
                 if ipr_acc not in ipr_levels:
