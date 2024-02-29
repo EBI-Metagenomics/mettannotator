@@ -34,7 +34,7 @@ process DETECT_NCRNA {
     parse_rRNA-bacteria.py \
     -s cmscan \
     -i ${meta.prefix}.ncrna.deoverlap.tbl \
-    -o ${meta.prefix}_rRNAs.out"
+    -o ${meta.prefix}_rRNAs.out
 
     rRNA2seq.py -d \
     ${meta.prefix}.ncrna.deoverlap.tbl \
