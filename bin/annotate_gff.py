@@ -470,6 +470,11 @@ def get_rnas(ncrnas_file):
     return ncrnas
 
 
+def get_trnas(trnas_file):
+    trnas = {}
+    return trnas
+
+
 def load_crispr(crispr_file):
     crispr_annotations = dict()
     with open(crispr_file, "r") as f:
@@ -604,6 +609,7 @@ if __name__ == "__main__":
         required=False,
     )
     parser.add_argument("-r", dest="rfam", help="Rfam results", required=True)
+    parser.add_argument("-t", dest="trnascan", help="tRNAScan-SE results", required=True)
     parser.add_argument("-o", dest="outfile", help="Outfile name", required=False)
 
     args = parser.parse_args()
@@ -623,6 +629,7 @@ if __name__ == "__main__":
     )
 
     ncRNAs = get_rnas(args.rfam)
+    tRNAs = get_trnas(args.trnascan)
     crispr_annotations = {}
     if args.crispr:
         crispr_annotations = load_crispr(args.crispr)
