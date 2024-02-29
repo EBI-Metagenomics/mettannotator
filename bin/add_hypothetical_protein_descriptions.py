@@ -192,17 +192,18 @@ def move_function_to_note(found_function, col9_dict):
 
 
 def clean_up_function(found_function):
-    if "domain" in found_function.lower():
+    found_function_lower = found_function.lower()
+    if "domain" in found_function_lower:
         found_function = reformat_domain(found_function)
     if (
-        found_function.lower().endswith("family")
+        found_function_lower.endswith("family")
         and "protein" not in found_function.lower()
     ):
         found_function += " protein"
     if (
-        found_function.lower().endswith("binding")
-        and "protein" not in found_function.lower()
-        and "domain" not in found_function.lower()
+        found_function_lower.endswith("binding")
+        and "protein" not in found_function_lower
+        and "domain" not in found_function_lower
     ):
         found_function += " protein"
     return found_function
