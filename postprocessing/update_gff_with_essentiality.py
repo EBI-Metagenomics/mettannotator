@@ -20,7 +20,7 @@ def update_gff_with_status(gff_file, coordinates_dict):
                 start, end = columns[3], columns[4]
                 essentiality = coordinates_dict.get((start, end))
                 if essentiality:
-                    columns[8] += f";Transit_combined_HMM_Gumbel_essentiality={essentiality}"
+                    columns[8] += f";transit_combined_hmm_gumbel_essentiality={essentiality}"
                     matched_coordinates.add((start,end))
             updated_lines.append('\t'.join(columns) + '\n')
         else:
@@ -43,7 +43,7 @@ if __name__ == "__main__":
                 Usage: python script.py <gff_file> <essentiality_file> <output_gff_file> <not_matched_file>
 
                 Match coordinates from essentiality file, produce modified GFF with new key-value pair and a file containing unmatched essentiality lines.
-                The key inserted into the 9th column of CDS lines only is Transit_combined_HMM_Gumbel_essentiality
+                The key inserted into the 9th column of CDS lines only is transit_combined_hmm_gumbel_essentiality (all lower case to fit with GFF specs)
                 Note that the input is a summary of essentiality data (i.e. medium ignored for now)
         """)
         sys.exit(1)
