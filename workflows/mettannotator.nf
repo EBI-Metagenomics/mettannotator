@@ -427,6 +427,8 @@ workflow METTANNOTATOR {
         ).join(
             DETECT_NCRNA.out.ncrna_tblout
         ).join(
+            DETECT_TRNA.out.trna_gff
+        ).join(
             CRISPRCAS_FINDER.out.hq_gff, remainder: true
         ).join(
             AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true

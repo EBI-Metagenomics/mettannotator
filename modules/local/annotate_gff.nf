@@ -13,6 +13,7 @@ process ANNOTATE_GFF {
         file(eggnog_annotations_tsv),
         file(sanntis_annotations_gff),
         file(ncrna_tsv),
+        file(trna_gff),
         file(crisprcas_hq_gff),
         file(amrfinder_tsv),
         file(antismash_gff),
@@ -68,6 +69,7 @@ process ANNOTATE_GFF {
     -g ${gff} \
     -i ${ips_annotations_tsv} \
     -r ${ncrna_tsv} \
+    -t ${trna_gff}
     -o ${meta.prefix}_temp.gff \
     ${eggnog_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} \
     ${antismash_flag} ${gecco_flag} ${dbcan_flag} ${df_flag}

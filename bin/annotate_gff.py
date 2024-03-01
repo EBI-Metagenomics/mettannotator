@@ -470,8 +470,15 @@ def get_rnas(ncrnas_file):
     return ncrnas
 
 
+# Todo: use the same generic function to load crispr and get trnas
 def get_trnas(trnas_file):
     trnas = {}
+    with open(trnas_file, "r") as f:
+        for line in f:
+            if not line.startswith("#"):
+                contig = line.split("\t")[0]
+                trnas.setdefault(contig, list())
+                trnas[contig].append(line)
     return trnas
 
 
@@ -486,10 +493,11 @@ def load_crispr(crispr_file):
     return crispr_annotations
 
 
-def add_ncrnas_and_crispr_to_gff(gff_outfile, ncrnas, crispr_annotations, res):
+def add_rnas_and_crispr_to_gff(gff_outfile, ncrnas, trnas, crispr_annotations, res):
     gff_out = open(gff_outfile, "w")
     added_ncrnas = set()
     added_crisprs = set()
+    added_trnas = set()
     for line in res:
         cols = line.strip().split("\t")
         if line[0] != "#" and len(cols) == 9:
@@ -525,6 +533,22 @@ def add_ncrnas_and_crispr_to_gff(gff_outfile, ncrnas, crispr_annotations, res):
                                 annot,
                             ]
                             gff_out.write("\t".join(newLine) + "\n")
+                # Todo: dont use duplicate code here
+                if contig in trnas:
+                    for trna_line in trnas[contig]:
+                        trna_parts = trna_line.strip().split("\t")
+                        if (
+                            "{}_{}_{}".format(
+                                trna_parts[2], trna_parts[3], trna_parts[4]
+                            )
+                            not in added_trnas
+                        ):
+                            added_trnas.add(
+                                "{}_{}_{}".format(
+                                    trna_parts[2], trna_parts[3], trna_parts[4]
+                                )
+                            )
+                            gff_out.write(trna_line)
                 if contig in crispr_annotations:
                     for crispr_line in crispr_annotations[contig]:
                         crispr_parts = crispr_line.strip().split("\t")
@@ -638,4 +662,4 @@ if __name__ == "__main__":
     if args.outfile:
         outfile = args.outfile
 
-    add_ncrnas_and_crispr_to_gff(outfile, ncRNAs, crispr_annotations, extended_gff)
+    add_rnas_and_crispr_to_gff(outfile, ncRNAs, tRNAs, crispr_annotations, extended_gff)
