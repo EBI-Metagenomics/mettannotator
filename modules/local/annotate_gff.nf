@@ -69,7 +69,7 @@ process ANNOTATE_GFF {
     -g ${gff} \
     -i ${ips_annotations_tsv} \
     -r ${ncrna_tsv} \
-    -t ${trna_gff}
+    -t ${trna_gff} \
     -o ${meta.prefix}_temp.gff \
     ${eggnog_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} \
     ${antismash_flag} ${gecco_flag} ${dbcan_flag} ${df_flag}
