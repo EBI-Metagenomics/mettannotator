@@ -477,8 +477,11 @@ def get_trnas(trnas_file):
         for line in f:
             if not line.startswith("#"):
                 contig = line.split("\t")[0]
-                trnas.setdefault(contig, list())
-                trnas[contig].append(line)
+                feature = line.split("\t")[2]
+                if feature == "tRNA":
+                    line = line.replace("tRNAscan-SE", "tRNAscan-SE:2.0.9")
+                    trnas.setdefault(contig, list())
+                    trnas[contig].append(line)
     return trnas
 
 
