@@ -247,9 +247,9 @@ def get_amr(amr_file):
                 seq_name = seq_name.replace("=", " ")
             amr_annotations[protein_id] = ";".join(
                 [
-                    "AMRFinderPlus_gene_symbol={}".format(gene_name),
-                    "AMRFinderPlus_sequence_name={}".format(seq_name),
-                    "AMRFinderPlus_scope={}".format(scope),
+                    "amrfinderplus_gene_symbol={}".format(gene_name),
+                    "amrfinderplus_sequence_name={}".format(seq_name),
+                    "amrfinderplus_scope={}".format(scope),
                     "element_type={}".format(element_type),
                     "element_subtype={}".format(element_subtype),
                     "drug_class={}".format(drug_class),
@@ -372,9 +372,9 @@ def add_gff(
                                 if pos == 1:
                                     added_annot[protein]["eggNOG"] = a
                                 elif pos == 2:
-                                    added_annot[protein]["COG"] = a
+                                    added_annot[protein]["cog"] = a
                                 elif pos == 3:
-                                    added_annot[protein]["KEGG"] = a
+                                    added_annot[protein]["kegg"] = a
                                 elif pos == 4:
                                     added_annot[protein]["Ontology_term"] = a
                     except Exception:
@@ -387,9 +387,9 @@ def add_gff(
                             a = list(a)
                             if a != [""] and a:
                                 if pos == 1:
-                                    added_annot[protein]["Pfam"] = a
+                                    added_annot[protein]["pfam"] = a
                                 elif pos == 2:
-                                    added_annot[protein]["InterPro"] = a
+                                    added_annot[protein]["interpro"] = a
                     except Exception:
                         pass
                     try:
