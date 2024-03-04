@@ -421,7 +421,7 @@ workflow METTANNOTATOR {
         PROKKA.out.gff.join(
             INTERPROSCAN.out.ips_annotations
         ).join(
-           EGGNOG_MAPPER_ANNOTATIONS.out.annotations, remainder: true
+           EGGNOG_MAPPER_ANNOTATIONS.out.annotations
         ).join(
             SANNTIS.out.sanntis_gff, remainder: true
         ).join(
