@@ -14,7 +14,7 @@ Changes in module 'nf-core/gecco/run'
      tuple val(meta), path("*_cluster_*.gbk"), optional: true, emit: gbk
 -    tuple val(meta), path("*.json")         , optional: true, emit: json
 -
-+    tuple val(meta), path("*_clusters*.gff"), optional: true, emit: gff
++    tuple val(meta), path("*clusters*.gff"), optional: true, emit: gff
 +    tuple val(meta), path("*.json"),          optional: true, emit: json
      path "versions.yml"                     , emit: versions
  
