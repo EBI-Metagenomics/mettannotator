@@ -560,6 +560,9 @@ def get_ncrnas(ncrnas_file):
                 locus = "{}_ncRNA{}".format(contig, counts)
                 product = " ".join(cols[26:])
                 model = cols[2]
+                if model == "RF00005":
+                    # Skip tRNAs, we add them from tRNAscan-SE
+                    continue
                 strand = cols[11]
                 if strand == "+":
                     start = int(cols[9])
