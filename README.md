@@ -18,11 +18,11 @@
 
 <a name="intro"></a>
 ## Introduction
-**mettannotator** is a bioinformatics pipeline that generates an exhaustive annotation of prokaryotic genomes using existing tools. The output is a GFF file that integrates results of all pipeline components. Results of each individual tool are also provided.
+**mettannotator** is a bioinformatics pipeline that generates an exhaustive annotation of prokaryotic genomes using existing tools. The output is a GFF file that integrates the results of all pipeline components. Results of each individual tool are also provided.
 
 <a name="wf"></a>
 ## Workflow and tools
-<img width="720" height="482" src="media/mettannotator-schema-temp.png">
+<img src="media/mettannotator-schema-temp.png">
 <br />
 <br />
 
@@ -32,17 +32,23 @@ The workflow uses the following tools and databases:
 | Tool/Database                                                                                    | Version           | Purpose                                                                                                                |
 |--------------------------------------------------------------------------------------------------|-------------------|------------------------------------------------------------------------------------------------------------------------|
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6            | CDS calling and functional annotation                                                                                  |
+| [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.62-94.0         | Protein annotation (InterPro, Pfam)                                                                                    |                                                                                                 |                   |                                                                                                                        |
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11            | Protein annotation (eggNOG, KEGG, COG, CAZy, GO-terms)                                                                 |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2             | Database for eggNOG-mapper                                                                                             |
-| [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.62-94.0         | Protein annotation (InterPro, Pfam)                                                                                    |
 | [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2023.4            | Protein annotation                                                                                                     |
-| [CRISPRCasFinder](https://github.com/dcouvin/CRISPRCasFinder)                                    | 4.3.2             | Annotation of CRISPR arrays                                                                                            |
 | [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 3.11.4            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
 | [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 3.11 2023-02-23.1 | Database for AMRFinderPlus                                                                                             |
-| [SanntiS](https://github.com/Finn-Lab/SanntiS)                                                   | 0.9.3.2           | Biosynthetic gene cluster annotation                                                                                   |
-| Infernal                                                                                         | 1.1.4             | ncRNA predictions                                                                                                      |
-| tRNAscan-SE                                                                                      | 2.0.9             | tRNA predictions                                                                                                       |
-| Rfam                                                                                             | 14.9              | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
+| [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 1.2.0             | Annotation of anti-phage systems                                                                                       |
+| [DefenseFinder models](https://github.com/mdmparis/defense-finder-models)                        | 1.2.3             | Database for DefenseFinder                                                                                             |
+| [GECCO](https://github.com/zellerlab/GECCO)                                                      | 0.9.8             | Biosynthetic gene cluster annotation                                                                                   |
+| [antiSMASH](https://antismash.secondarymetabolites.org/#!/download)                              | 7.1.0             | Biosynthetic gene cluster annotation                                                                                   |
+| [SanntiS](https://github.com/Finn-Lab/SanntiS)                                                   | 0.9.3.4           | Biosynthetic gene cluster annotation                                                                                   |
+| [run_dbCAN](https://github.com/linnabrown/run_dbcan)                                             | 4.1.2             | PUL prediction                                                                                                         |
+| [dbCAN database](https://bcb.unl.edu/dbCAN2/download/Databases/)                                 | V12               | Database for run_dbCAN                                                                                                 |
+| [CRISPRCasFinder](https://github.com/dcouvin/CRISPRCasFinder)                                    | 4.3.2             | Annotation of CRISPR arrays                                                                                            |
+| [cmscan](http://eddylab.org/infernal/)                                                           | 1.1.5             | ncRNA predictions                                                                                                      |
+| [Rfam](https://rfam.org/)                                                                        | 14.9              | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
+| [tRNAscan-SE](https://github.com/UCSC-LoweLab/tRNAscan-SE)                                       | 2.0.9             | tRNA predictions                                                                                                       |
 | [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline)                                 | 2.0.0             | Viral sequence annotation                                                                                              |
 | [Mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline) | 2.0               | Mobilome annotation                                                                                                    |
 
