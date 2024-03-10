@@ -4,7 +4,7 @@
 
 # mettannotator
 
-<img align="right" width="200" height="180" src="media/temp-logo.png">
+<img align="right" width="162" height="149" src="media/mettannotator-logo.png">
 
 - [ Introduction ](#intro)
 - [ Workflow and tools](#wf)
