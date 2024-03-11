@@ -80,11 +80,11 @@ EC_ASM584v2,/path/to/GCF_000005845.2.fna,562
 ...
 ```
 Here,
-`prefix` is the prefix and the locus tag that will be assigned to output files, contigs and proteins during the annotation process
+`prefix` is the prefix and the locus tag that will be assigned to output files, contigs and proteins during the annotation process;
 
-`assembly` is the path to where the assembly file in FASTA format is located
+`assembly` is the path to where the assembly file in FASTA format is located;
 
-`taxid` is the NCBI taxid (if the species-level taxid is not known, a taxid for a higher taxonomic level can be used)
+`taxid` is the NCBI taxid (if the species-level taxid is not known, a taxid for a higher taxonomic level can be used).
 
 ### Command
 
@@ -222,10 +222,37 @@ The two main output files for each genome are located in `<OUTDIR>/<PREFIX>/func
 
 - `<PREFIX>_annotations.gff`: annotations produced by all tools merged into a single file
 
-- `<PREFIX>_annotations_with_descriptions.gff`: this is a version of the GFF file above that includes descriptions of all InterPro terms to make the annotations human-readable.
+- `<PREFIX>_annotations_with_descriptions.gff`: a version of the GFF file above that includes descriptions of all InterPro terms to make the annotations human-readable.
 
 Both files include the genome sequence in the FASTA format at the bottom of the file.
 
+#### Data sources
+
+| Column | Feature/Attribute Name                                   | Reporting Tool  | Description                                                            |
+|--------|----------------------------------------------------------|-----------------|------------------------------------------------------------------------|
+| 3      | CDS                                                      | Prokka          | Coordinates associated with the record as reported by Prokka           |
+| 3      | ncRNA                                                    | cmscan + Rfam   | ncRNA annotation (excluding tRNA)                                      |
+| 3      | tRNA                                                     | tRNAscan-SE     | tRNA annotation                                                        |
+| 3      | LeftFLANK, RightFLANK                                    | CRISPRCasFinder | CRISPR array flanking sequence                                         |
+| 3      | CRISPRdr                                                 | CRISPRCasFinder | Direct repeat region of a CRISPR array                                 |
+| 3      | CRISPRspacer                                             | CRISPRCasFinder | CRISPR spacer                                                          |
+| 9      | ID, eC_number, Name, db_xref, gene, inference, locus_tag | Prokka          | Protein annotation                                                     |
+| 9      | product                                                  | mettannotator   | Product assigned as described in [ Determining the product ](#product) |
+| 9      | product_source                                           | mettannotator   | Tool that reported the product chosen by mettannotator.                |
+| 9      | eggNOG                                                   | eggNOG-mapper   | Seed ortholog from eggNOG                                              |
+| 9      | cog                                                      |                 |                                                                        |
+| 9      | kegg                                                     |                 |                                                                        |
+| 9      | Ontology_term                                            |                 |                                                                        |
+| 9      | pfam                                                     |                 |                                                                        |
+| 9      | interpro                                                 |                 |                                                                        |
+|        |                                                          |                 |                                                                        |
+|        |                                                          |                 |                                                                        |
+
+<a name="product"></a>
+#### Determining the product
+The following logic is used by mettannotator to fill out the `product` field in the 9th column of the GFF.
+
+### Contents of the tool output folders
 
 <a name="mobilome"></a>
 ## Mobilome annotation
