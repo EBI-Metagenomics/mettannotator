@@ -12,6 +12,9 @@
 - [ Usage ](#usage)
 - [ Test ](#test)
 - [ Outputs ](#out)
+- [ Mobilome annotation ](#mobilome)
+- [ Credits ](#credit)
+- [ Contributions and Support ](#contribute)
 - [ Citation ](#cite)
 
 <a name="intro"></a>
@@ -177,15 +180,71 @@ nextflow run ebi-metagenomics/mettannotator \
 <a name="out"></a>
 ## Outputs
 
+The output folder structure will look as follows:
+```
+   |-<PREFIX>
+   |---antimicrobial_resistance
+   |-----amrfinder_plus
+   |---antiphage_defense
+   |-----defense_finder
+   |---biosynthetic_gene_clusters
+   |-----antismash
+   |-----gecco
+   |-----sanntis
+   |---functional_annotation
+   |-----dbcan
+   |-----eggnog_mapper
+   |-----interproscan
+   |-----merged_gff
+   |-----prokka
+   |-----unifire
+   |---mobilome
+   |-----crisprcas_finder
+   |---quast
+   |-----<PREFIX>
+   |-------basic_stats
+   |-------icarus_viewers
+   |---rnas
+   |-----ncrna
+   |-----trna
+   |-multiqc
+   |---multiqc_data
+   |---multiqc_plots
+   |-----pdf
+   |-----png
+   |-----svg
+   |-pipeline_info
+```
 
+### Merged GFF
+
+The two main output files for each genome are located in `<OUTDIR>/<PREFIX>/functional_annotation/merged_gff/`:
+
+- `<PREFIX>_annotations.gff`: annotations produced by all tools merged into a single file
+
+- `<PREFIX>_annotations_with_descriptions.gff`: this is a version of the GFF file above that includes descriptions of all InterPro terms to make the annotations human-readable.
+
+Both files include the genome sequence in the FASTA format at the bottom of the file.
+
+
+<a name="mobilome"></a>
+## Mobilome annotation
+
+The mobilome annotation workflow is not currently integrated into mettannotator. However, the outputs produced by mettannotator can be used to run [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline) and the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline).
+
+TODO: describe how to run these
+
+<a name="credit"></a>
 ## Credits
 
 ebi-metagenomics/mettannotator was originally written by the Microbiome Informatics Team at [EMBL-EBI](https://www.ebi.ac.uk/about/teams/microbiome-informatics/)
 
+<a name="contribute"></a>
 ## Contributions and Support
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
+<a name="cite"></a>
 ## Citations
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
