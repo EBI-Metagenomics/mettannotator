@@ -227,6 +227,7 @@ The two main output files for each genome are located in `<OUTDIR>/<PREFIX>/func
 Both files include the genome sequence in the FASTA format at the bottom of the file.
 
 #### Data sources
+Below is an explanation of how each field in column 3 and 9 of the final GFF file is populated. In most cases, information is taken as is from the reporting tool's output.
 
 | Column | Feature/Attribute Name                                   | Reporting Tool  | Description                                                            |
 |--------|----------------------------------------------------------|-----------------|------------------------------------------------------------------------|
