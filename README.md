@@ -70,15 +70,21 @@ All necessary databases will be automatically downloaded during the execution of
 <a name="usage"></a>
 ## Usage
 
-First, prepare a assemblies_sheet with your input data that looks as follows:
+First, prepare an input file that looks as follows:
 
 `assemblies_sheet.csv`:
 
 ```csv
 prefix,assembly,taxid
-BU_ATCC8492VPI0062_NT5002,BU_ATCC8492VPI0062_NT5002.fa,820
+BU_ATCC8492VPI0062,/path/to/BU_ATCC8492VPI0062_NT5002.fa,820
 ...
 ```
+`prefix` is the prefix and the locus tag that will be assigned to output files, contigs and proteins during the annotation process.
+
+`assembly` is the path to where the assembly file is located
+
+`taxid` is the NCBI taxid (if species-level taxid is not known, a taxid for a higher taxonomic level can be used)
+
 
 Now, you can run the pipeline using:
 
