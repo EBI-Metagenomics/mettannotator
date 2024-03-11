@@ -19,7 +19,7 @@
           "mimetype": "text/csv",
           "pattern": "^\\S+\\.csv$",
           "schema": "assets/schema_input.json",
-          "description": "Path to comma-separated file containing information about the assemblies with the prefix to be used.",
+          "description": "Path to comma-separated file containing information about the assemblies with the prefix to be used and the taxid.",
           "help_text": "You will need to create a design file with information about the assemblies running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
           "fa_icon": "fas fa-file-csv"
         },
