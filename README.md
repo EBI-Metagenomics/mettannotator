@@ -229,24 +229,24 @@ Both files include the genome sequence in the FASTA format at the bottom of the 
 #### Data sources
 Below is an explanation of how each field in column 3 and 9 of the final GFF file is populated. In most cases, information is taken as is from the reporting tool's output.
 
-| Feature (column 3)    | Attribute Name (column 9)                                | Reporting Tool  | Description                                                            |
-|-----------------------|----------------------------------------------------------|-----------------|------------------------------------------------------------------------|
-| ncRNA                 | all                                                      | cmscan + Rfam   | ncRNA annotation (excluding tRNA)                                      |
-| tRNA                  | all                                                      | tRNAscan-SE     | tRNA annotation                                                        |
-| LeftFLANK, RightFLANK | all                                                      | CRISPRCasFinder | CRISPR array flanking sequence                                         |
-| CRISPRdr              | all                                                      | CRISPRCasFinder | Direct repeat region of a CRISPR array                                 |
-| CRISPRspacer          | all                                                       | CRISPRCasFinder | CRISPR spacer                                                          |
-| CDS                   | `ID`, `eC_number`, `Name`, `db_xref`, `gene`, `inference`, `locus_tag` | Prokka          | Protein annotation                                                     |
+| Feature (column 3)    | Attribute Name (column 9)                                | Reporting Tool  | Description                                                           |
+|-----------------------|----------------------------------------------------------|-----------------|-----------------------------------------------------------------------|
+| ncRNA                 | all                                                      | cmscan + Rfam   | ncRNA annotation (excluding tRNA)                                     |
+| tRNA                  | all                                                      | tRNAscan-SE     | tRNA annotation                                                       |
+| LeftFLANK, RightFLANK | all                                                      | CRISPRCasFinder | CRISPR array flanking sequence                                        |
+| CRISPRdr              | all                                                      | CRISPRCasFinder | Direct repeat region of a CRISPR array                                |
+| CRISPRspacer          | all                                                       | CRISPRCasFinder | CRISPR spacer                                                         |
+| CDS                   | `ID`, `eC_number`, `Name`, `db_xref`, `gene`, `inference`, `locus_tag` | Prokka          | Protein annotation                                                    |
 | CDS                   | `product`                                                 | mettannotator   | Product assigned as described in [ Determining the product ](#product) |
-| CDS                   | `product_source`                                          | mettannotator   | Tool that reported the product chosen by mettannotator.                |
-| CDS                   | `eggNOG`                                                  | eggNOG-mapper   | Seed ortholog from eggNOG                                              |
-| CDS                   | `cog`                                                     |                 |                                                                        |
-| CDS                   | `kegg`                                                    |                 |                                                                        |
-| CDS                   | `Ontology_term`                                           |                 |                                                                        |
-| CDS                   | `pfam`                                                     |                 |                                                                        |
-| CDS                   | `interpro`                                                 |                 |                                                                        |
-|                       |                                                          |                 |                                                                        |
-|                       |                                                          |                 |                                                                        |
+| CDS                   | `product_source`                                          | mettannotator   | Tool that reported the product chosen by mettannotator                |
+| CDS                   | `eggNOG`                                                  | eggNOG-mapper   | Seed ortholog from eggNOG                                             |
+| CDS                   | `cog`                                                     |                 |                                                                       |
+| CDS                   | `kegg`                                                    |                 |                                                                       |
+| CDS                   | `Ontology_term`                                           |                 |                                                                       |
+| CDS                   | `pfam`                                                     |                 |                                                                       |
+| CDS                   | `interpro`                                                 |                 |                                                                       |
+|                       |                                                          |                 |                                                                       |
+|                       |                                                          |                 |                                                                       |
 
 <a name="product"></a>
 #### Determining the product
