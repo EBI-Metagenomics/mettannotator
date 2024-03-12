@@ -109,8 +109,10 @@ def sanity_check(mobilome_dict, printed_list):
 
 def look_for_lines_to_print(mobilome_dict, contig, start, printed_list):
     lines_to_print = list()
+    if contig not in mobilome_dict:
+        return lines_to_print
     for interval in mobilome_dict[contig]:
-        if interval[1] <= start and mobilome_dict[contig][interval] not in printed_list:
+        if interval[0] < start and mobilome_dict[contig][interval] not in printed_list:
             lines_to_print.append(mobilome_dict[contig][interval])
     return lines_to_print
 
