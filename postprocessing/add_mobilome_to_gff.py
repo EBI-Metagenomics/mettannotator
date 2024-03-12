@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import logging
 import re
 
 
@@ -54,9 +53,7 @@ def main(mobilome_file, infile, outfile):
                     for line_to_print in lines_to_print:
                         if line_to_print not in printed_list:
                             # print the mobilome line first
-                            file_out.write(
-                                line_to_print
-                            )
+                            file_out.write(line_to_print)
                             printed_list.append(line_to_print)
                         if feature == "CDS":
                             add_to_cds = ""
@@ -172,7 +169,8 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description=(
             "The script takes the mobilome GFF and the genome annotation GFF produced by mettannotator "
-            "as inputs and adds mobilome to the main GFF."
+            "as inputs and adds mobilome to the main GFF. The current version of the script is project specific "
+            "and is not meant to be a part of the general annotation workflow."
         )
     )
     parser.add_argument(
@@ -184,14 +182,14 @@ def parse_args():
     parser.add_argument(
         "-i",
         dest="infile",
-        required=False,
-        help=("The GFF annotation file produced by mettannotator."),
+        required=True,
+        help="The GFF annotation file produced by mettannotator.",
     )
     parser.add_argument(
         "-o",
         dest="outfile",
-        required=False,
-        help=("The name of the file the result will be saved to."),
+        required=True,
+        help="The name of the file the result will be saved to.",
     )
     return parser.parse_args()
 
