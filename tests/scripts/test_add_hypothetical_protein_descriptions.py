@@ -156,7 +156,7 @@ class TestHypotheticalProteinAnnotation(unittest.TestCase):
         func = "2,3-containing domain, functional protein; integrase"
         result = escape_reserved_characters(func)
         self.assertEqual(
-            result, "2%2C3-containing domain/ functional protein\; integrase"
+            result, "2%2C3-containing domain/ functional protein/ integrase"
         )
 
     def test_clean_up_function_domain(self):

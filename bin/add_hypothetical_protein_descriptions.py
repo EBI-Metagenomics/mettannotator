@@ -597,7 +597,10 @@ def escape_reserved_characters(string):
     reserved_characters = [";", "=", "&"]
     for ch in reserved_characters:
         if ch in string:
-            string = string.replace(ch, "\{}".format(ch))
+            if ch == ';':
+                string = string.replace(ch, "/")
+            else:
+                string = string.replace(ch, "\{}".format(ch))
     return string
 
 
