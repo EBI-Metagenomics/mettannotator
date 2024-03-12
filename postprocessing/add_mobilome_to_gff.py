@@ -93,7 +93,18 @@ def main(mobilome_file, infile, outfile):
                     file_out.write(line)
                 else:
                     file_out.write(line)
-    # Todo: check that the lenght of printed list is identical to how many mobilome lines there were
+    sanity_check(mobilome_dict, printed_list)
+
+
+def sanity_check(mobilome_dict, printed_list):
+    """Check that the number of records added to the GFF matches the number of records in the mobilome file"""
+    printed_list_length = len(list(set(printed_list)))
+    mobilome_count = sum(len(inner_dict) for inner_dict in mobilome_dict.values())
+    assert (
+        printed_list_length == mobilome_count
+    ), "The number of mobilome entries added to the GFF does not match the expected count: added {}, expected{}".format(
+        printed_list_length, mobilome_count
+    )
 
 
 def look_for_lines_to_print(mobilome_dict, contig, start, printed_list):
