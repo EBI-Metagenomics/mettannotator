@@ -62,7 +62,7 @@ def main(mobilome_file, infile, outfile):
                                 re.split(r"(?<!\\)=", item)
                                 for item in re.split(r"(?<!\\);", mge_col9)
                             )
-                            add_to_cds += "mge_id={}".format(attributes_dict["ID"])
+                            add_to_cds += "mge_id={}".format(attributes_dict["ID"])  # Todo: cannot do this, it will give me multiple of the same key
                             if "merged_types" in attributes_dict:
                                 add_to_cds += ";mge_types={}".format(
                                     attributes_dict["merged_types"]
