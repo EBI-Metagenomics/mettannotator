@@ -1,7 +1,3 @@
-/*
- * eggNOG-mapper
-*/
-
 process EGGNOG_MAPPER {
 
     tag "${meta.prefix}"
@@ -29,6 +25,7 @@ process EGGNOG_MAPPER {
         --database ${eggnog_db_dir}/eggnog.db \
         --dmnd_db ${eggnog_db_dir}/eggnog_proteins.dmnd \
         --data_dir ${eggnog_db_dir} \
+        --dbmem \
         -m diamond \
         --no_file_comments \
         --cpu ${task.cpus} \

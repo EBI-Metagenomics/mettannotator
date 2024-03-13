@@ -16,6 +16,7 @@
 #
 
 import argparse
+import re
 
 
 def split_cds_to_gene_exon_mrna(entry):
@@ -35,7 +36,9 @@ def split_cds_to_gene_exon_mrna(entry):
 
         # tweak IDs and add Parent attributes
         attributes = entry[8]
-        attributes_dict = dict(item.split("=") for item in attributes.split(";"))
+        attributes_dict = dict(
+            re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", attributes)
+        )
         if "ID" in attributes_dict:
             gene_id = attributes_dict["ID"]  # use the cds ID as the gene ID
 

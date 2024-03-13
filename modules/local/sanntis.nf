@@ -5,7 +5,7 @@ process SANNTIS {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/microbiome-informatics/sanntis:0.9.3.2'
+    container 'quay.io/microbiome-informatics/sanntis:0.9.3.4'
 
     input:
     tuple val(meta), path(interproscan_tsv), path(prokka_gbk)
@@ -21,6 +21,7 @@ process SANNTIS {
         sanntis \
         --ip-file interproscan.tsv \
         --outfile ${meta.prefix}_sanntis.gff \
+        --cpu ${task.cpus} \
         ${prokka_gbk}
 
         cat <<-END_VERSIONS > versions.yml

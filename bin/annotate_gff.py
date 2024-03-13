@@ -14,8 +14,95 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import argparse
 import sys
+
+
+def main(
+    gff,
+    ipr_file,
+    eggnog_file,
+    sanntis_file,
+    crispr_file,
+    amr_file,
+    antismash_file,
+    gecco_file,
+    dbcan_file,
+    defense_finder_file,
+    rfam_file,
+    trnascan_file,
+    outfile,
+):
+    # load annotations and add them to existing CDS
+    # here header contains leading GFF lines starting with "#",
+    # main_gff_extended is a dictionary that contains Prokka GFF lines with added in additional annotations
+    # fasta is the fasta portion of the Prokka GFF files
+    header, main_gff_extended, fasta = load_annotations(
+        gff,
+        eggnog_file,
+        ipr_file,
+        sanntis_file,
+        amr_file,
+        antismash_file,
+        gecco_file,
+        dbcan_file,
+        defense_finder_file,
+    )
+
+    ncrnas = get_ncrnas(rfam_file)
+    trnas = get_trnas(trnascan_file)
+    crispr_annotations = {}
+    if args.crispr:
+        crispr_annotations = load_crispr(crispr_file)
+
+    write_results_to_file(
+        outfile, header, main_gff_extended, fasta, ncrnas, trnas, crispr_annotations
+    )
+
+
+def write_results_to_file(
+    outfile, header, main_gff_extended, fasta, ncrnas, trnas, crispr_annotations
+):
+    with open(outfile, "w") as file_out:
+        file_out.write("\n".join(header) + "\n")
+        contig_list = list(main_gff_extended.keys())
+        # check if there are any contigs that don't have CDS; if so add them in
+        contig_list = check_for_additional_keys(
+            ncrnas, trnas, crispr_annotations, contig_list
+        )
+        for contig in contig_list:
+            sorted_pos_list = sort_positions(
+                contig, main_gff_extended, ncrnas, trnas, crispr_annotations
+            )
+            for pos in sorted_pos_list:
+                for my_dict in (ncrnas, trnas, crispr_annotations, main_gff_extended):
+                    if contig in my_dict and pos in my_dict[contig]:
+                        for line in my_dict[contig][pos]:
+                            if type(line) == str:
+                                file_out.write("{}\n".format(line))
+                            else:
+                                for element in line:
+                                    file_out.write(element)
+        for line in fasta:
+            file_out.write("{}\n".format(line))
+
+
+def sort_positions(contig, main_gff_extended, ncrnas, trnas, crispr_annotations):
+    sorted_pos_list = list()
+    for my_dict in (main_gff_extended, ncrnas, trnas, crispr_annotations):
+        if contig in my_dict:
+            sorted_pos_list += list(my_dict[contig].keys())
+    return sorted(list(set(sorted_pos_list)))
+
+
+def check_for_additional_keys(ncrnas, trnas, crispr_annotations, contig_list):
+    for my_dict in (ncrnas, trnas, crispr_annotations):
+        dict_keys = set(my_dict.keys())
+        absent_keys = dict_keys - set(contig_list)
+        if absent_keys:
+            contig_list = contig_list + list(absent_keys)
+    return contig_list
 
 
 def get_iprs(ipr_annot):
@@ -24,6 +111,12 @@ def get_iprs(ipr_annot):
         for line in f:
             cols = line.strip().split("\t")
             protein = cols[0]
+            try:
+                evalue = float(cols[8])
+            except ValueError:
+                continue
+            if evalue > 1e-10:
+                continue
             if protein not in iprs:
                 iprs[protein] = [set(), set()]
             if cols[3] == "Pfam":
@@ -45,17 +138,22 @@ def get_eggnog(eggnog_annot):
             if line.startswith("#"):
                 eggnog_fields = get_eggnog_fields(line)
             else:
+                try:
+                    evalue = float(cols[2])
+                except ValueError:
+                    continue
+                if evalue > 1e-10:
+                    continue
                 protein = cols[0]
                 eggnog = [cols[1]]
-                try:
-                    cog = cols[eggnog_fields["cog_func"]]
-                    cog = list(cog)
-                    if len(cog) > 1:
-                        cog = ["R"]
-                except Exception:
-                    cog = ["NA"]
+
+                cog = list(cols[eggnog_fields["cog_func"]])
+                if len(cog) > 1:
+                    cog = ["R"]
+
                 kegg = cols[eggnog_fields["KEGG_ko"]].split(",")
-                go = cols[eggnog_fields["GOs"]]
+                # Todo: I added splitting to GO, check that I don't break anything later on
+                go = cols[eggnog_fields["GOs"]].split(",")
                 eggnogs[protein] = [eggnog, cog, kegg, go]
     return eggnogs
 
@@ -79,6 +177,8 @@ def get_bgcs(bgc_file, prokka_gff, tool):
     cluster_positions = dict()
     tool_result = dict()
     bgc_annotations = dict()
+    if not bgc_file:
+        return bgc_annotations
     # save positions of each BGC cluster to dictionary cluster_positions
     # and save the annotations to dictionary bgc_result
     with open(bgc_file, "r") as bgc_in:
@@ -205,6 +305,8 @@ def get_bgcs(bgc_file, prokka_gff, tool):
 
 def get_amr(amr_file):
     amr_annotations = {}
+    if not amr_file:
+        return amr_annotations
     with open(amr_file, "r") as f:
         for line in f:
             if line.startswith("Protein identifier"):
@@ -235,9 +337,9 @@ def get_amr(amr_file):
                 seq_name = seq_name.replace("=", " ")
             amr_annotations[protein_id] = ";".join(
                 [
-                    "AMRFinderPlus_gene_symbol={}".format(gene_name),
-                    "AMRFinderPlus_sequence_name={}".format(seq_name),
-                    "AMRFinderPlus_scope={}".format(scope),
+                    "amrfinderplus_gene_symbol={}".format(gene_name),
+                    "amrfinderplus_sequence_name={}".format(seq_name),
+                    "amrfinderplus_scope={}".format(scope),
                     "element_type={}".format(element_type),
                     "element_subtype={}".format(element_subtype),
                     "drug_class={}".format(drug_class),
@@ -250,6 +352,8 @@ def get_amr(amr_file):
 def get_dbcan(dbcan_file):
     dbcan_annotations = dict()
     substrates = dict()
+    if not dbcan_file:
+        return dbcan_annotations
     with open(dbcan_file, "r") as f:
         for line in f:
             if "predicted PUL" in line:
@@ -291,6 +395,8 @@ def get_dbcan(dbcan_file):
 def get_defense_finder(df_file):
     defense_finder_annotations = dict()
     type_info = dict()
+    if not df_file:
+        return defense_finder_annotations
     with open(df_file, "r") as f:
         for line in f:
             if "Anti-phage system" in line:
@@ -319,7 +425,7 @@ def get_defense_finder(df_file):
     return defense_finder_annotations
 
 
-def add_gff(
+def load_annotations(
     in_gff,
     eggnog_file,
     ipr_file,
@@ -335,20 +441,23 @@ def add_gff(
     sanntis_bgcs = get_bgcs(sanntis_file, in_gff, tool="sanntis")
     gecco_bgcs = get_bgcs(gecco_file, in_gff, tool="gecco")
     antismash_bgcs = get_bgcs(antismash_file, in_gff, tool="antismash")
-    amr_annotations = {}
-    if amr_file:
-        amr_annotations = get_amr(amr_file)
+    amr_annotations = get_amr(amr_file)
     dbcan_annotations = get_dbcan(dbcan_file)
     defense_finder_annotations = get_defense_finder(defense_finder_file)
     added_annot = {}
-    out_gff = []
+    main_gff = dict()
+    header = []
+    fasta = []
+    fasta_flag = False
     with open(in_gff, "r") as f:
         for line in f:
             line = line.strip()
-            if line[0] != "#":
+            if line[0] != "#" and not fasta_flag:
                 cols = line.split("\t")
                 if len(cols) == 9:
-                    annot = cols[8]
+                    contig, feature, start, annot = cols[0], cols[2], cols[3], cols[8]
+                    if feature != "CDS":
+                        continue
                     protein = annot.split(";")[0].split("=")[-1]
                     added_annot[protein] = {}
                     try:
@@ -360,12 +469,12 @@ def add_gff(
                                 if pos == 1:
                                     added_annot[protein]["eggNOG"] = a
                                 elif pos == 2:
-                                    added_annot[protein]["COG"] = a
+                                    added_annot[protein]["cog"] = a
                                 elif pos == 3:
-                                    added_annot[protein]["KEGG"] = a
+                                    added_annot[protein]["kegg"] = a
                                 elif pos == 4:
-                                    added_annot[protein]["ontology_term"] = a
-                    except Exception:
+                                    added_annot[protein]["Ontology_term"] = a
+                    except KeyError:
                         pass
                     try:
                         iprs[protein]
@@ -375,45 +484,45 @@ def add_gff(
                             a = list(a)
                             if a != [""] and a:
                                 if pos == 1:
-                                    added_annot[protein]["Pfam"] = a
+                                    added_annot[protein]["pfam"] = sorted(a)
                                 elif pos == 2:
-                                    added_annot[protein]["InterPro"] = a
-                    except Exception:
+                                    added_annot[protein]["interpro"] = sorted(a)
+                    except KeyError:
                         pass
                     try:
                         sanntis_bgcs[protein]
                         for key, value in sanntis_bgcs[protein].items():
                             added_annot[protein][key] = value
-                    except Exception:
+                    except KeyError:
                         pass
                     try:
                         gecco_bgcs[protein]
                         for key, value in gecco_bgcs[protein].items():
                             added_annot[protein][key] = value
-                    except Exception:
+                    except KeyError:
                         pass
                     try:
                         antismash_bgcs[protein]
                         for key, value in antismash_bgcs[protein].items():
                             added_annot[protein][key] = value
-                    except Exception:
+                    except KeyError:
                         pass
                     try:
                         amr_annotations[protein]
                         added_annot[protein]["AMR"] = amr_annotations[protein]
-                    except Exception:
+                    except KeyError:
                         pass
                     try:
                         dbcan_annotations[protein]
                         added_annot[protein]["dbCAN"] = dbcan_annotations[protein]
-                    except Exception:
+                    except KeyError:
                         pass
                     try:
                         defense_finder_annotations[protein]
                         added_annot[protein]["defense_finder"] = (
                             defense_finder_annotations[protein]
                         )
-                    except Exception:
+                    except KeyError:
                         pass
                     for a in added_annot[protein]:
                         value = added_annot[protein][a]
@@ -425,11 +534,21 @@ def add_gff(
                             if not value == "-":
                                 cols[8] = "{};{}={}".format(cols[8], a, value)
                     line = "\t".join(cols)
-            out_gff.append(line)
-    return out_gff
+                    main_gff.setdefault(contig, dict()).setdefault(
+                        int(start), list()
+                    ).append(line)
+            elif line.startswith("#"):
+                if line == "##FASTA":
+                    fasta_flag = True
+                    fasta.append(line)
+                else:
+                    header.append(line)
+            elif fasta_flag:
+                fasta.append(line)
+    return header, main_gff, fasta
 
 
-def get_rnas(ncrnas_file):
+def get_ncrnas(ncrnas_file):
     ncrnas = {}
     counts = 0
     with open(ncrnas_file, "r") as f:
@@ -441,6 +560,9 @@ def get_rnas(ncrnas_file):
                 locus = "{}_ncRNA{}".format(contig, counts)
                 product = " ".join(cols[26:])
                 model = cols[2]
+                if model == "RF00005":
+                    # Skip tRNAs, we add them from tRNAscan-SE
+                    continue
                 strand = cols[11]
                 if strand == "+":
                     start = int(cols[9])
@@ -448,90 +570,94 @@ def get_rnas(ncrnas_file):
                 else:
                     start = int(cols[10])
                     end = int(cols[9])
-                ncrnas.setdefault(contig, list()).append(
-                    [locus, start, end, product, model, strand]
+                annot = [
+                    "ID=" + locus,
+                    "inference=Rfam:14.9",
+                    "locus_tag=" + locus,
+                    "product=" + product,
+                    "rfam=" + model,
+                ]
+                annot = ";".join(annot)
+                newline = "\t".join(
+                    [
+                        contig,
+                        "INFERNAL:1.1.4",
+                        "ncRNA",
+                        str(start),
+                        str(end),
+                        ".",
+                        strand,
+                        ".",
+                        annot,
+                    ]
                 )
-                # if contig not in ncrnas:
-                #    ncrnas[contig] = [[locus, start, end, product, model, strand]]
-                # else:
-                #    ncrnas[contig].append([locus, start, end, product, model, strand])
+                ncrnas.setdefault(contig, dict()).setdefault(start, list()).append(
+                    newline
+                )
     return ncrnas
+
+
+def get_trnas(trnas_file):
+    trnas = {}
+    with open(trnas_file, "r") as f:
+        for line in f:
+            if not line.startswith("#"):
+                cols = line.split("\t")
+                contig, feature, start = cols[0], cols[2], cols[3]
+                if feature == "tRNA":
+                    line = line.replace("tRNAscan-SE", "tRNAscan-SE:2.0.9")
+                    trnas.setdefault(contig, dict()).setdefault(
+                        int(start), list()
+                    ).append(line.strip())
+    return trnas
 
 
 def load_crispr(crispr_file):
     crispr_annotations = dict()
     with open(crispr_file, "r") as f:
+        record = list()
+        left_coord = ""
+        loc_contig = ""
+        previous_end = ""
         for line in f:
             if not line.startswith("#"):
-                contig = line.split("\t")[0]
-                crispr_annotations.setdefault(contig, list())
-                crispr_annotations[contig].append(line)
+                cols = line.strip().split("\t")
+                contig, feature, start, end = (
+                    cols[0],
+                    cols[2],
+                    int(cols[3]),
+                    int(cols[4]),
+                )
+                if (
+                    len(record) > 0
+                    and contig == loc_contig
+                    and abs(start - previous_end) < 2
+                ):
+                    # the line is a continuation of an existing record
+                    record.append(line)
+                    previous_end = end
+                elif len(record) == 0:
+                    record.append(line)
+                    left_coord = start
+                    loc_contig = contig
+                    previous_end = end
+                else:
+                    # the previous record is complete, started reading a new record
+                    crispr_annotations.setdefault(contig, dict()).setdefault(
+                        left_coord, list()
+                    ).append(record)
+                    record = list()
+                    record.append(line)
+                    previous_end = end
+                    left_coord = start
+        if len(record) > 0:
+            crispr_annotations.setdefault(contig, dict()).setdefault(
+                left_coord, list()
+            ).append(record)
     return crispr_annotations
 
 
-def add_ncrnas_and_crispr_to_gff(gff_outfile, ncrnas, crispr_annotations, res):
-    gff_out = open(gff_outfile, "w")
-    added_ncrnas = set()
-    added_crisprs = set()
-    for line in res:
-        cols = line.strip().split("\t")
-        if line[0] != "#" and len(cols) == 9:
-            if cols[2] == "CDS":
-                contig = cols[0]
-                if contig in ncrnas:
-                    for c in ncrnas[contig]:
-                        locus = c[0]
-                        start = str(c[1])
-                        end = str(c[2])
-                        product = c[3]
-                        model = c[4]
-                        strand = c[5]
-                        if locus not in added_ncrnas:
-                            added_ncrnas.add(locus)
-                            annot = [
-                                "ID=" + locus,
-                                "inference=Rfam:14.9",
-                                "locus_tag=" + locus,
-                                "product=" + product,
-                                "rfam=" + model,
-                            ]
-                            annot = ";".join(annot)
-                            newLine = [
-                                contig,
-                                "INFERNAL:1.1.4",
-                                "ncRNA",
-                                start,
-                                end,
-                                ".",
-                                strand,
-                                ".",
-                                annot,
-                            ]
-                            gff_out.write("\t".join(newLine) + "\n")
-                if contig in crispr_annotations:
-                    for crispr_line in crispr_annotations[contig]:
-                        crispr_parts = crispr_line.strip().split("\t")
-                        if (
-                            "{}_{}_{}".format(
-                                crispr_parts[2], crispr_parts[3], crispr_parts[4]
-                            )
-                            not in added_crisprs
-                        ):
-                            added_crisprs.add(
-                                "{}_{}_{}".format(
-                                    crispr_parts[2], crispr_parts[3], crispr_parts[4]
-                                )
-                            )
-                            gff_out.write(crispr_line)
-                gff_out.write("{}\n".format(line))
-        #            else:
-        #                gff_out.write("{}\n".format(line))
-        else:
-            gff_out.write("{}\n".format(line))
-    gff_out.close()
-
-
-if __name__ == "__main__":
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Add functional annotation to GFF file",
     )
@@ -551,7 +677,7 @@ if __name__ == "__main__":
         "-e",
         dest="eggnog",
         help="eggnog annotations for the cluster repo",
-        required=False,
+        required=True,
     )
     parser.add_argument(
         "-s",
@@ -592,31 +718,28 @@ if __name__ == "__main__":
         required=False,
     )
     parser.add_argument("-r", dest="rfam", help="Rfam results", required=True)
-    parser.add_argument("-o", dest="outfile", help="Outfile name", required=False)
-
-    args = parser.parse_args()
-
-    gff = args.gff_input
-
-    extended_gff = add_gff(
-        in_gff=gff,
-        eggnog_file=args.eggnog,
-        ipr_file=args.ips,
-        sanntis_file=args.sanntis,
-        amr_file=args.amr,
-        antismash_file=args.antismash,
-        gecco_file=args.gecco,
-        dbcan_file=args.dbcan,
-        defense_finder_file=args.defense_finder,
+    parser.add_argument(
+        "-t", dest="trnascan", help="tRNAScan-SE results", required=True
     )
+    parser.add_argument("-o", dest="outfile", help="Outfile name", required=True)
 
-    ncRNAs = get_rnas(args.rfam)
-    crispr_annotations = {}
-    if args.crispr:
-        crispr_annotations = load_crispr(args.crispr)
+    return parser.parse_args()
 
-    outfile = gff.split(".gff")[0] + "_annotated.gff"
-    if args.outfile:
-        outfile = args.outfile
 
-    add_ncrnas_and_crispr_to_gff(outfile, ncRNAs, crispr_annotations, extended_gff)
+if __name__ == "__main__":
+    args = parse_args()
+    main(
+        args.gff_input,
+        args.ips,
+        args.eggnog,
+        args.sanntis,
+        args.crispr,
+        args.amr,
+        args.antismash,
+        args.gecco,
+        args.dbcan,
+        args.defense_finder,
+        args.rfam,
+        args.trnascan,
+        args.outfile,
+    )

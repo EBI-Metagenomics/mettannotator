@@ -37,7 +37,7 @@ include { CRISPRCAS_FINDER                           } from '../modules/local/cr
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
 include { INTERPROSCAN                               } from '../modules/local/interproscan'
-include { DETECT_RRNA                                } from '../modules/local/detect_rrna'
+include { DETECT_TRNA                                } from '../modules/local/detect_trna'
 include { DETECT_NCRNA                               } from '../modules/local/detect_ncrna'
 include { SANNTIS                                    } from '../modules/local/sanntis'
 include { UNIFIRE                                    } from '../modules/local/unifire'
@@ -51,6 +51,7 @@ include { DBCAN_GETDB                                } from '../modules/local/db
 include { DEFENSE_FINDER_GETDB                       } from '../modules/local/defense_finder_getdb'
 include { EGGNOG_MAPPER_GETDB                        } from '../modules/local/eggnog_getdb'
 include { INTEPROSCAN_GETDB                          } from '../modules/local/interproscan_getdb'
+include { INTEPRO_ENTRY_LIST_GETDB                   } from '../modules/local/interpro_list_getdb'
 include { RFAM_GETMODELS                             } from '../modules/local/rfam_getmodels'
 
 /*
@@ -58,9 +59,9 @@ include { RFAM_GETMODELS                             } from '../modules/local/rf
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { GECCO_RUN } from '../modules/nf-core/gecco/run/main'
-include { QUAST } from '../modules/nf-core/quast/main'
-include { MULTIQC } from '../modules/nf-core/multiqc/main'
+include { GECCO_RUN                   } from '../modules/nf-core/gecco/run/main'
+include { QUAST                       } from '../modules/nf-core/quast/main'
+include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
@@ -83,12 +84,12 @@ defense_finder_db = channel.empty()
 dbcan_db = channel.empty()
 
 interproscan_db = channel.empty()
+interpro_entry_list = channel.empty()
 
 eggnog_db = channel.empty()
 eggnog_diamond_db = channel.empty()
 eggnog_data = channel.empty()
 
-rfam_rrna_models = channel.empty()
 rfam_ncrna_models = channel.empty()
 
 /*
@@ -106,6 +107,7 @@ workflow DOWNLOAD_DATABASES {
         defense_finder_db = channel.empty()
         dbcan_db = channel.empty()
         interproscan_db = channel.empty()
+        interpro_entry_list = channel.empty()
         eggnog_db = channel.empty()
 
         amrfinder_plus_dir = file("$params.dbs/amrfinder/")
@@ -113,8 +115,8 @@ workflow DOWNLOAD_DATABASES {
         defense_finder_dir = file("$params.dbs/defense_finder/")
         dbcan_dir = file("$params.dbs/dbcan/")
         interproscan_dir = file("$params.dbs/interproscan")
+        interpro_entry_list_dir = file("$params.dbs/interproscan_entry_list/")
         eggnog_data_dir = file("$params.dbs/eggnog")
-        rfam_rrna_models = file("$params.dbs/rfam_models/rfam_rrna_cms")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
 
         if (amrfinder_plus_dir.exists()) {
@@ -173,6 +175,17 @@ workflow DOWNLOAD_DATABASES {
             interproscan_db = INTEPROSCAN_GETDB.out.interproscan_db.first()
         }
 
+        if (interpro_entry_list_dir.exists()) {
+            log.info("InterPro entry list file exists, or at least the expected folder.")
+            interpro_entry_list = tuple(
+                interpro_entry_list_dir,
+                file("${interpro_entry_list_dir}/VERSION.txt", checkIfExists: true).text // the DB version
+            )
+        } else {
+            INTEPRO_ENTRY_LIST_GETDB()
+            interpro_entry_list = INTEPRO_ENTRY_LIST_GETDB.out.interpro_entry_list.first()
+        }
+
         if (eggnog_data_dir.exists()) {
             log.info("EggNOG mapper database exists, or at least the expected folder.")
             eggnog_data = tuple(
@@ -181,19 +194,14 @@ workflow DOWNLOAD_DATABASES {
             )
         } else {
             EGGNOG_MAPPER_GETDB()
-            eggnog_db = EGGNOG_MAPPER_GETDB.out.eggnog_db
+            eggnog_db = EGGNOG_MAPPER_GETDB.out.eggnog_db.first()
         }
 
-        if (!rfam_rrna_models.exists() || !rfam_ncrna_models.exists()) {
+        if (!rfam_ncrna_models.exists()) {
             RFAM_GETMODELS()
-            rfam_rrna_models = RFAM_GETMODELS.out.rfam_rrna_cms
-            rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms
+            rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms.first()
         } else {
             log.info("RFam model files exists, or at least the expected folders.")
-            rfam_rrna_models = tuple(
-                rfam_rrna_models,
-                file("${rfam_rrna_models}/VERSION.txt", checkIfExists: true).text
-            )
             rfam_ncrna_models = tuple(
                 rfam_ncrna_models,
                 file("${rfam_ncrna_models}/VERSION.txt", checkIfExists: true).text
@@ -205,8 +213,8 @@ workflow DOWNLOAD_DATABASES {
         defense_finder_db = defense_finder_db
         dbcan_db = dbcan_db
         interproscan_db = interproscan_db
+        interpro_entry_list = interpro_entry_list
         eggnog_db = eggnog_db
-        rfam_rrna_models = rfam_rrna_models
         rfam_ncrna_models = rfam_ncrna_models
 
 }
@@ -236,9 +244,10 @@ workflow METTANNOTATOR {
 
         interproscan_db = DOWNLOAD_DATABASES.out.interproscan_db
 
+        interpro_entry_list = DOWNLOAD_DATABASES.out.interpro_entry_list
+
         eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
 
-        rfam_rrna_models = DOWNLOAD_DATABASES.out.rfam_rrna_models
         rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
     } else {
         // Use the parametrized folders and files for the databases //
@@ -267,15 +276,16 @@ workflow METTANNOTATOR {
             params.interproscan_db_version
         )
 
+        interpro_entry_list = tuple(
+            file(params.interpro_entry_list, checkIfExists: true),
+            params.interpro_entry_list_version
+        )
+
         eggnog_db = tuple(
             file(params.eggnog_db, checkIfExists: true),
             params.eggnog_db_version
         )
 
-        rfam_rrna_models = tuple(
-            file(params.rfam_rrna_models, checkIfExists: true),
-            params.rfam_rrna_models_rfam_version
-        )
         rfam_ncrna_models = tuple(
             file(params.rfam_ncrna_models, checkIfExists: true),
             params.rfam_ncrna_models_rfam_version
@@ -368,12 +378,11 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
-    DETECT_RRNA(
+    DETECT_TRNA(
         PROKKA.out.fna,
-        rfam_rrna_models
     )
 
-    ch_versions = ch_versions.mix(DETECT_RRNA.out.versions.first())
+    ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
 
     DETECT_NCRNA(
         PROKKA.out.fna,
@@ -412,11 +421,13 @@ workflow METTANNOTATOR {
         PROKKA.out.gff.join(
             INTERPROSCAN.out.ips_annotations
         ).join(
-           EGGNOG_MAPPER_ANNOTATIONS.out.annotations, remainder: true
+           EGGNOG_MAPPER_ANNOTATIONS.out.annotations
         ).join(
             SANNTIS.out.sanntis_gff, remainder: true
         ).join(
             DETECT_NCRNA.out.ncrna_tblout
+        ).join(
+            DETECT_TRNA.out.trna_gff
         ).join(
             CRISPRCAS_FINDER.out.hq_gff, remainder: true
         ).join(
@@ -435,7 +446,8 @@ workflow METTANNOTATOR {
             UNIFIRE.out.unirule, remainder: true
         ).join(
             UNIFIRE.out.pirsr, remainder: true
-        )
+        ),
+        interpro_entry_list
     )
 
     ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
@@ -458,7 +470,7 @@ workflow METTANNOTATOR {
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
     ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.results.collect { it[1] }.ifEmpty([]) )
-    ch_multiqc_files = ch_multiqc_files.mix( PROKKA.out.txt.collect { it[1] }.ifEmpty([]) )
+
 
     MULTIQC (
         ch_multiqc_files.collect(),

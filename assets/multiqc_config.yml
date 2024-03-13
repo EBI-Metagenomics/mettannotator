@@ -11,15 +11,10 @@ report_section_order:
 
 run_modules:
   - quast
-  - prokka
   - custom_content
 
 top_modules:
   - quast
-  - prokka
-
-prokka_table: true
-prokka_fn_snames: true
 
 sp:
   quast_config:

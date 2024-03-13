@@ -31,6 +31,22 @@ if (params.validate_params) {
     validateParameters()
 }
 
+// Custom validation until conditional schema validation gets implemented
+// https://github.com/nf-core/tools/issues/2453
+if (params.dbs == null && (
+    params.amrfinder_plus_db == null ||
+    params.antismash_db == null ||
+    params.defense_finder_db == null ||
+    params.dbcan_db == null ||
+    params.interproscan_db == null ||
+    params.interpro_entry_list == null ||
+    params.eggnog_db == null ||
+    params.rfam_ncrna_models == null
+)) {
+    log.error "Error: If the parameter '--dbs' is null, you must specify individual paths for each database."
+    System.exit(1)
+}
+
 WorkflowMain.initialise(workflow, params, log)
 
 /*

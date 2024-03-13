@@ -2,6 +2,8 @@ process CRISPRCAS_FINDER {
 
     tag "${meta.prefix}"
 
+    label 'process_nano'
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.crisprcasfinder:4.3.2'
 
     input:

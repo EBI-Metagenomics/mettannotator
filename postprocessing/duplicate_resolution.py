@@ -35,15 +35,26 @@ def main(reference, target, outfile, species):
                         "ref",
                         alias_genename_dict[dedupl_dict[base][gene]["alias"]],
                     )
-                    ref_gene_name = alias_genename_dict[dedupl_dict[base][gene]["alias"]]
-                    decision_dict[ref_gene_name] = decision_dict.get(ref_gene_name, 0) + 1
+                    ref_gene_name = alias_genename_dict[
+                        dedupl_dict[base][gene]["alias"]
+                    ]
+                    decision_dict[ref_gene_name] = (
+                        decision_dict.get(ref_gene_name, 0) + 1
+                    )
                 else:
-                    print("target", dedupl_dict[base][gene]["alias"], "ref", "Unknown gene")
+                    print(
+                        "target",
+                        dedupl_dict[base][gene]["alias"],
+                        "ref",
+                        "Unknown gene",
+                    )
                     unknown_counter += 1
             if len(decision_dict) == 0 and unknown_counter > 1:
                 stats_dict["unknowns_only"] = stats_dict.get("unknowns_only", 0) + 1
             elif any(count > 1 for count in decision_dict.values()):
-                stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
+                stats_dict["unable_to_decide"] = (
+                    stats_dict.get("unable_to_decide", 0) + 1
+                )
                 print("----------------------- > Unable to decide", decision_dict)
             else:
                 print("====!====!====!====!====!=== > Can decide", decision_dict)
@@ -117,8 +128,13 @@ def load_duplicates(infile):
                         base, copy_num = gene_name.split("_")
                         try:
                             int(copy_num)
-                            dedupl_dict.setdefault(base, dict()).setdefault(gene_name, dict())
-                            dedupl_dict[base][gene_name] = {"locus": locus_name, "alias": alias_name}
+                            dedupl_dict.setdefault(base, dict()).setdefault(
+                                gene_name, dict()
+                            )
+                            dedupl_dict[base][gene_name] = {
+                                "locus": locus_name,
+                                "alias": alias_name,
+                            }
                         except ValueError:
                             pass
     return dedupl_dict
