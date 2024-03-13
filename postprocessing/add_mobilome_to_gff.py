@@ -163,7 +163,7 @@ def load_mobilome(infile):
             )
             if feature == "nested":
                 # replace with a more meaningful name
-                feature = "nested_mobile_genetic_element"
+                feature = "nested_mobile_element"
             else:
                 # remove merged attributes from col9 of records that are not merged
                 col9 = (
