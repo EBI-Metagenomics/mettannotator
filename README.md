@@ -23,7 +23,7 @@
 
 <a name="wf"></a>
 ## Workflow and tools
-<img src="media/mettannotator-schema-temp.png">
+<img src="media/mettannotator-schema.png">
 <br />
 <br />
 
