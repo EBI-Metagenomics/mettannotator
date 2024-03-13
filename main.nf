@@ -41,7 +41,6 @@ if (params.dbs == null && (
     params.interproscan_db == null ||
     params.interpro_entry_list == null ||
     params.eggnog_db == null ||
-    params.rfam_rrna_models == null ||
     params.rfam_ncrna_models == null
 )) {
     log.error "Error: If the parameter '--dbs' is null, you must specify individual paths for each database."

@@ -13,6 +13,7 @@ process ANNOTATE_GFF {
         file(eggnog_annotations_tsv),
         file(sanntis_annotations_gff),
         file(ncrna_tsv),
+        file(trna_gff),
         file(crisprcas_hq_gff),
         file(amrfinder_tsv),
         file(antismash_gff),
@@ -31,7 +32,6 @@ process ANNOTATE_GFF {
 
     // For the version, I'm using the latest stable the genomes-annotation pipeline
     script:
-    def eggnog_annotations_flag = ""
     def sanntis_flag = "";
     def crisprcas_flag = "";
     def amrfinder_flag = "";
@@ -39,9 +39,6 @@ process ANNOTATE_GFF {
     def gecco_flag = "";
     def dbcan_flag = "";
     def df_flag = "";
-    if ( eggnog_annotations_tsv ) {
-        eggnog_annotations_flag = "-e ${eggnog_annotations_tsv} "
-    }
     if ( sanntis_annotations_gff ) {
         sanntis_flag = "-s ${sanntis_annotations_gff} ";
     }
@@ -67,9 +64,11 @@ process ANNOTATE_GFF {
     annotate_gff.py \
     -g ${gff} \
     -i ${ips_annotations_tsv} \
+    -e ${eggnog_annotations_tsv} \
     -r ${ncrna_tsv} \
+    -t ${trna_gff} \
     -o ${meta.prefix}_temp.gff \
-    ${eggnog_annotations_flag} ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} \
+    ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} \
     ${antismash_flag} ${gecco_flag} ${dbcan_flag} ${df_flag}
 
     process_unifire_output.py \\

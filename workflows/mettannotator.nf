@@ -37,7 +37,7 @@ include { CRISPRCAS_FINDER                           } from '../modules/local/cr
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
 include { INTERPROSCAN                               } from '../modules/local/interproscan'
-include { DETECT_RRNA                                } from '../modules/local/detect_rrna'
+include { DETECT_TRNA                                } from '../modules/local/detect_trna'
 include { DETECT_NCRNA                               } from '../modules/local/detect_ncrna'
 include { SANNTIS                                    } from '../modules/local/sanntis'
 include { UNIFIRE                                    } from '../modules/local/unifire'
@@ -90,7 +90,6 @@ eggnog_db = channel.empty()
 eggnog_diamond_db = channel.empty()
 eggnog_data = channel.empty()
 
-rfam_rrna_models = channel.empty()
 rfam_ncrna_models = channel.empty()
 
 /*
@@ -118,7 +117,6 @@ workflow DOWNLOAD_DATABASES {
         interproscan_dir = file("$params.dbs/interproscan")
         interpro_entry_list_dir = file("$params.dbs/interproscan_entry_list/")
         eggnog_data_dir = file("$params.dbs/eggnog")
-        rfam_rrna_models = file("$params.dbs/rfam_models/rfam_rrna_cms")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
 
         if (amrfinder_plus_dir.exists()) {
@@ -199,16 +197,11 @@ workflow DOWNLOAD_DATABASES {
             eggnog_db = EGGNOG_MAPPER_GETDB.out.eggnog_db.first()
         }
 
-        if (!rfam_rrna_models.exists() || !rfam_ncrna_models.exists()) {
+        if (!rfam_ncrna_models.exists()) {
             RFAM_GETMODELS()
-            rfam_rrna_models = RFAM_GETMODELS.out.rfam_rrna_cms.first()
             rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms.first()
         } else {
             log.info("RFam model files exists, or at least the expected folders.")
-            rfam_rrna_models = tuple(
-                rfam_rrna_models,
-                file("${rfam_rrna_models}/VERSION.txt", checkIfExists: true).text
-            )
             rfam_ncrna_models = tuple(
                 rfam_ncrna_models,
                 file("${rfam_ncrna_models}/VERSION.txt", checkIfExists: true).text
@@ -222,7 +215,6 @@ workflow DOWNLOAD_DATABASES {
         interproscan_db = interproscan_db
         interpro_entry_list = interpro_entry_list
         eggnog_db = eggnog_db
-        rfam_rrna_models = rfam_rrna_models
         rfam_ncrna_models = rfam_ncrna_models
 
 }
@@ -256,7 +248,6 @@ workflow METTANNOTATOR {
 
         eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
 
-        rfam_rrna_models = DOWNLOAD_DATABASES.out.rfam_rrna_models
         rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
     } else {
         // Use the parametrized folders and files for the databases //
@@ -295,10 +286,6 @@ workflow METTANNOTATOR {
             params.eggnog_db_version
         )
 
-        rfam_rrna_models = tuple(
-            file(params.rfam_rrna_models, checkIfExists: true),
-            params.rfam_rrna_models_rfam_version
-        )
         rfam_ncrna_models = tuple(
             file(params.rfam_ncrna_models, checkIfExists: true),
             params.rfam_ncrna_models_rfam_version
@@ -391,12 +378,11 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
-    DETECT_RRNA(
+    DETECT_TRNA(
         PROKKA.out.fna,
-        rfam_rrna_models
     )
 
-    ch_versions = ch_versions.mix(DETECT_RRNA.out.versions.first())
+    ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
 
     DETECT_NCRNA(
         PROKKA.out.fna,
@@ -435,11 +421,13 @@ workflow METTANNOTATOR {
         PROKKA.out.gff.join(
             INTERPROSCAN.out.ips_annotations
         ).join(
-           EGGNOG_MAPPER_ANNOTATIONS.out.annotations, remainder: true
+           EGGNOG_MAPPER_ANNOTATIONS.out.annotations
         ).join(
             SANNTIS.out.sanntis_gff, remainder: true
         ).join(
             DETECT_NCRNA.out.ncrna_tblout
+        ).join(
+            DETECT_TRNA.out.trna_gff
         ).join(
             CRISPRCAS_FINDER.out.hq_gff, remainder: true
         ).join(
