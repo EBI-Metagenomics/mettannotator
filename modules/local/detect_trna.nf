@@ -22,7 +22,7 @@ process DETECT_TRNA {
     shopt -s extglob
 
     # tRNAscan-SE needs a tmp folder otherwise it will use the base TMPDIR (with no subfolder)
-    # and that causes issues as other detect_rrna process will crash when the files are cleaned
+    # and that causes issues as other detect_trna process will crash when the files are cleaned
     PROCESSTMP="\$(mktemp -d)"
     export TMPDIR="\${PROCESSTMP}"
     # bash trap to clean the tmp directory
