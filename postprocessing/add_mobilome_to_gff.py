@@ -50,30 +50,35 @@ def main(mobilome_file, infile, outfile):
                         file_out.write(extra_line)
                         printed_list.append(extra_line)
                 if overlap:
+                    add_to_cds = ""
+                    mge_ids = list()
+                    mge_types = list()
+                    # Add mobilome record info to CDS
                     for line_to_print in lines_to_print:
                         if line_to_print not in printed_list:
                             # print the mobilome line first
                             file_out.write(line_to_print)
                             printed_list.append(line_to_print)
                         if feature == "CDS":
-                            add_to_cds = ""
+                            # extract information to add to the CDS
                             mge_col9 = line_to_print.strip().split("\t")[8]
                             attributes_dict = dict(
                                 re.split(r"(?<!\\)=", item)
                                 for item in re.split(r"(?<!\\);", mge_col9)
                             )
-                            add_to_cds += "mge_id={}".format(attributes_dict["ID"])  # Todo: cannot do this, it will give me multiple of the same key
+                            mge_ids.append(attributes_dict["ID"])
                             if "merged_types" in attributes_dict:
-                                add_to_cds += ";mge_types={}".format(
-                                    attributes_dict["merged_types"]
-                                )
+                                mge_types.append(attributes_dict["merged_types"])
                             else:
-                                add_to_cds += ";mge_types={}".format(
-                                    line_to_print.strip().split("\t")[2]
-                                )
-                            if add_to_cds and not col9.endswith(";"):
-                                col9 += ";"
-                            col9 = col9 + add_to_cds
+                                mge_types.append(line_to_print.strip().split("\t")[2])
+                    if feature == "CDS":
+                        if mge_ids:
+                            add_to_cds += "mge_id={}".format(",".join(mge_ids))
+                        if mge_types:
+                            add_to_cds += ";mge_types={}".format(",".join(mge_types))
+                        if add_to_cds and not col9.endswith(";"):
+                            col9 += ";"
+                        col9 = col9 + add_to_cds
                     line = (
                         "\t".join(
                             [
