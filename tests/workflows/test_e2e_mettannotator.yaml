@@ -1,5 +1,5 @@
 - name: End to end test
-  command: nextflow run main.nf -resume -work-dir ./wd -profile test,ebi,ebi_lsf --outdir ./results
+  command: nextflow run main.nf -resume -work-dir ./wd -profile test,ebi,ebi_lsf --outdir ./results --input tests/test.csv
   files:
     - path: "results/MGYG000000105/antimicrobial_resistance/amrfinder_plus/MGYG000000105_amrfinderplus.gff"
     - path: "results/MGYG000000105/antimicrobial_resistance/amrfinder_plus/MGYG000000105_amrfinderplus.tsv"
