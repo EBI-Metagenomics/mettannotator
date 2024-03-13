@@ -15,6 +15,10 @@ lint:
     - .github/workflows/awstest.yml
     - .github/workflows/awsfulltest.yml
     - .github/workflows/ci.yml
+    - lib/Utils.groovy
+    - lib/WorkflowMain.groovy
+    - lib/NfcoreTemplate.groovy
+    - lib/WorkflowMettannotator.groovy
   files_unchanged:
     - LICENSE
     - CODE_OF_CONDUCT.md
