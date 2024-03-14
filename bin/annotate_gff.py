@@ -453,6 +453,7 @@ def load_annotations(
         for line in f:
             line = line.strip()
             if line[0] != "#" and not fasta_flag:
+                line = line.replace("db_xref", "Dbxref")
                 cols = line.split("\t")
                 if len(cols) == 9:
                     contig, feature, start, annot = cols[0], cols[2], cols[3], cols[8]
