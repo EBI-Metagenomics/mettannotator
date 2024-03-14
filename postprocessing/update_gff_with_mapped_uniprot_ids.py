@@ -88,10 +88,12 @@ if __name__ == "__main__":
             """
                 Usage: python update_gff_with_mapped_uniprot_ids.py <species> <gff_file> <uniprot.faa> <pipeline.faa>
 
-		Need to download proteomes from UniProt (Buniformis: UP000004110, Pvulgatus: UP000002861) & strip away any unwanted bits in the headers, and have the new GFF and protein fasta files.
-		Blastp runs on the two protein fasta files, with evalue -10. The best hits are extracted from the results to produce a mapping file between the new genes and the old uniprot identifiers.
-		This mapping is used to insert Dbxref=UniProt: key-value attributes to the ninth column of CDS lines in the final output.
-                The species name is just used to name files.
+                Need to download proteomes from UniProt (Buniformis: UP000004110, Pvulgatus: UP000002861) & strip away
+                any unwanted bits in the headers, and have the new GFF and protein fasta files.
+                Blastp runs on the two protein fasta files, with evalue -10. The best hits are extracted from the
+                results to produce a mapping file between the new genes and the old uniprot identifiers.
+                This mapping is used to insert Dbxref=UniProt: key-value attributes to the ninth column of CDS lines in
+                the final output. The species name is just used to name files.
         """
         )
         sys.exit(1)
