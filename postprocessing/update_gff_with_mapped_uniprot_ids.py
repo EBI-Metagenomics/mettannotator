@@ -3,6 +3,7 @@
 import sys
 import os
 import subprocess
+import re
 
 
 def run_blast(pipeline_fasta, uniprot_fasta, blast_output):
@@ -72,11 +73,14 @@ def update_gff_with_mapping(gff_file, mapping_file, output_file):
                     and fields[2] == "CDS"
                     and fields[8].startswith("ID=")
                 ):
-                    # Should do something better than assume ID is always first
+                    attributes_dict = dict(
+                        re.split(r"(?<!\\)=", item)
+                        for item in re.split(r"(?<!\\);", fields[8])
+                    )
                     identifier = fields[8].split(";")[0].split("=")[1]
-                    if identifier.startswith("CDS:"):
-                        identifier = identifier[len("CDS:") :]
-                    if identifier in mapping_dict:
+                    if attributes_dict["ID"].startswith("CDS:"):
+                        attributes_dict["ID"] = attributes_dict["ID"][len("CDS:"):]
+                    if attributes_dict["ID"] in mapping_dict:
                         fields[8] += f";Dbxref=UniProt:{mapping_dict[identifier]}"
                 outfile.write("\t".join(fields) + "\n")
 
