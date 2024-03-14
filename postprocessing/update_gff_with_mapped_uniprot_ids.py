@@ -78,11 +78,15 @@ def update_gff_with_mapping(gff_file, mapping_file, output_file):
                         re.split(r"(?<!\\)=", item)
                         for item in re.split(r"(?<!\\);", fields[8])
                     )
-                    identifier = fields[8].split(";")[0].split("=")[1]
-                    if attributes_dict["ID"].startswith("CDS:"):
-                        attributes_dict["ID"] = attributes_dict["ID"][len("CDS:") :]
-                    if attributes_dict["ID"] in mapping_dict:
-                        fields[8] += f";Dbxref=UniProt:{mapping_dict[identifier]}"
+                    identifier = attributes_dict["ID"]
+                    if identifier.startswith("CDS:"):
+                        identifier = identifier[len("CDS:") :]
+                    if identifier in mapping_dict:
+                        if "Dbxref" in attributes_dict:
+                            attributes_dict["Dbxref"] += f",UniProt:{mapping_dict[identifier]}"
+                        else:
+                            attributes_dict["Dbxref"] = f"UniProt:{mapping_dict[identifier]}"
+                        fields[8] = ";".join([f"{key}={value}" for key, value in attributes_dict.items()])
                 outfile.write("\t".join(fields) + "\n")
 
 
