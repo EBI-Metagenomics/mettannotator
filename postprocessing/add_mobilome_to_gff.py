@@ -171,6 +171,11 @@ def load_mobilome(infile):
                     .replace("merged_types=NA;", "")
                     .replace("subtype=NA;", "")
                 )
+                if feature in [
+                    "terminal_inverted_repeat_element",
+                    "direct_repeat_element",
+                ]:
+                    col9 = col9.replace(";mge_recombinase=NA", "")
             line = (
                 "\t".join(
                     [contig, tool, feature, start, end, blank1, blank2, blank3, col9]
