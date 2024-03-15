@@ -9,6 +9,7 @@
 - [ Introduction ](#intro)
 - [ Workflow and tools](#wf)
 - [ Installation and dependencies ](#install)
+   - [Reference databases](#reference-databases)
 - [ Usage ](#usage)
 - [ Test ](#test)
 - [ Outputs ](#out)
@@ -28,7 +29,6 @@
 <br />
 
 The workflow uses the following tools and databases:
-
 
 | Tool/Database                                                                                    | Version           | Purpose                                                                                                          |
 |--------------------------------------------------------------------------------------------------|-------------------|------------------------------------------------------------------------------------------------------------------|
@@ -57,12 +57,35 @@ The workflow uses the following tools and databases:
 <a name="install"></a>
 ## Installation and dependencies
 
-This workflow is built using [Nextflow](https://www.nextflow.io/). It uses Singularity containers making installation simple and results highly reproducible.
+This workflow is built using [Nextflow](https://www.nextflow.io/). It uses containers (Docker or Singularity) containers making installation simple and results highly reproducible.
 
 - Install [Nextflow version >=21.10](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 - Install [Singularity](https://github.com/apptainer/singularity/blob/master/INSTALL.md)
+- Install [Docker](https://docs.docker.com/engine/install/)
 
-All necessary databases will be automatically downloaded during the execution of the workflow.
+Although it's possible to run the pipeline on a personal computer, due to the compute requirements, we encourage users to run it on HPC clusters. Any HPC scheduler supported by [Nextflow](https://www.nextflow.io/) is compatible; however, our team primarily uses [Slurm](https://slurm.schedmd.com/) and [IBM LSF](https://www.ibm.com/docs/en/spectrum-lsf) for the EBI HPC cluster, so those are the profiles we ship with the pipeline.
+
+<a name="reference-databases"></a>
+### Reference databases
+
+The pipeline needs references databases in order to work, it takes roughtly 110G. 
+
+Path             | Size  
+-----------------|-------
+amrfinder        | 217M   
+antismash        | 9.4G   
+dbcan            | 7.5G   
+defense_finder   | 242M   
+eggnog           | 48G    
+interproscan     | 45G    
+rfam_models      | 637M   
+total            | 110G   
+
+`mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically downloads them.
+
+Users can also provide individual paths to each reference database and its version if needed. For detailed instructions, please refer to the Reference databases section in the `--help` of the pipeline.
+
+It's important to note that users are not allowed to mix the `--dbs` flag with individual database paths and versions; they are mutually exclusive. We recommend users to run the pipeline with the `--dbs` flag for the first time in an appropriate path and to avoid downloading the individual databases separately.
 
 
 <a name="usage"></a>
@@ -96,7 +119,7 @@ Launching `mettannotator/main.nf` [disturbed_davinci] DSL2 - revision: f2a0e51af
 
 
 ------------------------------------------------------
-  ebi-metagenomics/mettannotator v1.0dev
+  ebi-metagenomics/mettannotator <version>
 ------------------------------------------------------
 Typical pipeline command:
 
@@ -182,38 +205,47 @@ nextflow run ebi-metagenomics/mettannotator \
 
 The output folder structure will look as follows:
 ```
-   |-<PREFIX>
-   |---antimicrobial_resistance
-   |-----amrfinder_plus
-   |---antiphage_defense
-   |-----defense_finder
-   |---biosynthetic_gene_clusters
-   |-----antismash
-   |-----gecco
-   |-----sanntis
-   |---functional_annotation
-   |-----dbcan
-   |-----eggnog_mapper
-   |-----interproscan
-   |-----merged_gff
-   |-----prokka
-   |-----unifire
-   |---mobilome
-   |-----crisprcas_finder
-   |---quast
-   |-----<PREFIX>
-   |-------basic_stats
-   |-------icarus_viewers
-   |---rnas
-   |-----ncrna
-   |-----trna
-   |-multiqc
-   |---multiqc_data
-   |---multiqc_plots
-   |-----pdf
-   |-----png
-   |-----svg
-   |-pipeline_info
+└─<PREFIX>
+   ├─antimicrobial_resistance
+   │  └─amrfinder_plus
+   ├─antiphage_defense
+   │  └─defense_finder
+   ├─biosynthetic_gene_clusters
+   │  ├─antismash
+   │  ├─gecco
+   │  └─sanntis
+   ├─functional_annotation
+   │  ├─dbcan
+   │  ├─eggnog_mapper
+   │  ├─interproscan
+   │  ├─merged_gff
+   │  ├─prokka
+   │  └─unifire
+   ├─mobilome
+   │  └─crisprcas_finder
+   ├─quast
+   │  └─<PREFIX>
+   │      ├─basic_stats
+   │      └─icarus_viewers
+   ├─rnas
+   │  ├─ncrna
+   │  └─trna
+   ├─multiqc
+   │  ├─multiqc_data
+   │  └─multiqc_plots
+   │      ├─pdf
+   │      ├─png
+   │      └─svg
+   ├─pipeline_info
+   │  ├─software_versions.yml
+   │  ├─execution_report_<timestamp>.txt
+   │  ├─execution_report_<timestamp>.html
+   │  ├─execution_timeline_<timestamp>.txt
+   │  ├─execution_timeline_<timestamp>.html
+   │  ├─execution_trace_<timestamp>.txt
+   │  ├─execution_trace_<timestamp>.html
+   │  └─pipeline_dag_<timestamp>.html
+
 ```
 
 ### Merged GFF
@@ -258,12 +290,7 @@ Below is an explanation of how each field in column 3 and 9 of the final GFF fil
 | CDS                   | `dbcan_prot_family`                                                    | run_dbCAN     | Predicted protein family                                                                                                                                                                                    |
 | CDS                   | `substrate_dbcan-pul`                                                  | run_dbCAN     | Substrate predicted by dbCAN-PUL search                                                                                                                                                                     |
 | CDS                   | `substrate_dbcan-sub`                                                  | run_dbCAN     | Substrate predicted by dbCAN-subfam                                                                                                                                                                         |
-| CDS                   | `defense_finder_type`, `defense_finder_type`                           |               |                                                                                                                                                                                                             |
-| CDS                   |                                                                        |               |                                                                                                                                                                                                             |
-| CDS                   |                                                                        |               |                                                                                                                                                                                                             |
-|                       |                                                                        |               |                                                                                                                                                                                                             |
-|                       |                                                                        |               |                                                                                                                                                                                                             |
-|                       |                                                                        |               |                                                                                                                                                                                                             |
+| CDS                   | `defense_finder_type`, `defense_finder_type`                           |               |                                                                                                                                                                                                                                                                                                                     |
 
 <a name="product"></a>
 #### Determining the product
