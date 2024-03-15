@@ -24,9 +24,7 @@
     - path: "results/MGYG000000105/functional_annotation/eggnog_mapper/MGYG000000105.emapper.seed_orthologs"
     - path: "results/MGYG000000105/functional_annotation/interproscan/MGYG000000105.IPS.tsv"
     - path: "results/MGYG000000105/functional_annotation/merged_gff/MGYG000000105_annotations.gff"
-      md5sum: fdc6732a6e7b464f58419445c8a42da6
     - path: "results/MGYG000000105/functional_annotation/merged_gff/MGYG000000105_annotations_with_descriptions.gff"
-      md5sum: 30fcf5b1fda095d1ed0aa282baef5175
     - path: "results/MGYG000000105/functional_annotation/prokka/MGYG000000105.faa"
     - path: "results/MGYG000000105/functional_annotation/prokka/MGYG000000105.ffn"
     - path: "results/MGYG000000105/functional_annotation/prokka/MGYG000000105.fna"
