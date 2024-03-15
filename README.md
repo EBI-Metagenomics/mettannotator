@@ -57,7 +57,7 @@ The workflow uses the following tools and databases:
 <a name="install"></a>
 ## Installation and dependencies
 
-This workflow is built using [Nextflow](https://www.nextflow.io/). It uses containers (Docker or Singularity) containers making installation simple and results highly reproducible.
+This workflow is built using [Nextflow](https://www.nextflow.io/). It uses containers (Docker or Singularity) making installation simple and results highly reproducible.
 
 - Install [Nextflow version >=21.10](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 - Install [Singularity](https://github.com/apptainer/singularity/blob/master/INSTALL.md)
@@ -68,20 +68,21 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 <a name="reference-databases"></a>
 ### Reference databases
 
-The pipeline needs references databases in order to work, it takes roughtly 110G. 
+The pipeline needs reference databases in order to work, they take roughtly 110G.
 
-Path             | Size  
------------------|-------
-amrfinder        | 217M   
-antismash        | 9.4G   
-dbcan            | 7.5G   
-defense_finder   | 242M   
-eggnog           | 48G    
-interproscan     | 45G    
-rfam_models      | 637M   
-total            | 110G   
+Path             | Size
+-----------------|------
+amrfinder        | 217M
+antismash        | 9.4G
+dbcan            | 7.5G
+defense_finder   | 242M
+eggnog           | 48G
+interproscan     | 45G
+interproscan_entry_list  | 2.6M |
+rfam_models      | 637M
+total            | 110G
 
-`mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically downloads them.
+`mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
 Users can also provide individual paths to each reference database and its version if needed. For detailed instructions, please refer to the Reference databases section in the `--help` of the pipeline.
 
