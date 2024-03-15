@@ -7,6 +7,39 @@ import subprocess
 import re
 
 
+def load_uniprot_descriptions(uniprot_tsv):
+    uniprot_descriptions = dict()
+    entry_index = None
+    protein_name_index = None
+    with open(uniprot_tsv, "r") as file_in:
+        for line in file_in:
+            if line.startswith("Entry"):
+                fields = line.strip().split("\t")
+                for index, field in enumerate(fields):
+                    if field == "Entry":
+                        entry_index = index
+                    elif field == "Protein names":
+                        protein_name_index = index
+                if protein_name_index is None or entry_index is None:
+                    sys.exit("Could not get uniprot indices to load descriptions")
+            else:
+                fields = line.strip().split("\t")
+                uniprot_descriptions[fields[entry_index]] = escape_reserved_characters(fields[protein_name_index])
+    assert len(uniprot_descriptions) > 0, "Uniprot description dictionary is empty."
+    return uniprot_descriptions
+
+
+def escape_reserved_characters(string):
+    reserved_characters = [";", "=", "&"]
+    for ch in reserved_characters:
+        if ch in string:
+            if ch == ';':
+                string = string.replace(ch, "/")
+            else:
+                string = string.replace(ch, "\{}".format(ch))
+    return string
+
+
 def run_blast(pipeline_fasta, uniprot_fasta, blast_output):
     # Create blast database
     subprocess.run(
@@ -55,7 +88,7 @@ def create_mapping_file(best_hits, mapping_file):
             file.write(f"{query_id}\t{result_id}\t{percent_id}\t{overlap}\n")
 
 
-def update_gff_with_mapping(gff_file, mapping_file, output_file):
+def update_gff_with_mapping(gff_file, mapping_file, output_file, uniprot_descriptions):
     mapping_dict = {}
     with open(mapping_file, "r") as file:
         next(file)  # Skip header
@@ -86,6 +119,8 @@ def update_gff_with_mapping(gff_file, mapping_file, output_file):
                             attributes_dict["Dbxref"] += f",UniProt:{mapping_dict[identifier]}"
                         else:
                             attributes_dict["Dbxref"] = f"UniProt:{mapping_dict[identifier]}"
+                        if mapping_dict[identifier] in uniprot_descriptions:
+                            attributes_dict["uniprot_prot_name"] = uniprot_descriptions[mapping_dict[identifier]]
                         fields[8] = ";".join([f"{key}={value}" for key, value in attributes_dict.items()])
                 outfile.write("\t".join(fields) + "\n")
 
@@ -128,6 +163,19 @@ if __name__ == "__main__":
         help="Path to the output file where the results will be saved to. Default: <species>.withuniprotids.output.gff",
         required=False,
     )
+    parser.add_argument(
+        "--description",
+        dest="include_description",
+        action="store_true",
+        default=False,
+        help="Use this flag to add descriptions of UniProt accessions to the output GFF. Must provide UniProt Input.",
+        required=False,
+    )
+    parser.add_argument(
+        "--uniprot-tsv",
+        help="Provide a path to UniProt TSV if using the --description flag.",
+        required=False,
+    )
 
     args = parser.parse_args()
 
@@ -138,6 +186,11 @@ if __name__ == "__main__":
                 species
             )
         )
+    if args.include_description:
+        if not args.uniprot_tsv:
+            sys.exit("Must provide a UniProt TSV if the --description flag is used")
+        uniprot_tsv = args.uniprot_tsv
+        uniprot_descriptions = load_uniprot_descriptions(uniprot_tsv)
     gff_file = args.gff_file
     uniprot_fasta = args.uniprot_fasta
     pipeline_fasta = args.pipeline_fasta
@@ -159,4 +212,7 @@ if __name__ == "__main__":
     create_mapping_file(best_hits, mapping_file)
 
     # Update GFF with mapping
-    update_gff_with_mapping(gff_file, mapping_file, output_gff_file)
+    if args.include_description:
+        update_gff_with_mapping(gff_file, mapping_file, output_gff_file, uniprot_descriptions)
+    else:
+        update_gff_with_mapping(gff_file, mapping_file, output_gff_file, dict())
