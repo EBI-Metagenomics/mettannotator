@@ -173,6 +173,11 @@ def keep_or_move_to_note(found_function, function_source, col9_dict):
             col9_dict = move_function_to_note(found_function, col9_dict)
             found_function = "hypothetical protein"
             function_source = "Prokka"
+    else:
+        # Product is too long, move to note
+        col9_dict = move_function_to_note(found_function, col9_dict)
+        found_function = "hypothetical protein"
+        function_source = "Prokka"
     return found_function, function_source, col9_dict
 
 
