@@ -62,7 +62,7 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
         "keyword": "uf_keyword",
         "gene.name.primary": "uf_gene_name",
         "gene.name.synonym": "uf_gene_name_synonym",
-        "pirsr_name": "uf_pirsr_name",
+        "pirsr_name": "uf_pirsr_cofactor",
     }
 
     fasta_flag = False
