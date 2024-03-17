@@ -199,7 +199,8 @@ To run the pipeline using  a test dataset, execute the following command:
 nextflow run ebi-metagenomics/mettannotator \
    -profile <docker/singularity/...> \
    --input ebi-metagenomics/mettannotator/tests/test.csv \
-   --outdir <OUTDIR>
+   --outdir <OUTDIR> \
+   --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
 ```
 
 <a name="out"></a>
