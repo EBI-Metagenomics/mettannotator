@@ -183,7 +183,8 @@ Now, you can run the pipeline using:
 nextflow run ebi-metagenomics/mettannotator \
    -profile <docker/singularity/...> \
    --input assemblies_sheet.csv \
-   --outdir <OUTDIR>
+   --outdir <OUTDIR> \
+   --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
 ```
 
 > **Warning:**
