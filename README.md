@@ -194,7 +194,7 @@ nextflow run ebi-metagenomics/mettannotator \
 
 <a name="test"></a>
 ## Test
-To run the pipeline using  a test dataset, execute the following command:
+To run the pipeline using a test dataset, execute the following command:
 ```bash
 https://raw.githubusercontent.com/EBI-Metagenomics/mettannotator/master/tests/test.csv
 
