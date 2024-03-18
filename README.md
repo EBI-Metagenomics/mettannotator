@@ -196,9 +196,11 @@ nextflow run ebi-metagenomics/mettannotator \
 ## Test
 To run the pipeline using  a test dataset, execute the following command:
 ```bash
+https://raw.githubusercontent.com/EBI-Metagenomics/mettannotator/master/tests/test.csv
+
 nextflow run ebi-metagenomics/mettannotator \
    -profile <docker/singularity/...> \
-   --input ebi-metagenomics/mettannotator/tests/test.csv \
+   --input test.csv \
    --outdir <OUTDIR> \
    --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
 ```
