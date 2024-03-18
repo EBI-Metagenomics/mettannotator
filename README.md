@@ -306,6 +306,8 @@ Below is an explanation of how each field in column 3 and 9 of the final GFF fil
 #### Determining the product
 The following logic is used by mettannotator to fill out the `product` field in the 9th column of the GFF.
 
+<img src="media/mettannotator-product.png">
+
 ### Contents of the tool output folders
 
 <a name="mobilome"></a>
