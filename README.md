@@ -68,7 +68,7 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 <a name="reference-databases"></a>
 ### Reference databases
 
-The pipeline needs reference databases in order to work, they take roughtly 110G.
+The pipeline needs reference databases in order to work, they take roughly 110G.
 
 Path             | Size
 -----------------|------
