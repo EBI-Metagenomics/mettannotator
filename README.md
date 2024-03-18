@@ -310,6 +310,7 @@ The following logic is used by mettannotator to fill out the `product` field in 
 
 ### Contents of the tool output folders
 The output folders of each individual tool contain select output files of the third-party tools used by mettannotator. For file descriptions, please refer to the tool documentation.
+
 Note: if the pipeline completed without errors but some of the tool-specific output folders are empty, those particular tools did not generate any annotations to output.
 
 <a name="mobilome"></a>
