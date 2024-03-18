@@ -306,7 +306,7 @@ Below is an explanation of how each field in column 3 and 9 of the final GFF fil
 
 <a name="product"></a>
 #### Determining the product
-The following logic is used by mettannotator to fill out the `product` field in the 9th column of the GFF:
+The following logic is used by `mettannotator` to fill out the `product` field in the 9th column of the GFF:
 
 <img src="media/mettannotator-product.png">
 
@@ -318,7 +318,7 @@ Note: if the pipeline completed without errors but some of the tool-specific out
 <a name="mobilome"></a>
 ## Mobilome annotation
 
-The mobilome annotation workflow is not currently integrated into mettannotator. However, the outputs produced by mettannotator can be used to run [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline) and the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline).
+The mobilome annotation workflow is not currently integrated into `mettannotator`. However, the outputs produced by `mettannotator` can be used to run [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline) and the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline).
 
 These post-processing steps will be better integrated in the next release.
 
