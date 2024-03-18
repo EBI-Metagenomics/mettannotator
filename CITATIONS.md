@@ -70,6 +70,10 @@
 
   > Kalvari I, Argasinska J, Quinones-Olvera N, Nawrocki EP, Rivas E, Eddy SR, Bateman A, Finn RD, Petrov AI. Rfam 13.0: shifting to a genome-centric resource for non-coding RNA families. Nucleic Acids Res. 2018 Jan 4;46(D1):D335-D342. doi: 10.1093/nar/gkx1038. PMID: 29112718; PMCID: PMC5753348.
 
+- [tRNAscan-SE](https://pubmed.ncbi.nlm.nih.gov/34417604/)
+
+  > Chan PP, Lin BY, Mak AJ, Lowe TM. tRNAscan-SE 2.0: improved detection and functional classification of transfer RNA genes. Nucleic Acids Res. 2021 Sep 20;49(16):9077-9096. doi: 10.1093/nar/gkab688. PMID: 34417604; PMCID: PMC8450103.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)
