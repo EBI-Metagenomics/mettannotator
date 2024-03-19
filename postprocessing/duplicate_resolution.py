@@ -18,7 +18,9 @@ def main(reference, target, outfile, species):
     # key = full gene name (e.g. susC_1), value = dictionary where:
     # key = "locus", value = locus name (e.g. BU_ATCC8492_00006); key = "alias", value = alias name (e.g. BACUNI_00053)
     # gene_occurrence_counter has the number of times every single gene appears in the genome we are deduplicating
-    dedupl_dict, gene_occurrence_counter = load_duplicates(target)
+    dedupl_dict, gene_occurrence_counter, alias_repeats = load_duplicates(target)
+    # Todo: articifially create a file with alias repeated and gene name assigned to test deduplication
+    #  with extra_copy_number > 1
 
     counter = 0  # track total number of gene groups to deduplicate
     stats_dict = dict()  # stats for printing
@@ -261,6 +263,7 @@ def check_value_uniqueness(my_dict):
 def load_duplicates(infile):
     dedupl_dict = dict()
     gene_occurrence_counter = dict()
+    alias_repeats = dict()
     with open(infile, "r") as file_in:
         for line in file_in:
             if not line.startswith("#"):
@@ -283,6 +286,8 @@ def load_duplicates(infile):
                         alias_name = re.search(alias_pattern, annot).group(1)
                     except:
                         alias_name = None
+                    if alias_name:
+                        alias_repeats[alias_name] = alias_repeats.get(alias_name, 0) + 1
                     print(gene_name, locus_name, alias_name)
                     if "_" in gene_name:
                         base, copy_num = gene_name.split("_")
@@ -304,7 +309,7 @@ def load_duplicates(infile):
                         gene_occurrence_counter[gene_name] = (
                             gene_occurrence_counter.get(gene_name, 0) + 1
                         )
-    return dedupl_dict, gene_occurrence_counter
+    return dedupl_dict, gene_occurrence_counter, alias_repeats
 
 
 def get_prefix(species):
