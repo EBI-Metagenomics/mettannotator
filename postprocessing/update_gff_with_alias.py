@@ -116,7 +116,7 @@ def parse_args():
         "--field-to",
         required=False,
         choices=["CDS", "gene", "all"],
-        default="all",
+        default="gene",
         help="Feature that the alias should be added to in the final GFF.",
     )
     return parser.parse_args()
