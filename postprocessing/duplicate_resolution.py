@@ -172,7 +172,7 @@ def main(reference, target, outfile, species):
 
 def make_replacement_file(target, outfile, replacements):
     seq_flag = False
-    count_replacements = 0
+    count_replacements = list()
     with open(target, "r") as file_in, open(outfile, "w") as file_out:
         for line in file_in:
             if line.startswith("#"):
@@ -183,7 +183,7 @@ def make_replacement_file(target, outfile, replacements):
                 file_out.write(line)
             else:
                 fields = line.strip().split("\t")
-                if fields[2] == "gene":
+                if fields[2] in ["gene", "CDS", "mRNA", "exon"]:
                     gene_pattern = r";gene=(.*?);"
                     alias_pattern = r";Alias=(.*?);"
                     try:
@@ -200,11 +200,11 @@ def make_replacement_file(target, outfile, replacements):
                         print("line before", line)
                         line = line.replace(gene_name, replacements[alias_name])
                         print("line after", line)
-                        count_replacements += 1
+                        count_replacements.append(alias_name)
                     file_out.write(line)
                 else:
                     file_out.write(line)
-    return count_replacements
+    return len(set(count_replacements))
 
 
 def resolve_duplicate(
