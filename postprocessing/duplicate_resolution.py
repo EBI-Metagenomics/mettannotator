@@ -60,16 +60,22 @@ def main(reference, target, outfile, species):
                 if base in decision_dict and len(decision_dict) == 1:
                     # there is one clear "real" gene
                     alias = decision_dict[base][0]
-                    if alias not in replacements and base not in replacements.values():
-                        replacements[alias] = base
-                    else:
-                        logging.error(
-                            "Alias {} or gene {} is already in replacements".format(
-                                alias, base
-                            )
+                    if alias_repeats[alias] > 1:
+                        # The same alias is assigned to multiple genes, we cannot resolve this
+                        stats_dict["unable_to_decide"] = (
+                            stats_dict.get("unable_to_decide", 0) + 1
                         )
-                        sys.exit()
-                    stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
+                    else:
+                        if alias not in replacements and base not in replacements.values():
+                            replacements[alias] = base
+                        else:
+                            logging.error(
+                                "Alias {} or gene {} is already in replacements".format(
+                                    alias, base
+                                )
+                            )
+                            sys.exit()
+                        stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
                 else:
                     print("Case is not clear", dedupl_dict[base], decision_dict)
                     unique = check_value_uniqueness(
