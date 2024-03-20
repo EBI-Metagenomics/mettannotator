@@ -44,6 +44,10 @@ def main(reference, target, outfile, species):
                     )
                 else:
                     unknown_counter += 1
+            # Go through decision dictionary and see what we can resolve.
+            # Decision format has the following format (2 examples here):
+            # {'fabHA': ['BACUNI_03004', 'BACUNI_04476']}
+            # {'der': ['BACUNI_03006'], 'feoB': ['BACUNI_04461'], 'hydF': ['BACUNI_02997']}}
             if len(decision_dict) == 0:
                 # unable to resolve duplicates, leave records as they are
                 stats_dict["unknowns_only"] = stats_dict.get("unknowns_only", 0) + 1
