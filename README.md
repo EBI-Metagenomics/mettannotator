@@ -159,7 +159,7 @@ Reference databases
   --amrfinder_plus_db_version        [string]  The AMRFinderPlus reference database version. [default: 2023-02-23.1]
   --defense_finder_db                [string]  Defense Finder reference models, https://github.com/mdmparis/defense-finder#updating-defensefinder. The
                                                Microbiome Informatics team provides a pre-indexed version of the models for version 1.2.3 on this ftp location:
-                                               ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.
+                                               ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.
   --defense_finder_db_version        [string]  The Defense Finder models version. [default: 1.2.3]
   --antismash_db                     [string]  antiSMASH reference database, go to this documentation to do the database setup
                                                https://docs.antismash.secondarymetabolites.org/install/#installing-the-latest-antismash-release.
@@ -167,7 +167,7 @@ Reference databases
   --dbcan_db                         [string]  dbCAN indexed reference database, please go to the documentation for the setup
                                                https://dbcan.readthedocs.io/en/latest/. The Microbiome Informatics team provides a pre-indexed version of the
                                                database for version 4.0 on this ftp location:
-                                               ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/dbcan/dbcan_4.0.tar.gz
+                                               ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/dbcan/dbcan_4.0.tar.gz
   --dbcan_db_version                 [string]  The dbCAN reference database version. [default: 4.1.3_V12]
 
 Generic options

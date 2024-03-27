@@ -114,7 +114,7 @@
         "defense_finder_db": {
           "type": "string",
           "format": "directory-path",
-          "description": "Defense Finder reference models, https://github.com/mdmparis/defense-finder#updating-defensefinder. The Microbiome Informatics team provides a pre-indexed version of the models for version 1.2.3 on this ftp location: ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.",
+          "description": "Defense Finder reference models, https://github.com/mdmparis/defense-finder#updating-defensefinder. The Microbiome Informatics team provides a pre-indexed version of the models for version 1.2.3 on this ftp location: ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.",
           "help_text": "Set this variable to the path of the folder that contains the Defense Finder models directory."
         },
         "defense_finder_db_version": {
@@ -136,7 +136,7 @@
         "dbcan_db": {
           "type": "string",
           "format": "directory-path",
-          "description": "dbCAN indexed reference database, please go to the documentation for the setup https://dbcan.readthedocs.io/en/latest/. The Microbiome Informatics team provides a pre-indexed version of the database for version 4.0 on this ftp location: ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/dbcan/dbcan_4.0.tar.gz",
+          "description": "dbCAN indexed reference database, please go to the documentation for the setup https://dbcan.readthedocs.io/en/latest/. The Microbiome Informatics team provides a pre-indexed version of the database for version 4.0 on this ftp location: ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/dbcan/dbcan_4.0.tar.gz",
           "help_text": "Set this variable to the path of the folder that contains the dbCAN indexed database directory."
         },
         "dbcan_db_version": {

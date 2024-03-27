@@ -14,7 +14,7 @@ process DBCAN_GETDB {
     """
     mkdir -p dbcan_db
 
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/dbcan/dbcan_4.1.3_V12.tar.gz
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/dbcan/dbcan_4.1.3_V12.tar.gz
 
     tar -xvzf dbcan_4.1.3_V12.tar.gz
 

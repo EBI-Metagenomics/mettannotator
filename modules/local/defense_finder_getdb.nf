@@ -12,7 +12,7 @@ process DEFENSE_FINDER_GETDB {
 
     script:
     """
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz
 
     tar -xvzf defense-finder-models_1.2.3.tar.gz
 
