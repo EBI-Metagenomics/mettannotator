@@ -180,17 +180,21 @@ def make_replacement_file(target, outfile, replacements):
                 file_out.write(line)
             else:
                 fields = line.strip().split("\t")
-                if fields[2] in ["gene", "CDS", "mRNA", "exon"]:
-                    gene_pattern = r";gene=(.*?);"
+                if fields[2] == "gene":
                     alias_pattern = r";Alias=(.*?);"
-                    try:
-                        gene_name = re.search(gene_pattern, fields[8]).group(1)
-                    except:
-                        gene_name = None
                     try:
                         alias_name = re.search(alias_pattern, fields[8]).group(1)
                     except:
                         alias_name = None
+                    gene_alias_name = alias_name
+                if fields[2] in ["gene", "CDS", "mRNA", "exon"]:
+                    gene_pattern = r";gene=(.*?);"
+                    try:
+                        gene_name = re.search(gene_pattern, fields[8]).group(1)
+                    except:
+                        gene_name = None
+                    if fields[2] in ["CDS", "mRNA", "exon"]:
+                        alias_name = gene_alias_name
                     if alias_name and alias_name in replacements:
                         print("Will replace line: {}".format(line))
                         print("with: ", replacements[alias_name])
