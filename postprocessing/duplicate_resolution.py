@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 def main(reference, target, outfile, species):
     # Choose stable ID prefix depending on the species
     species_prefix = get_prefix(species)
-    # Load known gene names and prefixes from the reference
+    # Load known gene names and aliases from the reference
     alias_genename_dict = load_ref_genenames(reference, species_prefix)
     # Get duplicate gene names from the GFF we are modifying.
     # In dedupl_dict, key = base gene name (e.g. susC), value = dictionary where:
@@ -34,6 +34,7 @@ def main(reference, target, outfile, species):
             unknown_counter = 0
             decision_dict = dict()
             # lookup these aliases in the reference to see if they have gene names
+            # if they don't, we consider them an unknown
             for gene in dedupl_dict[base]:
                 if dedupl_dict[base][gene]["alias"] in alias_genename_dict:
                     ref_gene_name = alias_genename_dict[
@@ -45,7 +46,7 @@ def main(reference, target, outfile, species):
                 else:
                     unknown_counter += 1
             # Go through decision dictionary and see what we can resolve.
-            # Decision format has the following format (2 examples here):
+            # Decision dictionary has the following format (2 examples here):
             # {'fabHA': ['BACUNI_03004', 'BACUNI_04476']}
             # {'der': ['BACUNI_03006'], 'feoB': ['BACUNI_04461'], 'hydF': ['BACUNI_02997']}}
             if len(decision_dict) == 0:
@@ -56,112 +57,92 @@ def main(reference, target, outfile, species):
                 stats_dict["unable_to_decide"] = (
                     stats_dict.get("unable_to_decide", 0) + 1
                 )
+            elif base in decision_dict and len(decision_dict) == 1:
+                # there is one clear "real" gene
+                alias = decision_dict[base][0]
+                if alias_repeats[alias] > 1:
+                    # The same alias is assigned to multiple genes, we cannot resolve this
+                    stats_dict["unable_to_decide"] = (
+                        stats_dict.get("unable_to_decide", 0) + 1
+                    )
+                else:
+                    if alias in replacements:
+                        sys.exit("Error: something went wrong, alias {} is already in replacements".format(alias))
+                    replacements[alias] = base
+                    stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
             else:
-                if base in decision_dict and len(decision_dict) == 1:
-                    # there is one clear "real" gene
-                    alias = decision_dict[base][0]
-                    if alias_repeats[alias] > 1:
-                        # The same alias is assigned to multiple genes, we cannot resolve this
-                        stats_dict["unable_to_decide"] = (
-                            stats_dict.get("unable_to_decide", 0) + 1
+                print("Case is not clear", dedupl_dict[base], decision_dict)
+                unique = check_value_uniqueness(
+                    decision_dict
+                )  # check that the alias doesn't repeat
+                occurrence_flag = False  # check if a gene we are replacing with is already in the genome
+                for gene in decision_dict:
+                    if not gene == base:
+                        if gene in gene_occurrence_counter:
+                            occurrence_flag = True
+                if not unique:
+                    # aliases repeat and we can't resolve duplicates
+                    stats_dict["unable_to_decide"] = (
+                        stats_dict.get("unable_to_decide", 0) + 1
+                    )
+                elif occurrence_flag:
+                    # the gene is already in the genome and we will create a new duplicate if we use it
+                    stats_dict["unable_to_decide"] = (
+                        stats_dict.get("unable_to_decide", 0) + 1
+                    )
+                    print(
+                        "Replacement gene already occurs in the genome, can't replace"
+                    )
+                else:
+                    already_present_in_replacements, reverse = check_gene_presence(
+                        decision_dict, replacements, reverse
+                    )
+
+                    if already_present_in_replacements:
+                        stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
+                        print("Replacement gene already occurs in the replacement list, can't replace")
+                        continue
+
+                    if len(dedupl_dict[base]) == (len(decision_dict) + unknown_counter) and all(
+                        len(value) == 1 for value in decision_dict.values()
+                    ):
+                        # two dictionaries are the same length and new gene names don't occur in the genome
+                        # we can replace every gene
+                        for gene_name, alias_list in decision_dict.items():
+                            alias = alias_list[0]
+                            if alias not in replacements:
+                                replacements[alias] = gene_name
+                            else:
+                                (
+                                    "Alias {} is already in replacements".format(
+                                        alias
+                                    )
+                                )
+                                sys.exit()
+
+                        print("Replaced one for one", decision_dict)
+                        stats_dict["replaced"] = (
+                            stats_dict.get("replaced", 0) + 1
                         )
                     else:
-                        if (
-                            alias not in replacements
-                            and base not in replacements.values()
-                        ):
-                            replacements[alias] = base
+                        print("length is different")
+                        if len(dedupl_dict[base]) - len(decision_dict) > 1:
+                            stats_dict["unable_to_decide"] = (
+                                stats_dict.get("unable_to_decide", 0) + 1
+                            )
+                            print("Cannot resolve")
                         else:
-                            logging.error(
-                                "Alias {} or gene {} is already in replacements".format(
-                                    alias, base
+                            print("Should be able to resolve")
+                            replacements, reverse, stats_dict = (
+                                resolve_duplicate(
+                                    dedupl_dict[base],
+                                    decision_dict,
+                                    replacements,
+                                    reverse,
+                                    stats_dict,
+                                    base,
                                 )
                             )
-                            sys.exit()
-                        stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
-                else:
-                    print("Case is not clear", dedupl_dict[base], decision_dict)
-                    unique = check_value_uniqueness(
-                        decision_dict
-                    )  # check that the alias doesn't repeat
-                    occurrence_flag = False  # check if a gene we are replacing with is already in genome
-                    for gene in decision_dict:
-                        if not gene == base:
-                            if gene in gene_occurrence_counter:
-                                occurrence_flag = True
-                    if not unique:
-                        # aliases repeat and we can't resolve duplicates
-                        stats_dict["unable_to_decide"] = (
-                            stats_dict.get("unable_to_decide", 0) + 1
-                        )
-                    elif occurrence_flag:
-                        # the gene is already in the genome and we will create a new duplicate if we use it
-                        stats_dict["unable_to_decide"] = (
-                            stats_dict.get("unable_to_decide", 0) + 1
-                        )
-                        print(
-                            "Replacement gene already occurs in the genome, can't replace"
-                        )
-                    else:
-                        already_present_in_replacements, reverse = check_gene_presence(
-                            decision_dict, replacements, reverse
-                        )
-                        if len(dedupl_dict[base]) == len(decision_dict) and all(
-                            len(value) == 1 for value in decision_dict.values()
-                        ):
-                            if already_present_in_replacements:
-                                stats_dict["unable_to_decide"] = (
-                                    stats_dict.get("unable_to_decide", 0) + 1
-                                )
-                                print(
-                                    "Replacement gene already occurs in the replacement list, can't replace"
-                                )
-                            else:
-                                # two dictionaries are the same length and new gene names don't occur in the genome
-                                # we can replace every gene
-                                for gene_name, alias_list in decision_dict.items():
-                                    alias = alias_list[0]
-                                    if alias not in replacements:
-                                        replacements[alias] = gene_name
-                                    else:
-                                        (
-                                            "Alias {} is already in replacements".format(
-                                                alias
-                                            )
-                                        )
-                                        sys.exit()
-
-                                print("Replaced one for one", decision_dict)
-                                stats_dict["replaced"] = (
-                                    stats_dict.get("replaced", 0) + 1
-                                )
-                        else:
-                            if already_present_in_replacements:
-                                stats_dict["unable_to_decide"] = (
-                                    stats_dict.get("unable_to_decide", 0) + 1
-                                )
-                                print(
-                                    "Replacement gene already occurs in the replacement list, can't replace"
-                                )
-                            else:
-                                print("length is different")
-                                if len(dedupl_dict[base]) - len(decision_dict) > 1:
-                                    stats_dict["unable_to_decide"] = (
-                                        stats_dict.get("unable_to_decide", 0) + 1
-                                    )
-                                    print("Cannot resolve")
-                                else:
-                                    print("Should be able to resolve")
-                                    replacements, reverse, stats_dict = (
-                                        resolve_duplicate(
-                                            dedupl_dict[base],
-                                            decision_dict,
-                                            replacements,
-                                            reverse,
-                                            stats_dict,
-                                            base,
-                                        )
-                                    )
 
     for key, value in replacements.items():
         print("{}\t{}".format(key, value))
@@ -370,7 +351,7 @@ def parse_args():
         "-t",
         dest="target",
         required=True,
-        help="The GFF file generated by Prokka.",
+        help="The GFF file generated by Prokka with aliases added from reference by liftoff.",
     )
     parser.add_argument(
         "-o",
