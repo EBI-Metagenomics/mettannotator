@@ -30,7 +30,7 @@ workflow DOWNLOAD_DATABASES {
         defense_finder_dir = file("$params.dbs/defense_finder/")
         dbcan_dir = file("$params.dbs/dbcan/")
         interproscan_dir = file("$params.dbs/interproscan")
-        interpro_entry_list_dir = file("$params.dbs/interproscan_entry_list/")
+        interpro_entry_list_dir = file("$params.dbs/interpro_entry_list/")
         eggnog_data_dir = file("$params.dbs/eggnog")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
 

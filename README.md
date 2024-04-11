@@ -75,17 +75,17 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 
 The pipeline needs reference databases in order to work, they take roughly 110G.
 
-| Path                    | Size |
-| ----------------------- | ---- |
-| amrfinder               | 217M |
-| antismash               | 9.4G |
-| dbcan                   | 7.5G |
-| defense_finder          | 242M |
-| eggnog                  | 48G  |
-| interproscan            | 45G  |
-| interproscan_entry_list | 2.6M |
-| rfam_models             | 637M |
-| total                   | 110G |
+| Path                | Size |
+| ------------------- | ---- |
+| amrfinder           | 217M |
+| antismash           | 9.4G |
+| dbcan               | 7.5G |
+| defense_finder      | 242M |
+| eggnog              | 48G  |
+| interproscan        | 45G  |
+| interpro_entry_list | 2.6M |
+| rfam_models         | 637M |
+| total               | 110G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
