@@ -75,17 +75,17 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 
 The pipeline needs reference databases in order to work, they take roughly 110G.
 
-| Path                    | Size |
-| ----------------------- | ---- |
-| amrfinder               | 217M |
-| antismash               | 9.4G |
-| dbcan                   | 7.5G |
-| defense_finder          | 242M |
-| eggnog                  | 48G  |
-| interproscan            | 45G  |
-| interproscan_entry_list | 2.6M |
-| rfam_models             | 637M |
-| total                   | 110G |
+| Path                | Size |
+| ------------------- | ---- |
+| amrfinder           | 217M |
+| antismash           | 9.4G |
+| dbcan               | 7.5G |
+| defense_finder      | 242M |
+| eggnog              | 48G  |
+| interproscan        | 45G  |
+| interpro_entry_list | 2.6M |
+| rfam_models         | 637M |
+| total               | 110G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
@@ -159,7 +159,7 @@ Reference databases
   --amrfinder_plus_db_version        [string]  The AMRFinderPlus reference database version. [default: 2023-02-23.1]
   --defense_finder_db                [string]  Defense Finder reference models, https://github.com/mdmparis/defense-finder#updating-defensefinder. The
                                                Microbiome Informatics team provides a pre-indexed version of the models for version 1.2.3 on this ftp location:
-                                               ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.
+                                               ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.
   --defense_finder_db_version        [string]  The Defense Finder models version. [default: 1.2.3]
   --antismash_db                     [string]  antiSMASH reference database, go to this documentation to do the database setup
                                                https://docs.antismash.secondarymetabolites.org/install/#installing-the-latest-antismash-release.
@@ -167,7 +167,7 @@ Reference databases
   --dbcan_db                         [string]  dbCAN indexed reference database, please go to the documentation for the setup
                                                https://dbcan.readthedocs.io/en/latest/. The Microbiome Informatics team provides a pre-indexed version of the
                                                database for version 4.0 on this ftp location:
-                                               ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tools-reference-dbs/dbcan/dbcan_4.0.tar.gz
+                                               ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/dbcan/dbcan_4.0.tar.gz
   --dbcan_db_version                 [string]  The dbCAN reference database version. [default: 4.1.3_V12]
 
 Generic options

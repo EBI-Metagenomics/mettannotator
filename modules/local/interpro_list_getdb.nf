@@ -7,7 +7,7 @@ process INTEPRO_ENTRY_LIST_GETDB {
     publishDir "${params.dbs}", mode: 'copy'
 
     output:
-    tuple path("ipr-entry-lists/", type: "dir"), val("94.0"), emit: interpro_entry_list
+    tuple path("interpro_entry_list/", type: "dir"), val("94.0"), emit: interpro_entry_list
 
     script:
     """
@@ -15,13 +15,13 @@ process INTEPRO_ENTRY_LIST_GETDB {
 
     wget https://ftp.ebi.ac.uk/pub/databases/interpro/releases/94.0/ParentChildTreeFile.txt
 
-    mkdir -p ipr-entry-lists
+    mkdir -p interpro_entry_list
 
-    mv entry.list ipr-entry-lists/
+    mv entry.list interpro_entry_list/
 
-    mv ParentChildTreeFile.txt ipr-entry-lists/
+    mv ParentChildTreeFile.txt interpro_entry_list/
 
-    echo '94.0' > ipr-entry-lists/VERSION.txt
+    echo '94.0' > interpro_entry_list/VERSION.txt
 
     """
 }
