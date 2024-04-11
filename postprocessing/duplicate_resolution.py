@@ -26,7 +26,8 @@ def main(reference, target, outfile, species):
     stats_dict = dict()  # stats for printing
     replacements = dict()  # gene names to change
     reverse = list()  # undo some planned changes (remove these from replacements)
-    stats_out = open("stats.txt", "w")
+    stats_out = open("{}_stats.txt".format(species), "w")
+    stats_out.write("Gene\tCopy number\tReplaced\tWhy not replaced\n")
     for base in dedupl_dict:
         if (
             len(dedupl_dict[base]) > 1
@@ -99,7 +100,7 @@ def main(reference, target, outfile, species):
                         stats_dict.get("unable_to_decide", 0) + 1
                     )
                     printed_stat += "No\tReplacement already occurs elsewhere in the genome\n"
-                    print(
+                    logging.debug(
                         "Replacement gene already occurs in the genome, can't replace"
                     )
                 else:
@@ -110,7 +111,7 @@ def main(reference, target, outfile, species):
                     if already_present_in_replacements:
                         stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
                         printed_stat += "No\tWe already used the replacement gene in a previous duplicate group\n"
-                        print("Replacement gene already occurs in the replacement list, can't replace")
+                        logging.debug("Replacement gene already occurs in the replacement list, can't replace")
                         continue
 
                     if len(dedupl_dict[base]) == (len(decision_dict) + unknown_counter) and all(
@@ -130,21 +131,19 @@ def main(reference, target, outfile, species):
                                 )
                                 sys.exit()
 
-                        print("Replaced one for one", decision_dict)
+                        logging.debug("Replaced one for one {}".format(decision_dict))
                         stats_dict["replaced"] = (
                             stats_dict.get("replaced", 0) + 1
                         )
                         printed_stat += "Yes\t\n"
                     else:
-                        print("length is different")
+                        logging.debug("length is different")
                         if len(dedupl_dict[base]) - len(decision_dict) > 1:
                             stats_dict["unable_to_decide"] = (
                                 stats_dict.get("unable_to_decide", 0) + 1
                             )
-                            print("Cannot resolve")
                             printed_stat += "No\tSource and replacement dicts have different lengths\n"
                         else:
-                            print("Should be able to resolve")
                             replacements, reverse, stats_dict, printed_stat = (
                                 resolve_duplicate(
                                     dedupl_dict[base],
@@ -164,25 +163,25 @@ def main(reference, target, outfile, species):
     ):
         sys.exit("Non-unique values in replacements")
     else:
-        made_replacements = make_replacement_file(target, outfile, replacements)
+        made_replacements = make_replacement_file(target, outfile, replacements, species)
     if made_replacements != len(replacements):
         sys.exit(
             "Made {} replacements but expected {}".format(
                 str(made_replacements), str(len(replacements))
             )
         )
-    print("Total number of groups: {}".format(counter))
-    print(replacements)
-    print("Made replacements: {}".format(made_replacements))
-    print("Reverse", reverse)
+    logging.info("Total number of groups: {}".format(counter))
+    logging.info("Replacements: {}".format(replacements))
+    logging.info("Made replacements: {}".format(made_replacements))
+    logging.info("Reverse {}".format(reverse))
     stats_out.close()
     return stats_dict
 
 
-def make_replacement_file(target, outfile, replacements):
+def make_replacement_file(target, outfile, replacements, species):
     seq_flag = False
     count_replacements = list()
-    rep_out = open("replacements.txt", "w")
+    rep_out = open("{}_replacements.txt".format(species), "w")
     with open(target, "r") as file_in, open(outfile, "w") as file_out:
         for line in file_in:
             if line.startswith("#"):
@@ -223,7 +222,7 @@ def make_replacement_file(target, outfile, replacements):
 def resolve_duplicate(
     genes_to_resolve, reference_dict, replacements, reverse, stats_dict, base, printed_stat
 ):
-    print("=============>RESOLVING", genes_to_resolve, reference_dict)
+    logging.debug("=============>RESOLVING {} {}".format(genes_to_resolve, reference_dict))
     resolved = dict()
     duplicate_removed = False
     for gene in reference_dict:
@@ -237,7 +236,7 @@ def resolve_duplicate(
                 break
     if len(genes_to_resolve) > 1:
         # unable to fully resolve
-        print("Unable to fully resolve")
+        logging.debug("Unable to fully resolve")
         stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
         printed_stat += "No\tResolve function can't resolve\n"
     elif len(genes_to_resolve) == 1 and not duplicate_removed:
@@ -247,7 +246,7 @@ def resolve_duplicate(
         printed_stat += "Yes\t\n"
     else:
         sys.exit("Unknown case")
-    print("============>Resolved", resolved)
+    logging.debug("============>Resolved {}".format(resolved))
     return replacements, reverse, stats_dict, printed_stat
 
 
