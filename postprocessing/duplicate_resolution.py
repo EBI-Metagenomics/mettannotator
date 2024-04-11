@@ -340,11 +340,20 @@ def load_ref_genenames(reference, species_prefix):
                 _, _, feature, _, _, _, _, _, annot = line.strip().split("\t")
                 if feature == "gene":
                     if ";Name=" in annot and species_prefix in annot:
-                        id_pattern = r"ID=gene:(.*?);"
-                        name_pattern = r";Name=(.*?);"
+                        if species_prefix == "BACUNI":
+                            id_pattern = r"ID=gene:(.*?);"
+                            name_pattern = r";Name=(.*?);"
+                        elif species_prefix == "BVU":
+                            if "old_locus_tag" in annot and "gene=" in annot:
+                                print(line)
+                                id_pattern = r"old_locus_tag=(.*?)$"
+                                name_pattern = r";gene=(.*?);"
+                            else:
+                                continue
                         id = re.search(id_pattern, annot).group(1)
                         gene_name = re.search(name_pattern, annot).group(1)
                         alias_genename_dict[id] = gene_name
+    print(alias_genename_dict)
     return alias_genename_dict
 
 
