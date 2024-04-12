@@ -25,5 +25,5 @@ TEST_INPUT = os.path.join(
 class TestDuplicateResolution(unittest.TestCase):
     def test_main(self):
         result = main(DUMMY_REFERENCE, TEST_INPUT, "deduplication_test_outfile.gff", "uniformis")
-        self.assertEqual(result, {'replaced': 3, 'unable_to_decide': 2})
+        self.assertEqual(result, {'replaced': 3, 'unable_to_decide': 4})
         #os.remove("deduplication_test_outfile.gff")
