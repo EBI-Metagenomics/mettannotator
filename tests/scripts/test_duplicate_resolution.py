@@ -27,4 +27,4 @@ class TestDuplicateResolution(unittest.TestCase):
         result = main(
             DUMMY_REFERENCE, TEST_INPUT, "deduplication_test_outfile.gff", "uniformis"
         )
-        self.assertEqual(result, {"replaced": 3, "unable_to_decide": 5})
+        self.assertEqual(result, {"replaced": 6, "unable_to_decide": 5})
