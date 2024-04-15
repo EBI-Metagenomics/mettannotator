@@ -27,7 +27,7 @@ def main(reference, target, outfile, species):
     replacements = dict()  # gene names to change
     reverse = list()  # undo some planned changes (remove these from replacements)
     stats_out = open("{}_stats.txt".format(species), "w")
-    stats_out.write("Gene\tCopy number\tReplaced\tWhy not replaced\n")
+    stats_out.write("Gene\tCopy number\tReplaced\tWhy not replaced/ Comment\n")
     for base in dedupl_dict:
         if (
             len(dedupl_dict[base]) > 1
@@ -37,6 +37,7 @@ def main(reference, target, outfile, species):
             counter += 1
             unknown_counter = 0
             decision_dict = dict()
+            replace = False
             # lookup these aliases in the reference to see if they have gene names
             # if they don't, we consider them an unknown
             for gene in dedupl_dict[base]:
@@ -82,9 +83,12 @@ def main(reference, target, outfile, species):
                         )
                     replacements[alias] = base
                     stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
+                    replace = True
                     printed_stat += "Yes\t\n"
             else:
-                print("Case is not clear", dedupl_dict[base], decision_dict)
+                logging.debug(
+                    "Case is not clear {} {}".format(dedupl_dict[base], decision_dict)
+                )
                 unique = check_value_uniqueness(
                     decision_dict
                 )  # check that the alias doesn't repeat
@@ -140,6 +144,7 @@ def main(reference, target, outfile, species):
 
                         logging.debug("Replaced one for one {}".format(decision_dict))
                         stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
+                        replace = True
                         printed_stat += "Yes\t\n"
                     else:
                         logging.debug("length is different")
@@ -160,6 +165,12 @@ def main(reference, target, outfile, species):
                                     printed_stat,
                                 )
                             )
+                            if "Yes" in printed_stat:
+                                replace = True
+        if replace:
+            replacements, printed_stat = try_to_remove_more_underscores(
+                replacements, base, printed_stat, decision_dict, dedupl_dict[base]
+            )
         stats_out.write(printed_stat)
 
     if (
@@ -183,6 +194,32 @@ def main(reference, target, outfile, species):
     logging.info("Reverse {}".format(reverse))
     stats_out.close()
     return stats_dict
+
+
+def try_to_remove_more_underscores(
+    replacements, base, printed_stat, decision_dict, deduplication_section
+):
+    # Check if after the replacements have been made we can remove more underscores.
+    # This can only happen if replacements have been made to genes that are not the base value
+    # For example, you start with dnaA_1, dnaA_2, dnaA_3 and replace with dnaA_1, dnaB, dnaC
+    # You can now remove the underscore from dnaA_1 because it's no longer a duplicate.
+    if base not in decision_dict:
+        if len(deduplication_section.keys()) - len(decision_dict.keys()) == 1:
+            # one name remains not replaced and it's not already being used in deduplication
+            bacunis_already_replaced = [
+                item for sublist in decision_dict.values() for item in sublist
+            ]
+            for key in deduplication_section.keys():
+                if not deduplication_section[key]["alias"] in bacunis_already_replaced:
+                    replacements[deduplication_section[key]["alias"]] = key.split("_")[
+                        0
+                    ]
+                    printed_stat = printed_stat.replace(
+                        "\n",
+                        "Removed underscore from {} because it was the only duplicate "
+                        "remaining after other replacements\n",
+                    ).format(key)
+    return replacements, printed_stat
 
 
 def make_replacement_file(target, outfile, replacements, species):
@@ -362,7 +399,6 @@ def load_ref_genenames(reference, species_prefix):
                             name_pattern = r";Name=(.*?);"
                         elif species_prefix == "BVU":
                             if "old_locus_tag" in annot and "gene=" in annot:
-                                print(line)
                                 id_pattern = r"old_locus_tag=(.*?)$"
                                 name_pattern = r";gene=(.*?);"
                             else:
