@@ -475,7 +475,6 @@ def merger(
             starts = []
             ends = []
             coord_list = []
-            irdr_list = []
             nested_types = []
             mgeR_list = []
             momosub_list = []
