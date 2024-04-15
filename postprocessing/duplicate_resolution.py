@@ -53,6 +53,7 @@ def main(reference, target, outfile, species):
             # Decision dictionary has the following format (2 examples here):
             # {'fabHA': ['BACUNI_03004', 'BACUNI_04476']}
             # {'der': ['BACUNI_03006'], 'feoB': ['BACUNI_04461'], 'hydF': ['BACUNI_02997']}}
+            logging.debug("Decision dictionary: {}".format(decision_dict))
             if len(decision_dict) == 0:
                 # unable to resolve duplicates, leave records as they are
                 stats_dict["unknowns_only"] = stats_dict.get("unknowns_only", 0) + 1
@@ -62,7 +63,7 @@ def main(reference, target, outfile, species):
                 stats_dict["unable_to_decide"] = (
                     stats_dict.get("unable_to_decide", 0) + 1
                 )
-                printed_stat += "No\tGene name occurs in reference multiple times\n"
+                printed_stat += "No\tGene name occurs in reference multiple times or alias repeated in target\n"
             elif base in decision_dict and len(decision_dict) == 1:
                 # there is one clear "real" gene
                 alias = decision_dict[base][0]
