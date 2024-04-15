@@ -11,7 +11,8 @@ import os.path
 ##### Dec 6, 2023
 ##### Apr 12, 2024 -> Fixes on merger function to debug overlapping coordinates of multiple nested MGEs
 
-def gff_parser( current_line ):
+
+def gff_parser(current_line):
     (
         contig,
         seq_source,
@@ -28,7 +29,7 @@ def gff_parser( current_line ):
     return data_list
 
 
-def momo_parser( mobannot ):
+def momo_parser(mobannot):
     ### Parsing the MAP gff file
     momofy_dict = {}
     momo_subtypes = {}
@@ -292,13 +293,13 @@ def mapper(momofy_dict, promge_dict):
     for cluster in overlapped:
         cluster_counter += 1
         cluster = list(set(cluster))
-        #print('clstr_'+str(cluster_counter)+' '+','.join(cluster)+'\n')
+        # print('clstr_'+str(cluster_counter)+' '+','.join(cluster)+'\n')
         for element in cluster:
             contig = element.split(":")[0]
             start = int(element.split(":")[1].split("-")[0])
             end = int(element.split(":")[1].split("-")[1])
             composite_key = (contig, cluster_counter)
-            #print(contig+', clstr_'+str(cluster_counter)+', '+str(start)+', '+str(end))
+            # print(contig+', clstr_'+str(cluster_counter)+', '+str(start)+', '+str(end))
             if composite_key in clusters_dict:
                 clusters_dict[composite_key].append(start)
                 clusters_dict[composite_key].append(end)
@@ -313,7 +314,7 @@ def mapper(momofy_dict, promge_dict):
         max_coord = sorted(clusters_dict[comp_key])[-1]
         coords = (min_coord, max_coord)
         clust_bounderies[comp_key] = coords
-        #print(comp_key,min_coord,max_coord)
+        # print(comp_key,min_coord,max_coord)
 
     # Finding overlapping clusters
     clst_used = []
@@ -354,7 +355,7 @@ def mapper(momofy_dict, promge_dict):
                             cluster_counter += 1
                             collapsed_key = (contig_1, cluster_counter)
                             clst_2_add[collapsed_key] = collapsed_cluster
-                            #print(comp_key_1, comp_key_2, new_min, new_max, collapsed_cluster)
+                            # print(comp_key_1, comp_key_2, new_min, new_max, collapsed_cluster)
                             clst_used.append(comp_key_1)
                             clst_used.append(comp_key_2)
 
@@ -482,7 +483,7 @@ def merger(
             momofy_positions = []
 
             for element in cluster:
-                contig = element.split(':')[0]
+                contig = element.split(":")[0]
                 element_type = permge_metadata[element][1].replace(" ", "")
                 if "|" in element_type:
                     for composite_type in element_type.split("|"):
@@ -490,9 +491,9 @@ def merger(
                 else:
                     nested_types.append(element_type)
 
-                mge_start = int(element.split(':')[1].split('-')[0])
+                mge_start = int(element.split(":")[1].split("-")[0])
                 starts.append(mge_start)
-                mge_end = int(element.split(':')[1].split('-')[1])
+                mge_end = int(element.split(":")[1].split("-")[1])
                 ends.append(mge_end)
 
                 element_range = list(range(int(mge_start), int(mge_end) + 1))
@@ -523,7 +524,9 @@ def merger(
             else:
                 mge_type = "partial_overlap"
 
-            global_id = "ID=" + genome_name + "|" + contig + ":" + str(start) + "-" + str(end)
+            global_id = (
+                "ID=" + genome_name + "|" + contig + ":" + str(start) + "-" + str(end)
+            )
 
             merge_info = ",".join(coord_list)
             nested_info = ",".join(list(set(nested_types)))
@@ -591,8 +594,8 @@ def main():
     args = parser.parse_args()
 
     ### Calling functions
-    ( momofy_dict, irdr_dict, momo_subtypes ) = momo_parser( args.mobannot )
-    ( promge_dict, mgeR ) = promge_parser( args.proMGE, args.meta)
+    (momofy_dict, irdr_dict, momo_subtypes) = momo_parser(args.mobannot)
+    (promge_dict, mgeR) = promge_parser(args.proMGE, args.meta)
 
     (momo_unique, pro_unique, final_overlapped, permge_metadata) = mapper(
         momofy_dict, promge_dict
