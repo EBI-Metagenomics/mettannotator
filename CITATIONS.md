@@ -18,6 +18,62 @@
 
   > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
+- [Prokka](https://pubmed.ncbi.nlm.nih.gov/24642063/)
+
+  > Seemann T. Prokka: rapid prokaryotic genome annotation. Bioinformatics. 2014 Jul 15;30(14):2068-9. doi: 10.1093/bioinformatics/btu153. Epub 2014 Mar 18. PMID: 24642063.
+
+- [InterProScan](https://pubmed.ncbi.nlm.nih.gov/24451626/)
+
+  > Jones P, Binns D, Chang HY, Fraser M, Li W, McAnulla C, McWilliam H, Maslen J, Mitchell A, Nuka G, Pesseat S, Quinn AF, Sangrador-Vegas A, Scheremetjew M, Yong SY, Lopez R, Hunter S. InterProScan 5: genome-scale protein function classification. Bioinformatics. 2014 May 1;30(9):1236-40. doi: 10.1093/bioinformatics/btu031. Epub 2014 Jan 21. PMID: 24451626; PMCID: PMC3998142.
+
+- [eggNOG-mapper](https://pubmed.ncbi.nlm.nih.gov/34597405/)
+
+  > Cantalapiedra CP, Hernández-Plaza A, Letunic I, Bork P, Huerta-Cepas J. eggNOG-mapper v2: Functional Annotation, Orthology Assignments, and Domain Prediction at the Metagenomic Scale. Mol Biol Evol. 2021 Dec 9;38(12):5825-5829. doi: 10.1093/molbev/msab293. PMID: 34597405; PMCID: PMC8662613.
+
+- [UniFIRE](https://pubmed.ncbi.nlm.nih.gov/32399560/)
+
+  > MacDougall A, Volynkin V, Saidi R, Poggioli D, Zellner H, Hatton-Ellis E, Joshi V, O'Donovan C, Orchard S, Auchincloss AH, Baratin D, Bolleman J, Coudert E, de Castro E, Hulo C, Masson P, Pedruzzi I, Rivoire C, Arighi C, Wang Q, Chen C, Huang H, Garavelli J, Vinayaka CR, Yeh LS, Natale DA, Laiho K, Martin MJ, Renaux A, Pichler K; UniProt Consortium. UniRule: a unified rule resource for automatic annotation in the UniProt Knowledgebase. Bioinformatics. 2020 Nov 1;36(17):4643-4648. doi: 10.1093/bioinformatics/btaa485. Erratum in: Bioinformatics. 2021 Apr 1;36(22-23):5562. PMID: 32399560; PMCID: PMC7750954.
+
+- [AMRFinderPlus](https://pubmed.ncbi.nlm.nih.gov/34135355/)
+
+  > Feldgarden M, Brover V, Gonzalez-Escalona N, Frye JG, Haendiges J, Haft DH, Hoffmann M, Pettengill JB, Prasad AB, Tillman GE, Tyson GH, Klimke W. AMRFinderPlus and the Reference Gene Catalog facilitate examination of the genomic links among antimicrobial resistance, stress response, and virulence. Sci Rep. 2021 Jun 16;11(1):12728. doi: 10.1038/s41598-021-91456-0. PMID: 34135355; PMCID: PMC8208984.
+
+- [DefenseFinder](https://pubmed.ncbi.nlm.nih.gov/35538097/)
+
+  > Tesson F, Hervé A, Mordret E, Touchon M, d'Humières C, Cury J, Bernheim A. Systematic and quantitative view of the antiviral arsenal of prokaryotes. Nat Commun. 2022 May 10;13(1):2561. doi: 10.1038/s41467-022-30269-9. PMID: 35538097; PMCID: PMC9090908.
+
+- [GECCO](https://www.biorxiv.org/content/10.1101/2021.05.03.442509v1)
+
+  > Carroll LM, Larralde M, Fleck JS, Ponnudurai R, Milanese A, Barazzone EC, Zeller G. Accurate de novo identification of biosynthetic gene clusters with GECCO. bioRxiv 2021.05.03.442509; doi:10.1101/2021.05.03.442509
+
+- [antiSMASH](https://pubmed.ncbi.nlm.nih.gov/37140036/)
+
+  > Blin K, Shaw S, Augustijn HE, Reitz ZL, Biermann F, Alanjary M, Fetter A, Terlouw BR, Metcalf WW, Helfrich EJN, van Wezel GP, Medema MH, Weber T. antiSMASH 7.0: new and improved predictions for detection, regulation, chemical structures and visualisation. Nucleic Acids Res. 2023 Jul 5;51(W1):W46-W50. doi: 10.1093/nar/gkad344. PMID: 37140036; PMCID: PMC10320115.
+
+- [SanntiS](https://www.biorxiv.org/content/10.1101/2023.05.23.540769v2)
+
+  > Sanchez S, Rogers JD, Rogers AB, Nassar M, McEntyre J, Welch M, Hollfelder F, Finn RD. Expansion of novel biosynthetic gene clusters from diverse environments using SanntiS. bioRxiv 2023.05.23.540769; doi: https://doi.org/10.1101/2023.05.23.540769
+
+- [run_dbCAN](https://pubmed.ncbi.nlm.nih.gov/37125649/)
+
+  > Zheng J, Ge Q, Yan Y, Zhang X, Huang L, Yin Y. dbCAN3: automated carbohydrate-active enzyme and substrate annotation. Nucleic Acids Res. 2023 Jul 5;51(W1):W115-W121. doi: 10.1093/nar/gkad328. PMID: 37125649; PMCID: PMC10320055.
+
+- [CRISPRCasFinder](https://pubmed.ncbi.nlm.nih.gov/29790974/)
+
+  > Couvin D, Bernheim A, Toffano-Nioche C, Touchon M, Michalik J, Néron B, Rocha EPC, Vergnaud G, Gautheret D, Pourcel C. CRISPRCasFinder, an update of CRISRFinder, includes a portable version, enhanced performance and integrates search for Cas proteins. Nucleic Acids Res. 2018 Jul 2;46(W1):W246-W251. doi: 10.1093/nar/gky425. PMID: 29790974; PMCID: PMC6030898.
+
+- [Infernal](https://pubmed.ncbi.nlm.nih.gov/24008419/)
+
+  > Nawrocki EP, Eddy SR. Infernal 1.1: 100-fold faster RNA homology searches. Bioinformatics. 2013 Nov 15;29(22):2933-5. doi: 10.1093/bioinformatics/btt509. Epub 2013 Sep 4. PMID: 24008419; PMCID: PMC3810854.
+
+- [Rfam](https://pubmed.ncbi.nlm.nih.gov/29112718/)
+
+  > Kalvari I, Argasinska J, Quinones-Olvera N, Nawrocki EP, Rivas E, Eddy SR, Bateman A, Finn RD, Petrov AI. Rfam 13.0: shifting to a genome-centric resource for non-coding RNA families. Nucleic Acids Res. 2018 Jan 4;46(D1):D335-D342. doi: 10.1093/nar/gkx1038. PMID: 29112718; PMCID: PMC5753348.
+
+- [tRNAscan-SE](https://pubmed.ncbi.nlm.nih.gov/34417604/)
+
+  > Chan PP, Lin BY, Mak AJ, Lowe TM. tRNAscan-SE 2.0: improved detection and functional classification of transfer RNA genes. Nucleic Acids Res. 2021 Sep 20;49(16):9077-9096. doi: 10.1093/nar/gkab688. PMID: 34417604; PMCID: PMC8450103.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

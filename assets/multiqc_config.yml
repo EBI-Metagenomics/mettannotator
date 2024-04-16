@@ -9,6 +9,10 @@ report_section_order:
   "ebi-metagenomics-mettannotator-summary":
     order: -1002
 
+run_modules:
+  - quast
+  - custom_content
+
 top_modules:
   - quast
 
@@ -17,3 +21,7 @@ sp:
     fn: "*.tsv"
 
 export_plots: true
+
+## Prettification
+custom_logo_url: https://github.com/ebi-metagenomics/mettannotator
+custom_logo_title: "ebi-metagenomics/mettannotator"

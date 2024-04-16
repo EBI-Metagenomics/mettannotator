@@ -1,6 +1,6 @@
 process QUAST {
     tag "$meta.prefix"
-    label 'process_light'
+    label 'process_nano'
 
     conda "bioconda::quast=5.2.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

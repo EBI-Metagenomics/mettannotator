@@ -29,25 +29,33 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { PROKKA } from '../modules/local/prokka'
-include { AMRFINDER_PLUS } from '../modules/local/amrfinder_plus'
-include { CRISPRCAS_FINDER } from '../modules/local/crisprcasfinder'
-include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS } from '../modules/local/eggnog'
+include { LOOKUP_KINGDOM                             } from '../modules/local/lookup_kingdom'
+include { PROKKA                                     } from '../modules/local/prokka'
+include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
+include { DEFENSE_FINDER                             } from '../modules/local/defense_finder'
+include { CRISPRCAS_FINDER                           } from '../modules/local/crisprcasfinder'
+include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
-include { IPS } from '../modules/local/interproscan'
-include { DETECT_RRNA } from '../modules/local/detect_rrna'
-include { DETECT_NCRNA } from '../modules/local/detect_ncrna'
-include { SANNTIS } from '../modules/local/sanntis'
-include { ANNONTATE_GFF } from '../modules/local/annotate_gff'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { INTERPROSCAN                               } from '../modules/local/interproscan'
+include { DETECT_TRNA                                } from '../modules/local/detect_trna'
+include { DETECT_NCRNA                               } from '../modules/local/detect_ncrna'
+include { SANNTIS                                    } from '../modules/local/sanntis'
+include { UNIFIRE                                    } from '../modules/local/unifire'
+include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
+include { ANTISMASH                                  } from '../modules/local/antismash'
+include { DBCAN                                      } from '../modules/local/dbcan'
+
+include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { QUAST } from '../modules/nf-core/quast/main'
-include { MULTIQC } from '../modules/nf-core/multiqc/main'
+include { GECCO_RUN                   } from '../modules/nf-core/gecco/run/main'
+include { QUAST                       } from '../modules/nf-core/quast/main'
+include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,16 +71,19 @@ include { MULTIQC } from '../modules/nf-core/multiqc/main'
 /* --  Create channels for reference databases  -- */
 /////////////////////////////////////////////////////
 
-ch_interproscan_db = file(params.interproscan_db)
+amrfinder_plus_db = channel.empty()
 
-ch_eggnog_db = file(params.eggnog_db)
-ch_eggnog_diamond_db = file(params.eggnong_diamond_db)
-ch_eggnog_data_dir = file(params.eggnong_data_dir)
+defense_finder_db = channel.empty()
+dbcan_db = channel.empty()
 
-ch_rfam_rrna_models = file(params.rfam_rrna_models)
-ch_rfam_ncrna_models = file(params.rfam_ncrna_models)
+interproscan_db = channel.empty()
+interpro_entry_list = channel.empty()
 
-ch_amrfinder_plus_db = file(params.amrfinder_plus_db)
+eggnog_db = channel.empty()
+eggnog_diamond_db = channel.empty()
+eggnog_data = channel.empty()
+
+rfam_ncrna_models = channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,11 +96,75 @@ def multiqc_report = []
 
 workflow METTANNOTATOR {
 
+    if (params.dbs) {
+        // Download databases (if needed) //
+        DOWNLOAD_DATABASES()
+
+        amrfinder_plus_db = DOWNLOAD_DATABASES.out.amrfinder_plus_db
+
+        antismash_db = DOWNLOAD_DATABASES.out.antismash_db
+
+        defense_finder_db = DOWNLOAD_DATABASES.out.defense_finder_db
+
+        dbcan_db = DOWNLOAD_DATABASES.out.dbcan_db
+
+        interproscan_db = DOWNLOAD_DATABASES.out.interproscan_db
+
+        interpro_entry_list = DOWNLOAD_DATABASES.out.interpro_entry_list
+
+        eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
+
+        rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
+    } else {
+        // Use the parametrized folders and files for the databases //
+        amrfinder_plus_db = tuple(
+            file(params.amrfinder_plus_db, checkIfExists: true),
+            params.amrfinder_plus_db_version
+        )
+
+        antismash_db = tuple(
+            file(params.antismash_db, checkIfExists: true),
+            params.antismash_db_version
+        )
+
+        defense_finder_db = tuple(
+            file(params.defense_finder_db, checkIfExists: true),
+            params.defense_finder_db_version
+        )
+
+        dbcan_db = tuple(
+            file(params.dbcan_db, checkIfExists: true),
+            params.dbcan_db_version
+        )
+
+        interproscan_db = tuple(
+            file(params.interproscan_db, checkIfExists: true),
+            params.interproscan_db_version
+        )
+
+        interpro_entry_list = tuple(
+            file(params.interpro_entry_list, checkIfExists: true),
+            params.interpro_entry_list_version
+        )
+
+        eggnog_db = tuple(
+            file(params.eggnog_db, checkIfExists: true),
+            params.eggnog_db_version
+        )
+
+        rfam_ncrna_models = tuple(
+            file(params.rfam_ncrna_models, checkIfExists: true),
+            params.rfam_ncrna_models_rfam_version
+        )
+    }
+
     ch_versions = Channel.empty()
 
     assemblies = Channel.fromSamplesheet("input")
 
-    PROKKA( assemblies )
+    LOOKUP_KINGDOM( assemblies )
+
+    PROKKA( assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ))
 
     ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 
@@ -114,9 +189,7 @@ workflow METTANNOTATOR {
     EGGNOG_MAPPER_ORTHOLOGS(
         proteins_for_emapper_orth,
         Channel.value("mapper"),
-        ch_eggnog_db,
-        ch_eggnog_diamond_db,
-        ch_eggnog_data_dir
+        eggnog_db
     )
 
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ORTHOLOGS.out.versions.first())
@@ -131,19 +204,17 @@ workflow METTANNOTATOR {
     EGGNOG_MAPPER_ANNOTATIONS(
         orthologs_for_annotations,
         Channel.value("annotations"),
-        ch_eggnog_db,
-        ch_eggnog_diamond_db,
-        ch_eggnog_data_dir
+        eggnog_db
     )
 
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
-    IPS(
+    INTERPROSCAN(
         PROKKA.out.faa,
-        ch_interproscan_db
+        interproscan_db
     )
 
-    ch_versions = ch_versions.mix(IPS.out.versions.first())
+    ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
 
     assemblies_plus_faa_and_gff = assemblies.join(
         PROKKA.out.faa
@@ -151,47 +222,101 @@ workflow METTANNOTATOR {
         PROKKA.out.gff
     )
 
-    AMRFINDER_PLUS( assemblies_plus_faa_and_gff )
+    AMRFINDER_PLUS(
+        assemblies_plus_faa_and_gff,
+        amrfinder_plus_db
+    )
 
     ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
 
-    DETECT_RRNA(
-        PROKKA.out.fna,
-        ch_rfam_rrna_models
+    AMRFINDER_PLUS_TO_GFF( AMRFINDER_PLUS.out.amrfinder_tsv )
+
+    ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
+
+    DEFENSE_FINDER (
+        PROKKA.out.faa.join( PROKKA.out.gff ),
+        defense_finder_db
     )
 
-    ch_versions = ch_versions.mix(DETECT_RRNA.out.versions.first())
+    ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
+
+    UNIFIRE ( PROKKA.out.faa )
+
+    ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
+
+    DETECT_TRNA(
+        PROKKA.out.fna,
+    )
+
+    ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
 
     DETECT_NCRNA(
         PROKKA.out.fna,
-        ch_rfam_ncrna_models
+        rfam_ncrna_models
     )
 
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
 
     SANNTIS(
-        IPS.out.ips_annontations.join(PROKKA.out.gbk)
+        INTERPROSCAN.out.ips_annotations.join(PROKKA.out.gbk)
     )
 
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
 
-    ANNONTATE_GFF(
+    GECCO_RUN(
+        PROKKA.out.gbk.map { meta, gbk -> [meta, gbk, []] }, []
+    )
+
+    ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
+
+    ANTISMASH(
+        PROKKA.out.gbk,
+        antismash_db
+    )
+
+    ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
+
+    DBCAN(
+        PROKKA.out.faa.join( PROKKA.out.gff ),
+        dbcan_db
+    )
+
+    ch_versions = ch_versions.mix(DBCAN.out.versions.first())
+
+    ANNOTATE_GFF(
         PROKKA.out.gff.join(
-            IPS.out.ips_annontations
+            INTERPROSCAN.out.ips_annotations
         ).join(
-           EGGNOG_MAPPER_ANNOTATIONS.out.annotations, remainder: true
+           EGGNOG_MAPPER_ANNOTATIONS.out.annotations
         ).join(
             SANNTIS.out.sanntis_gff, remainder: true
         ).join(
             DETECT_NCRNA.out.ncrna_tblout
         ).join(
+            DETECT_TRNA.out.trna_gff
+        ).join(
             CRISPRCAS_FINDER.out.hq_gff, remainder: true
         ).join(
             AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
-        )
+        ).join(
+            ANTISMASH.out.gff, remainder: true
+        ).join(
+            GECCO_RUN.out.gff, remainder: true
+        ).join(
+            DBCAN.out.dbcan_gff, remainder: true
+        ).join(
+            DEFENSE_FINDER.out.gff, remainder: true
+        ).join(
+            UNIFIRE.out.arba, remainder: true
+        ).join(
+            UNIFIRE.out.unirule, remainder: true
+        ).join(
+            UNIFIRE.out.pirsr, remainder: true
+        ),
+        interpro_entry_list
     )
 
-    ch_versions = ch_versions.mix(ANNONTATE_GFF.out.versions.first())
+    ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
@@ -211,6 +336,7 @@ workflow METTANNOTATOR {
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
     ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.results.collect { it[1] }.ifEmpty([]) )
+
 
     MULTIQC (
         ch_multiqc_files.collect(),
