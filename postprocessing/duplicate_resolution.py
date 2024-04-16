@@ -25,6 +25,7 @@ def main(reference, target, outfile, species):
     counter = 0  # track total number of gene groups to deduplicate
     stats_dict = dict()  # stats for printing
     replacements = dict()  # gene names to change
+    replacements_ids = dict()  # changes to make if alias is None
     reverse = list()  # undo some planned changes (remove these from replacements)
     stats_out = open("{}_stats.txt".format(species), "w")
     stats_out.write("Gene\tCopy number\tReplaced\tWhy not replaced/ Comment\n")
@@ -168,11 +169,18 @@ def main(reference, target, outfile, species):
                             if "Yes" in printed_stat:
                                 replace = True
         if replace:
-            replacements, printed_stat = try_to_remove_more_underscores(
-                replacements, base, printed_stat, decision_dict, dedupl_dict[base]
+            replacements, printed_stat, replacements_ids = (
+                try_to_remove_more_underscores(
+                    replacements,
+                    base,
+                    printed_stat,
+                    decision_dict,
+                    dedupl_dict[base],
+                    replacements_ids,
+                )
             )
         stats_out.write(printed_stat)
-
+    print("replacement ids", replacements_ids)
     if (
         len(set(replacements.values())) != len(replacements.values())
         or len(reverse) > 0
@@ -180,9 +188,9 @@ def main(reference, target, outfile, species):
         sys.exit("Non-unique values in replacements")
     else:
         made_replacements = make_replacement_file(
-            target, outfile, replacements, species
+            target, outfile, replacements, replacements_ids, species
         )
-    if made_replacements != len(replacements):
+    if made_replacements != (len(replacements) + len(replacements_ids)):
         sys.exit(
             "Made {} replacements but expected {}".format(
                 str(made_replacements), str(len(replacements))
@@ -197,7 +205,12 @@ def main(reference, target, outfile, species):
 
 
 def try_to_remove_more_underscores(
-    replacements, base, printed_stat, decision_dict, deduplication_section
+    replacements,
+    base,
+    printed_stat,
+    decision_dict,
+    deduplication_section,
+    replacements_ids,
 ):
     # Check if after the replacements have been made we can remove more underscores.
     # This can only happen if replacements have been made to genes that are not the base value
@@ -210,6 +223,17 @@ def try_to_remove_more_underscores(
                 item for sublist in decision_dict.values() for item in sublist
             ]
             for key in deduplication_section.keys():
+                if deduplication_section[key]["alias"] is None:
+                    print("Alias is none", deduplication_section[key])
+                    replacements_ids[deduplication_section[key]["locus"]] = key.split(
+                        "_"
+                    )[0]
+                    printed_stat = printed_stat.replace(
+                        "\n",
+                        "Removed underscore from {} because it was the only duplicate "
+                        "remaining after other replacements; no stable ID was assigned to this gene\n",
+                    ).format(key)
+                    return replacements, printed_stat, replacements_ids
                 if not deduplication_section[key]["alias"] in bacunis_already_replaced:
                     replacements[deduplication_section[key]["alias"]] = key.split("_")[
                         0
@@ -219,10 +243,10 @@ def try_to_remove_more_underscores(
                         "Removed underscore from {} because it was the only duplicate "
                         "remaining after other replacements\n",
                     ).format(key)
-    return replacements, printed_stat
+    return replacements, printed_stat, replacements_ids
 
 
-def make_replacement_file(target, outfile, replacements, species):
+def make_replacement_file(target, outfile, replacements, replacements_ids, species):
     seq_flag = False
     count_replacements = list()
     rep_out = open("{}_replacements.txt".format(species), "w")
@@ -237,12 +261,15 @@ def make_replacement_file(target, outfile, replacements, species):
             else:
                 fields = line.strip().split("\t")
                 if fields[2] == "gene":
+                    id = fields[8].split(";")[0].split("=")[1]
+                    print(id)
                     alias_pattern = r";Alias=(.*?);"
                     try:
                         alias_name = re.search(alias_pattern, fields[8]).group(1)
                     except:
                         alias_name = None
                     gene_alias_name = alias_name
+                    gene_id = id
                 if fields[2] in ["gene", "CDS", "mRNA", "exon"]:
                     gene_pattern = r";gene=(.*?);"
                     try:
@@ -251,6 +278,7 @@ def make_replacement_file(target, outfile, replacements, species):
                         gene_name = None
                     if fields[2] in ["CDS", "mRNA", "exon"]:
                         alias_name = gene_alias_name
+                        id = gene_id
                     if alias_name and alias_name in replacements:
                         if fields[2] == "gene":
                             rep_out.write(
@@ -258,6 +286,16 @@ def make_replacement_file(target, outfile, replacements, species):
                             )
                         line = line.replace(gene_name, replacements[alias_name])
                         count_replacements.append(alias_name)
+                    print("ID is {}".format(id))
+                    if id in replacements_ids:
+                        print("ID IS IN IDS")
+                        if fields[2] == "gene":
+                            rep_out.write(
+                                "{}\t{}\n".format(gene_name, replacements_ids[id])
+                            )
+                            print("made replacement of", gene_name, replacements_ids[id])
+                        line = line.replace(gene_name, replacements_ids[id])
+                        count_replacements.append(id)
                     file_out.write(line)
                 else:
                     file_out.write(line)
