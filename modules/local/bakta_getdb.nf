@@ -23,6 +23,8 @@ process BAKTA_GETDB {
 
     amrfinder_index bakta/amrfinderplus-db/2024-01-31.1
 
+    mv bakta/amrfinderplus-db/2024-01-31.1/ bakta/amrfinderplus-db/latest/
+
     echo "2024-01-19" > bakta/Version.txt
     """
 }
