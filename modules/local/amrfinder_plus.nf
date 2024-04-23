@@ -2,7 +2,7 @@ process AMRFINDER_PLUS {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/biocontainers/ncbi-amrfinderplus:3.11.4--h6e70893_0'
+    container 'quay.io/biocontainers/ncbi-amrfinderplus:3.12.8--h283d18e_0'
 
     input:
     tuple val(meta), path(fna), path(faa), path(gff)
@@ -52,7 +52,7 @@ process AMRFINDER_PLUS_TO_GFF {
     process_amrfinderplus_results.py \\
     -i ${amrfinder_tsv} \\
     -o ${meta.prefix}_amrfinderplus.gff \\
-    -v 3.11.4
+    -v 3.12.8
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
