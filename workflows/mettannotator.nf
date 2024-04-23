@@ -52,6 +52,7 @@ include { DOWNLOAD_DATABASES                         } from '../subworkflows/dow
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { BAKTA                       } from '../modules/nf-core/bakta/bakta/main'
 include { GECCO_RUN                   } from '../modules/nf-core/gecco/run/main'
 include { QUAST                       } from '../modules/nf-core/quast/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
@@ -98,7 +99,7 @@ workflow METTANNOTATOR {
 
     if (params.dbs) {
         // Download databases (if needed) //
-        DOWNLOAD_DATABASES()
+        DOWNLOAD_DATABASES(params.bakta)
 
         amrfinder_plus_db = DOWNLOAD_DATABASES.out.amrfinder_plus_db
 
@@ -115,6 +116,10 @@ workflow METTANNOTATOR {
         eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
 
         rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
+
+        if (params.bakta) {
+            bakta_db = DOWNLOAD_DATABASES.out.bakta_db
+        }
     } else {
         // Use the parametrized folders and files for the databases //
         amrfinder_plus_db = tuple(
@@ -156,6 +161,10 @@ workflow METTANNOTATOR {
             file(params.rfam_ncrna_models, checkIfExists: true),
             params.rfam_ncrna_models_rfam_version
         )
+        if (params.bakta) {
+            file(params.bakta_db, checkIfExists: true),
+            params.bakta_db_version
+        }
     }
 
     ch_versions = Channel.empty()

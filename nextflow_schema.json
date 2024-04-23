@@ -43,6 +43,15 @@
         }
       }
     },
+    "tool_options": {
+      "title": "Tool options",
+      "type": "object",
+      "bakta": {
+        "type": "boolean",
+        "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes",
+        "default": false
+      }
+    },
     "reference_databases": {
       "title": "Reference databases",
       "type": "object",
