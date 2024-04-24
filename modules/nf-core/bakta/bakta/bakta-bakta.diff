@@ -19,11 +19,22 @@ Changes in module 'nf-core/bakta/bakta'
      path "versions.yml"                                 , emit: versions
  
      when:
-@@ -42,7 +44,14 @@
+@@ -32,17 +34,21 @@
+     script:
+     def args = task.ext.args   ?: ''
+     prefix   = task.ext.prefix ?: "${meta.id}"
+-    def proteins_opt = proteins ? "--proteins ${proteins[0]}" : ""
+-    def prodigal_tf = prodigal_tf ? "--prodigal-tf ${prodigal_tf[0]}" : ""
+     """
+     bakta \\
+         $fasta \\
+         $args \\
+         --threads $task.cpus \\
          --prefix $prefix \\
-         $proteins_opt \\
-         $prodigal_tf \\
+-        $proteins_opt \\
+-        $prodigal_tf \\
 -        --db $db
++        --locus-tag $prefix \\
 +        --db $db \\
 +        --keep-contig-headers \\
 +        --skip-trna \\

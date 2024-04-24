@@ -34,16 +34,13 @@ process BAKTA_BAKTA {
     script:
     def args = task.ext.args   ?: ''
     prefix   = task.ext.prefix ?: "${meta.id}"
-    def proteins_opt = proteins ? "--proteins ${proteins[0]}" : ""
-    def prodigal_tf = prodigal_tf ? "--prodigal-tf ${prodigal_tf[0]}" : ""
     """
     bakta \\
         $fasta \\
         $args \\
         --threads $task.cpus \\
         --prefix $prefix \\
-        $proteins_opt \\
-        $prodigal_tf \\
+        --locus-tag $prefix \\
         --db $db \\
         --keep-contig-headers \\
         --skip-trna \\
