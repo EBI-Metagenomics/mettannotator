@@ -1,39 +1,50 @@
 {
-  "name": "ebi-metagenomics/mettannotator",
-  "homePage": "https://github.com/ebi-metagenomics/mettannotator",
-  "repos": {
-    "https://github.com/nf-core/modules.git": {
-      "modules": {
-        "nf-core": {
-          "bakta/bakta": {
-            "branch": "master",
-            "git_sha": "9d0f89b445e1f5b2fb30476f4be9a8b519c07846",
-            "installed_by": ["modules"]
-          },
-          "custom/dumpsoftwareversions": {
-            "branch": "master",
-            "git_sha": "05c280924b6c768d484c7c443dad5e605c4ff4b4",
-            "installed_by": ["modules"]
-          },
-          "gecco/run": {
-            "branch": "master",
-            "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-            "installed_by": ["modules"],
-            "patch": "modules/nf-core/gecco/run/gecco-run.diff"
-          },
-          "multiqc": {
-            "branch": "master",
-            "git_sha": "a6e11ac655e744f7ebc724be669dd568ffdc0e80",
-            "installed_by": ["modules"]
-          },
-          "quast": {
-            "branch": "master",
-            "git_sha": "344638191a5d6b3526556410819dfcf24e98039e",
-            "installed_by": ["modules"],
-            "patch": "modules/nf-core/quast/quast.diff"
-          }
+    "name": "ebi-metagenomics/mettannotator",
+    "homePage": "https://github.com/ebi-metagenomics/mettannotator",
+    "repos": {
+        "https://github.com/nf-core/modules.git": {
+            "modules": {
+                "nf-core": {
+                    "bakta/bakta": {
+                        "branch": "master",
+                        "git_sha": "9d0f89b445e1f5b2fb30476f4be9a8b519c07846",
+                        "installed_by": [
+                            "modules"
+                        ],
+                        "patch": "modules/nf-core/bakta/bakta/bakta-bakta.diff"
+                    },
+                    "custom/dumpsoftwareversions": {
+                        "branch": "master",
+                        "git_sha": "05c280924b6c768d484c7c443dad5e605c4ff4b4",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "gecco/run": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": [
+                            "modules"
+                        ],
+                        "patch": "modules/nf-core/gecco/run/gecco-run.diff"
+                    },
+                    "multiqc": {
+                        "branch": "master",
+                        "git_sha": "a6e11ac655e744f7ebc724be669dd568ffdc0e80",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "quast": {
+                        "branch": "master",
+                        "git_sha": "344638191a5d6b3526556410819dfcf24e98039e",
+                        "installed_by": [
+                            "modules"
+                        ],
+                        "patch": "modules/nf-core/quast/quast.diff"
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }

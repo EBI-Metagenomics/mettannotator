@@ -24,6 +24,8 @@ process BAKTA_BAKTA {
     tuple val(meta), path("${prefix}.hypotheticals.faa"), emit: hypotheticals_faa
     tuple val(meta), path("${prefix}.tsv")              , emit: tsv
     tuple val(meta), path("${prefix}.txt")              , emit: txt
+    tuple val(meta), path("${prefix}.svg")              , emit: svg
+    tuple val(meta), path("${prefix}.png")              , emit: png
     path "versions.yml"                                 , emit: versions
 
     when:
@@ -42,7 +44,14 @@ process BAKTA_BAKTA {
         --prefix $prefix \\
         $proteins_opt \\
         $prodigal_tf \\
-        --db $db
+        --db $db \\
+        --keep-contig-headers \\
+        --skip-trna \\
+        --skip-tmrna \\
+        --skip-rrna \\
+        --skip-ncrna \\
+        --skip-ncrna-region \\
+        --skip-crispr
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
