@@ -81,12 +81,12 @@ The pipeline needs reference databases in order to work, they take roughly 110G.
 |---------------------|------|
 | amrfinder           | 217M |
 | antismash           | 9.4G |
+| bakta               | 71G  |
 | dbcan               | 7.5G |
 | defense_finder      | 242M |
 | eggnog              | 48G  |
 | interproscan        | 45G  |
 | interpro_entry_list | 2.6M |
-| bakta               | 71G  |
 | rfam_models         | 637M |
 | total               | 180G |
 
