@@ -177,7 +177,7 @@ workflow METTANNOTATOR {
 
     gene_caller = channel.empty()
 
-    if ( params.bakta ) {
+    if ( params.bakta && val(cat LOOKUP_KINGDOM.out.detected_kingdom) == "Bacteria" ) {
         BAKTA_BAKTA(
             assemblies,
             bakta_db
