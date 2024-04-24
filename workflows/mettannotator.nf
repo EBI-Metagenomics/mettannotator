@@ -173,12 +173,24 @@ workflow METTANNOTATOR {
 
     LOOKUP_KINGDOM( assemblies )
 
-    PROKKA( assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ))
+    gene_caller = channel.empty()
 
-    ch_versions = ch_versions.mix(PROKKA.out.versions.first())
+    if ( params.bakta ) {
+        BAKTA(
+            assemblies
+        )
+        gene_caller = BAKTA
+    } else {
+        PROKKA(
+            assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom )
+        )
+        gene_caller = PROKKA
+    }
+
+    ch_versions = ch_versions.mix(gene_caller.out.versions.first())
 
     assemblies_for_quast = assemblies.join(
-        PROKKA.out.gff
+        gene_caller.out.gff
     ).map { it -> tuple(it[0], it[1], it[2]) }
 
     QUAST(
@@ -193,7 +205,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(CRISPRCAS_FINDER.out.versions.first())
 
     // EGGNOG_MAPPER_ORTHOLOGS - needs a third empty file in mode=mapper
-    proteins_for_emapper_orth = PROKKA.out.faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
+    proteins_for_emapper_orth = gene_caller.out.faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
 
     EGGNOG_MAPPER_ORTHOLOGS(
         proteins_for_emapper_orth,
@@ -219,16 +231,16 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
     INTERPROSCAN(
-        PROKKA.out.faa,
+        gene_caller.out.faa,
         interproscan_db
     )
 
     ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
 
     assemblies_plus_faa_and_gff = assemblies.join(
-        PROKKA.out.faa
+        gene_caller.out.faa
     ).join(
-        PROKKA.out.gff
+        gene_caller.out.gff
     )
 
     AMRFINDER_PLUS(
@@ -243,57 +255,57 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
 
     DEFENSE_FINDER (
-        PROKKA.out.faa.join( PROKKA.out.gff ),
+        gene_caller.out.faa.join( gene_caller.out.gff ),
         defense_finder_db
     )
 
     ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
 
-    UNIFIRE ( PROKKA.out.faa )
+    UNIFIRE ( gene_caller.out.faa )
 
     ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
     DETECT_TRNA(
-        PROKKA.out.fna,
+        gene_caller.out.fna,
     )
 
     ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
 
     DETECT_NCRNA(
-        PROKKA.out.fna,
+        gene_caller.out.fna,
         rfam_ncrna_models
     )
 
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
 
     SANNTIS(
-        INTERPROSCAN.out.ips_annotations.join(PROKKA.out.gbk)
+        INTERPROSCAN.out.ips_annotations.join(gene_caller.out.gbk)
     )
 
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
 
     GECCO_RUN(
-        PROKKA.out.gbk.map { meta, gbk -> [meta, gbk, []] }, []
+        gene_caller.out.gbk.map { meta, gbk -> [meta, gbk, []] }, []
     )
 
     ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
 
     ANTISMASH(
-        PROKKA.out.gbk,
+        gene_caller.out.gbk,
         antismash_db
     )
 
     ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
 
     DBCAN(
-        PROKKA.out.faa.join( PROKKA.out.gff ),
+        gene_caller.out.faa.join( gene_caller.out.gff ),
         dbcan_db
     )
 
     ch_versions = ch_versions.mix(DBCAN.out.versions.first())
 
     ANNOTATE_GFF(
-        PROKKA.out.gff.join(
+        gene_caller.out.gff.join(
             INTERPROSCAN.out.ips_annotations
         ).join(
            EGGNOG_MAPPER_ANNOTATIONS.out.annotations
