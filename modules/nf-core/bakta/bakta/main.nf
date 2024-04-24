@@ -9,7 +9,7 @@ process BAKTA_BAKTA {
 
     input:
     tuple val(meta), path(fasta)
-    path db
+    tuple path(db), val(db_version)
 
     output:
     tuple val(meta), path("${prefix}.embl")             , emit: embl

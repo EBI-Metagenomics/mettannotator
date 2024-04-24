@@ -10,12 +10,14 @@ Changes in module 'nf-core/bakta/bakta'
 
 --- modules/nf-core/bakta/bakta/main.nf
 +++ modules/nf-core/bakta/bakta/main.nf
-@@ -10,20 +10,20 @@
+@@ -9,21 +9,21 @@
+ 
      input:
      tuple val(meta), path(fasta)
-     path db
+-    path db
 -    path proteins
 -    path prodigal_tf
++    tuple path(db), val(db_version)
  
      output:
      tuple val(meta), path("${prefix}.embl")             , emit: embl
