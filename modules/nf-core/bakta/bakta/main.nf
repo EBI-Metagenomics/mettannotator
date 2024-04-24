@@ -31,7 +31,7 @@ process BAKTA_BAKTA {
 
     script:
     def args = task.ext.args   ?: ''
-    prefix   = task.ext.prefix ?: "${meta.id}"
+    prefix   = task.ext.prefix ?: "${meta.prefix}"
     """
     bakta \\
         $fasta \\
