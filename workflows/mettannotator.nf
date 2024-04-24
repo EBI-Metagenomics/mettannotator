@@ -179,7 +179,8 @@ workflow METTANNOTATOR {
 
     if ( params.bakta ) {
         BAKTA_BAKTA(
-            assemblies
+            assemblies,
+            bakta_db
         )
         gene_caller = BAKTA_BAKTA
     } else {

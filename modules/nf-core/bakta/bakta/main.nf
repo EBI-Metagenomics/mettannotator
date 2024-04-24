@@ -10,8 +10,6 @@ process BAKTA_BAKTA {
     input:
     tuple val(meta), path(fasta)
     path db
-    path proteins
-    path prodigal_tf
 
     output:
     tuple val(meta), path("${prefix}.embl")             , emit: embl

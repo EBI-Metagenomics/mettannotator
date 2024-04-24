@@ -10,7 +10,16 @@ Changes in module 'nf-core/bakta/bakta'
 
 --- modules/nf-core/bakta/bakta/main.nf
 +++ modules/nf-core/bakta/bakta/main.nf
-@@ -24,6 +24,8 @@
+@@ -10,8 +10,6 @@
+     input:
+     tuple val(meta), path(fasta)
+     path db
+-    path proteins
+-    path prodigal_tf
+ 
+     output:
+     tuple val(meta), path("${prefix}.embl")             , emit: embl
+@@ -24,6 +22,8 @@
      tuple val(meta), path("${prefix}.hypotheticals.faa"), emit: hypotheticals_faa
      tuple val(meta), path("${prefix}.tsv")              , emit: tsv
      tuple val(meta), path("${prefix}.txt")              , emit: txt
@@ -19,7 +28,7 @@ Changes in module 'nf-core/bakta/bakta'
      path "versions.yml"                                 , emit: versions
  
      when:
-@@ -32,17 +34,21 @@
+@@ -32,17 +32,21 @@
      script:
      def args = task.ext.args   ?: ''
      prefix   = task.ext.prefix ?: "${meta.id}"
