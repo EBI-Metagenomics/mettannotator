@@ -190,7 +190,29 @@ workflow METTANNOTATOR {
         gene_caller = PROKKA
     }
 
-    ch_versions = ch_versions.mix(gene_caller.out.versions.first())
+   if ( params.bakta ) {
+       assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).branch {
+           bacteria: it[3] == "Bacteria"
+           archaea: it[3] == "Archaea"
+       }.set { assemblies_to_annotate }
+
+       BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
+
+       PROKKA( assemblies_to_annotate.archaea )
+
+       gene_caller = BAKTA_BAKTA.out.mix( PROKKA.out )
+
+       ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
+       ch_versions = ch_versions.mix(PROKKA.out.versions.first())
+
+    } else {
+
+       PROKKA( assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ) )
+
+       ch_versions = ch_versions.mix(PROKKA.out.versions.first())
+
+       gene_caller = PROKKA
+    }
 
     assemblies_for_quast = assemblies.join(
         gene_caller.out.gff
