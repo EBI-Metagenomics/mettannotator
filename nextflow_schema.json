@@ -146,6 +146,17 @@
                     "type": "string",
                     "default": "4.1.3_V12",
                     "description": "The dbCAN reference database version."
+                },
+                "bakta_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Bakta reference database, please go to the documentation for the setup https://zenodo.org/records/10522951 and https://github.com/oschwengers/bakta?tab=readme-ov-file#database",
+                    "help_text": "Set this variable to the path of the folder that contains the Bakta database directory with pre-indexed AMRFinderPlus db inside."
+                },
+                "bakta_db_version": {
+                    "type": "string",
+                    "default": "2024-01-19",
+                    "description": "The Bakta reference database version."
                 }
             }
         },
