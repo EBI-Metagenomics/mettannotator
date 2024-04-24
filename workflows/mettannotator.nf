@@ -52,7 +52,7 @@ include { DOWNLOAD_DATABASES                         } from '../subworkflows/dow
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { BAKTA                       } from '../modules/nf-core/bakta/bakta/main'
+include { BAKTA_BAKTA                 } from '../modules/nf-core/bakta/bakta/main'
 include { GECCO_RUN                   } from '../modules/nf-core/gecco/run/main'
 include { QUAST                       } from '../modules/nf-core/quast/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
@@ -162,8 +162,10 @@ workflow METTANNOTATOR {
             params.rfam_ncrna_models_rfam_version
         )
         if (params.bakta) {
-            file(params.bakta_db, checkIfExists: true),
-            params.bakta_db_version
+            bakta_db = tuple(
+                file(params.bakta_db, checkIfExists: true),
+                params.bakta_db_version
+            )
         }
     }
 
@@ -176,10 +178,10 @@ workflow METTANNOTATOR {
     gene_caller = channel.empty()
 
     if ( params.bakta ) {
-        BAKTA(
+        BAKTA_BAKTA(
             assemblies
         )
-        gene_caller = BAKTA
+        gene_caller = BAKTA_BAKTA
     } else {
         PROKKA(
             assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom )
