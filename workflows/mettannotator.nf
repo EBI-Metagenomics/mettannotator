@@ -177,19 +177,6 @@ workflow METTANNOTATOR {
 
     gene_caller = channel.empty()
 
-    if ( params.bakta && val(cat LOOKUP_KINGDOM.out.detected_kingdom) == "Bacteria" ) {
-        BAKTA_BAKTA(
-            assemblies,
-            bakta_db
-        )
-        gene_caller = BAKTA_BAKTA
-    } else {
-        PROKKA(
-            assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom )
-        )
-        gene_caller = PROKKA
-    }
-
    if ( params.bakta ) {
        assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).branch {
            bacteria: it[3] == "Bacteria"
@@ -200,7 +187,7 @@ workflow METTANNOTATOR {
 
        PROKKA( assemblies_to_annotate.archaea )
 
-       gene_caller = BAKTA_BAKTA.out.mix( PROKKA.out )
+       gene_caller = BAKTA_BAKTA.out.gff.mix( PROKKA.out.gff )
 
        ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
        ch_versions = ch_versions.mix(PROKKA.out.versions.first())
