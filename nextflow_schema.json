@@ -319,7 +319,7 @@
     "properties": {
         "bakta": {
             "type": "boolean",
-            "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes"
+            "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes."
         }
     }
 }
