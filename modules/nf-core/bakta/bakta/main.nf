@@ -16,7 +16,7 @@ process BAKTA_BAKTA {
     tuple val(meta), path("${prefix}.faa")              , emit: faa
     tuple val(meta), path("${prefix}.ffn")              , emit: ffn
     tuple val(meta), path("${prefix}.fna")              , emit: fna
-    tuple val(meta), path("${prefix}.gbff")             , emit: gbff
+    tuple val(meta), path("${prefix}.gbff")             , emit: gbk
     tuple val(meta), path("${prefix}.gff3")             , emit: gff
     tuple val(meta), path("${prefix}.hypotheticals.tsv"), emit: hypotheticals_tsv
     tuple val(meta), path("${prefix}.hypotheticals.faa"), emit: hypotheticals_faa
