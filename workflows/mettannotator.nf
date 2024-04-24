@@ -175,7 +175,10 @@ workflow METTANNOTATOR {
 
     LOOKUP_KINGDOM( assemblies )
 
-    gene_caller = channel.empty()
+    annotations_fna = channel.empty()
+    annotations_gbk = channel.empty()
+    annotations_faa = channel.empty()
+    annotations_gff = channel.empty()
 
    if ( params.bakta ) {
        assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).branch {
@@ -187,22 +190,28 @@ workflow METTANNOTATOR {
 
        PROKKA( assemblies_to_annotate.archaea )
 
-       gene_caller = BAKTA_BAKTA.out.gff.mix( PROKKA.out.gff )
-
        ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
        ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 
-    } else {
+       annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( PROKKA.out.fna )
+       annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA.out.gbk )
+       annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA.out.faa )
+       annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA.out.gff )
+
+   } else {
 
        PROKKA( assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ) )
 
        ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 
-       gene_caller = PROKKA
-    }
+       annotations_fna = PROKKA.out.fna
+       annotations_gbk = PROKKA.out.gbk
+       annotations_faa = PROKKA.out.faa
+       annotations_gff = PROKKA.out.gff
+   }
 
     assemblies_for_quast = assemblies.join(
-        gene_caller.out.gff
+        annotations_gff
     ).map { it -> tuple(it[0], it[1], it[2]) }
 
     QUAST(
@@ -217,7 +226,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(CRISPRCAS_FINDER.out.versions.first())
 
     // EGGNOG_MAPPER_ORTHOLOGS - needs a third empty file in mode=mapper
-    proteins_for_emapper_orth = gene_caller.out.faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
+    proteins_for_emapper_orth = annotations_faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
 
     EGGNOG_MAPPER_ORTHOLOGS(
         proteins_for_emapper_orth,
@@ -243,16 +252,16 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
     INTERPROSCAN(
-        gene_caller.out.faa,
+        annotations_faa,
         interproscan_db
     )
 
     ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
 
     assemblies_plus_faa_and_gff = assemblies.join(
-        gene_caller.out.faa
+        annotations_faa
     ).join(
-        gene_caller.out.gff
+        annotations_gff
     )
 
     AMRFINDER_PLUS(
@@ -267,57 +276,57 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
 
     DEFENSE_FINDER (
-        gene_caller.out.faa.join( gene_caller.out.gff ),
+        annotations_faa.join( annotations_gff ),
         defense_finder_db
     )
 
     ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
 
-    UNIFIRE ( gene_caller.out.faa )
+    UNIFIRE ( annotations_faa )
 
     ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
     DETECT_TRNA(
-        gene_caller.out.fna,
+        annotations_fna,
     )
 
     ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
 
     DETECT_NCRNA(
-        gene_caller.out.fna,
+        annotations_fna,
         rfam_ncrna_models
     )
 
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
 
     SANNTIS(
-        INTERPROSCAN.out.ips_annotations.join(gene_caller.out.gbk)
+        INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
     )
 
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
 
     GECCO_RUN(
-        gene_caller.out.gbk.map { meta, gbk -> [meta, gbk, []] }, []
+        annotations_gbk.map { meta, gbk -> [meta, gbk, []] }, []
     )
 
     ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
 
     ANTISMASH(
-        gene_caller.out.gbk,
+        annotations_gbk,
         antismash_db
     )
 
     ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
 
     DBCAN(
-        gene_caller.out.faa.join( gene_caller.out.gff ),
+        annotations_faa.join( annotations_gff ),
         dbcan_db
     )
 
     ch_versions = ch_versions.mix(DBCAN.out.versions.first())
 
     ANNOTATE_GFF(
-        gene_caller.out.gff.join(
+        annotations_gff.join(
             INTERPROSCAN.out.ips_annotations
         ).join(
            EGGNOG_MAPPER_ANNOTATIONS.out.annotations
