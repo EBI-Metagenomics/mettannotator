@@ -1,5 +1,5 @@
 process BAKTA_BAKTA {
-    tag "$meta.id"
+    tag "$meta.prefix"
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"

@@ -10,6 +10,13 @@ Changes in module 'nf-core/bakta/bakta'
 
 --- modules/nf-core/bakta/bakta/main.nf
 +++ modules/nf-core/bakta/bakta/main.nf
+@@ -1,5 +1,5 @@
+ process BAKTA_BAKTA {
+-    tag "$meta.id"
++    tag "$meta.prefix"
+     label 'process_medium'
+ 
+     conda "${moduleDir}/environment.yml"
 @@ -9,21 +9,21 @@
  
      input:
