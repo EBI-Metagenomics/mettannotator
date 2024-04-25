@@ -182,8 +182,8 @@ workflow METTANNOTATOR {
 
    if ( params.bakta ) {
        assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).branch {
-           bacteria: it[3] == "Bacteria"
-           archaea: it[3] == "Archaea"
+           bacteria: it[3] == "Bacteria.txt"
+           archaea: it[3] == "Archaea.txt"
        }.set { assemblies_to_annotate }
 
        BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
