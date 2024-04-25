@@ -184,10 +184,10 @@ workflow METTANNOTATOR {
             def fileName = parts[-1]
             def nameParts = fileName.split('_')
             def kingdomName = nameParts[0]
-            return [meta, file2, kingdomName]
+            return [meta, file1, kingdomName]
             }
        }
-       
+
        assembliesWithKingdom.branch {
            bacteria: it[3] == "Bacteria"
            archaea: it[3] == "Archaea"
