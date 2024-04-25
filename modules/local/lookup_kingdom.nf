@@ -15,7 +15,7 @@ process LOOKUP_KINGDOM {
     // For the version, I'm using the latest stable the genomes-annotation pipeline
     script:
     """
-    identify_kingdom.py -t ${meta.taxid} --outfile-is-kingdom
+    identify_kingdom.py -t ${meta.taxid} --include-kingdom -o ${meta.prefix}_kingdom.txt
     """
 
     stub:
