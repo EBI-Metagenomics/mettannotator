@@ -25,7 +25,7 @@ from retry import retry
 logging.basicConfig(level=logging.INFO)
 
 
-def main(taxid, outfile):
+def main(taxid, outfile_is_kingdom, outfile):
     kingdom = "Bacteria"
     if not taxid.isdigit():
         sys.exit("Invalid format of taxid {}".format(taxid))
@@ -55,7 +55,10 @@ def main(taxid, outfile):
             "Reporting default kingdom instead: Bacteria.".format(taxid)
         )
     logging.info("Reporting kingdom {} for taxid {}".format(kingdom, taxid))
-    if outfile:
+    if outfile_is_kingdom:
+        with open("{}.txt".format(kingdom), "w") as file_out:
+            file_out.write(kingdom)
+    elif outfile:
         with open(outfile, "w") as file_out:
             file_out.write(kingdom)
     else:
@@ -83,13 +86,19 @@ def parse_args():
         required=True,
         help="Taxid to identify the kingdom for.",
     )
-    parser.add_argument(
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument(
+        "--outfile-is-kingdom",
+        action='store_true',
+        help="Name the output file with the name of the kingdom.",
+    )
+    input_group.add_argument(
         "-o",
         dest="outfile",
         required=False,
         help=(
-            "Path to the output file where the result will be saved. If none specified, script will print the output "
-            "as STDOUT."
+            "Path to the output file where the result will be saved. If none specified and option --outfile-is-kingdom "
+            "is not used, script will print the output as STDOUT."
         ),
     )
     return parser.parse_args()
@@ -99,5 +108,6 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         args.taxid,
+        args.outfile_is_kingdom,
         args.outfile,
     )
