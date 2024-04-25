@@ -172,18 +172,25 @@ workflow METTANNOTATOR {
     ch_versions = Channel.empty()
 
     assemblies = Channel.fromSamplesheet("input")
-
-    LOOKUP_KINGDOM( assemblies )
-
     annotations_fna = channel.empty()
     annotations_gbk = channel.empty()
     annotations_faa = channel.empty()
     annotations_gff = channel.empty()
 
+   LOOKUP_KINGDOM( assemblies )
    if ( params.bakta ) {
-       assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).branch {
-           bacteria: it[3] == "Bacteria.txt"
-           archaea: it[3] == "Archaea.txt"
+       assembliesWithKingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map{ meta, file1, file2 -> {
+            def parts = file2.toString().split('/')
+            def fileName = parts[-1]
+            def nameParts = fileName.split('_')
+            def kingdomName = nameParts[0]
+            return [meta, file2, kingdomName]
+            }
+       }
+       
+       assembliesWithKingdom.branch {
+           bacteria: it[3] == "Bacteria"
+           archaea: it[3] == "Archaea"
        }.set { assemblies_to_annotate }
 
        BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
