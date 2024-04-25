@@ -8,7 +8,7 @@ process BAKTA_BAKTA {
         'biocontainers/bakta:1.9.3--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(fasta), path(detected_kingdom)
+    tuple val(meta), path(fasta), val(detected_kingdom)
     tuple path(db), val(db_version)
 
     output:

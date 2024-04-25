@@ -5,7 +5,7 @@ process PROKKA {
     container "quay.io/biocontainers/prokka:1.14.6--pl526_0"
 
     input:
-    tuple val(meta), path(fasta), path(detected_kingdom)
+    tuple val(meta), path(fasta), val(detected_kingdom)
 
     output:
     tuple val(meta), file("${meta.prefix}_prokka/${meta.prefix}.gff"), emit: gff
@@ -20,11 +20,9 @@ process PROKKA {
     """
     cat ${fasta} | tr '-' ' ' > ${meta.prefix}_cleaned.fasta
 
-    kingdom_val="\$(cat ${detected_kingdom})"
-
     prokka ${meta.prefix}_cleaned.fasta \
     --cpus ${task.cpus} \
-    --kingdom \${kingdom_val} \
+    --kingdom ${detected_kingdom} \
     --outdir ${meta.prefix}_prokka \
     --prefix ${meta.prefix} \
     --force \

@@ -177,20 +177,22 @@ workflow METTANNOTATOR {
     annotations_faa = channel.empty()
     annotations_gff = channel.empty()
 
-   LOOKUP_KINGDOM( assemblies )
-   if ( params.bakta ) {
-       assembliesWithKingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map{ meta, file1, file2 -> {
-            def parts = file2.toString().split('/')
-            def fileName = parts[-1]
-            def nameParts = fileName.split('_')
-            def kingdomName = nameParts[0]
-            return [meta, file1, kingdomName]
-            }
-       }
+    LOOKUP_KINGDOM( assemblies )
 
+    assembliesWithKingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map{ meta, file1, file2 -> {
+        def parts = file2.toString().split('/')
+        def fileName = parts[-1]
+        def nameParts = fileName.split('_')
+        def kingdomName = nameParts[0]
+        return [meta, file1, kingdomName]
+        }
+    }
+
+
+   if ( params.bakta ) {
        assembliesWithKingdom.branch {
-           bacteria: it[3] == "Bacteria"
-           archaea: it[3] == "Archaea"
+           bacteria: it[2] == "Bacteria"
+           archaea: it[2] == "Archaea"
        }.set { assemblies_to_annotate }
 
        BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
@@ -207,7 +209,7 @@ workflow METTANNOTATOR {
 
    } else {
 
-       PROKKA( assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ) )
+       PROKKA( assembliesWithKingdom )
 
        ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 
