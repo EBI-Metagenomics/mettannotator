@@ -19,6 +19,7 @@ process SANNTIS {
     if (interproscan_tsv.extension == "gz") {
         """
         gunzip -c ${interproscan_tsv} > interproscan.tsv
+        // Workaround implemented for SanntiS due to discrepancies in Bakta's format, resulting in empty output files.
         grep -v "/protein_id=" ${prokka_gbk} > ${meta.prefix}_prepped.${genbank_extension}
         sanntis \
         --ip-file interproscan.tsv \
