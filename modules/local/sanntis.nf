@@ -15,14 +15,17 @@ process SANNTIS {
     path "versions.yml"                   , emit: versions
 
     script:
+    def genbank_extension = prokka_gbk.extension
     if (interproscan_tsv.extension == "gz") {
         """
         gunzip -c ${interproscan_tsv} > interproscan.tsv
+        // Workaround implemented for SanntiS due to discrepancies in Bakta's format, resulting in empty output files.
+        grep -v "/protein_id=" ${prokka_gbk} > ${meta.prefix}_prepped.${genbank_extension}
         sanntis \
         --ip-file interproscan.tsv \
         --outfile ${meta.prefix}_sanntis.gff \
         --cpu ${task.cpus} \
-        ${prokka_gbk}
+        ${meta.prefix}_prepped.${genbank_extension}
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
@@ -31,10 +34,11 @@ process SANNTIS {
         """
     } else {
         """
+        grep -v "/protein_id=" ${prokka_gbk} > ${meta.prefix}_prepped.${genbank_extension}
         sanntis \
         --ip-file ${interproscan_tsv} \
         --outfile ${meta.prefix}_sanntis.gff \
-        ${prokka_gbk}
+        ${meta.prefix}_prepped.${genbank_extension}
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":

@@ -11,6 +11,7 @@ include { EGGNOG_MAPPER_GETDB      } from '../modules/local/eggnog_getdb'
 include { INTEPROSCAN_GETDB        } from '../modules/local/interproscan_getdb'
 include { INTEPRO_ENTRY_LIST_GETDB } from '../modules/local/interpro_list_getdb'
 include { RFAM_GETMODELS           } from '../modules/local/rfam_getmodels'
+include { BAKTA_GETDB              } from '../modules/local/bakta_getdb'
 
 
 workflow DOWNLOAD_DATABASES {
@@ -24,6 +25,7 @@ workflow DOWNLOAD_DATABASES {
         interproscan_db = channel.empty()
         interpro_entry_list = channel.empty()
         eggnog_db = channel.empty()
+        bakta_db = channel.empty()
 
         amrfinder_plus_dir = file("$params.dbs/amrfinder/")
         antismash_dir = file("$params.dbs/antismash")
@@ -33,6 +35,7 @@ workflow DOWNLOAD_DATABASES {
         interpro_entry_list_dir = file("$params.dbs/interpro_entry_list/")
         eggnog_data_dir = file("$params.dbs/eggnog")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
+        bakta_dir = file("$params.dbs/bakta")
 
         if (amrfinder_plus_dir.exists()) {
             amrfinder_plus_db = tuple(
@@ -122,6 +125,17 @@ workflow DOWNLOAD_DATABASES {
                 file("${rfam_ncrna_models}/VERSION.txt", checkIfExists: true).text
             )
         }
+
+        if (bakta_db.exists()) {
+            log.info("Bakta database exists, or at least the expected folders.")
+            bakta_db = tuple(
+                bakta_dir,
+                file("${bakta_dir}/VERSION.txt", checkIfExists: true).text
+            )
+        } else {
+            BAKTA_GETDB()
+            bakta_db = BAKTA_GETDB.out.bakta_db.first()
+        }
     emit:
         amrfinder_plus_db = amrfinder_plus_db
         antismash_db = antismash_db
@@ -131,5 +145,6 @@ workflow DOWNLOAD_DATABASES {
         interpro_entry_list = interpro_entry_list
         eggnog_db = eggnog_db
         rfam_ncrna_models = rfam_ncrna_models
+        bakta_db = bakta_db
 
 }

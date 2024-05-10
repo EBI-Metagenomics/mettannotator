@@ -10,17 +10,17 @@ process LOOKUP_KINGDOM {
     tuple val(meta), path(fasta)
 
     output:
-    tuple val(meta), path("${meta.prefix}_kingdom.txt"), emit: detected_kingdom
+    tuple val(meta), path("*.txt"), emit: detected_kingdom
 
     // For the version, I'm using the latest stable the genomes-annotation pipeline
     script:
     """
-    identify_kingdom.py -t ${meta.taxid} -o ${meta.prefix}_kingdom.txt
+    identify_kingdom.py -t ${meta.taxid} --include-kingdom -o ${meta.prefix}_kingdom.txt
     """
 
     stub:
     """
-    touch ${meta.prefix}_kingdom.txt
+    touch Bacteria.txt
 
     """
 }

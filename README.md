@@ -34,28 +34,30 @@
 
 The workflow uses the following tools and databases:
 
-| Tool/Database                                                                                    | Version           | Purpose                                                                                                                |
-| ------------------------------------------------------------------------------------------------ |-------------------| ---------------------------------------------------------------------------------------------------------------------- |
-| [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6            | CDS calling and functional annotation                                                                                  |
-| [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.62-94.0         | Protein annotation (InterPro, Pfam)                                                                                    |
-| [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11            | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
-| [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2             | Database for eggNOG-mapper                                                                                             |
-| [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2023.4            | Protein annotation                                                                                                     |
-| [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 3.11.4            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
-| [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 3.11 2024-01-31.1 | Database for AMRFinderPlus                                                                                             |
-| [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 1.2.0             | Annotation of anti-phage systems                                                                                       |
-| [DefenseFinder models](https://github.com/mdmparis/defense-finder-models)                        | 1.2.3             | Database for DefenseFinder                                                                                             |
-| [GECCO](https://github.com/zellerlab/GECCO)                                                      | 0.9.8             | Biosynthetic gene cluster annotation                                                                                   |
-| [antiSMASH](https://antismash.secondarymetabolites.org/#!/download)                              | 7.1.0             | Biosynthetic gene cluster annotation                                                                                   |
-| [SanntiS](https://github.com/Finn-Lab/SanntiS)                                                   | 0.9.3.4           | Biosynthetic gene cluster annotation                                                                                   |
-| [run_dbCAN](https://github.com/linnabrown/run_dbcan)                                             | 4.1.2             | PUL prediction                                                                                                         |
-| [dbCAN DB](https://bcb.unl.edu/dbCAN2/download/Databases/)                                       | V12               | Database for run_dbCAN                                                                                                 |
-| [CRISPRCasFinder](https://github.com/dcouvin/CRISPRCasFinder)                                    | 4.3.2             | Annotation of CRISPR arrays                                                                                            |
-| [cmscan](http://eddylab.org/infernal/)                                                           | 1.1.5             | ncRNA predictions                                                                                                      |
-| [Rfam](https://rfam.org/)                                                                        | 14.9              | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
-| [tRNAscan-SE](https://github.com/UCSC-LoweLab/tRNAscan-SE)                                       | 2.0.9             | tRNA predictions                                                                                                       |
-| [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline)                                 | 2.0.0             | Viral sequence annotation (runs separately)                                                                            |
-| [Mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline) | 2.0               | Mobilome annotation (runs separately)                                                                                  |
+| Tool/Database                                                                                 | Version                                       | Purpose                                                                                                                |
+|-----------------------------------------------------------------------------------------------|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| [Prokka](https://github.com/tseemann/prokka)                                                  | 1.14.6                                        | CDS calling and functional annotation (default)                                                                        |
+| [Bakta](https://github.com/oschwengers/bakta)                     | 1.9.3                                         | CDS calling and functional annotation (if --bakta flag is used)                                                        |
+| [Bakta db](https://zenodo.org/record/10522951/)                    | 2024-01-19 with AMRFinderPlus DB 2024-01-31.1 | Bakta DB (when Bakta is used as the gene caller)                                                                       |
+| [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                            | 5.62-94.0                                     | Protein annotation (InterPro, Pfam)                                                                                    |
+| [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                    | 2.1.11                                        | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
+| [eggNOG DB](http://eggnog6.embl.de/download/)                                                 | 5.0.2                                         | Database for eggNOG-mapper                                                                                             |
+| [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                    | 2023.4                                        | Protein annotation                                                                                                     |
+| [AMRFinderPlus](https://github.com/ncbi/amr)                                                  | 3.12.8                                        | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
+| [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)           | 3.12 2024-01-31.1                             | Database for AMRFinderPlus                                                                                             |
+| [DefenseFinder](https://github.com/mdmparis/defense-finder)                                   | 1.2.0                                         | Annotation of anti-phage systems                                                                                       |
+| [DefenseFinder models](https://github.com/mdmparis/defense-finder-models)                     | 1.2.3                                         | Database for DefenseFinder                                                                                             |
+| [GECCO](https://github.com/zellerlab/GECCO)                                                   | 0.9.8                                         | Biosynthetic gene cluster annotation                                                                                   |
+| [antiSMASH](https://antismash.secondarymetabolites.org/#!/download)                           | 7.1.0                                         | Biosynthetic gene cluster annotation                                                                                   |
+| [SanntiS](https://github.com/Finn-Lab/SanntiS)                                                | 0.9.3.4                                       | Biosynthetic gene cluster annotation                                                                                   |
+| [run_dbCAN](https://github.com/linnabrown/run_dbcan)                                          | 4.1.2                                         | PUL prediction                                                                                                         |
+| [dbCAN DB](https://bcb.unl.edu/dbCAN2/download/Databases/)                                    | V12                                           | Database for run_dbCAN                                                                                                 |
+| [CRISPRCasFinder](https://github.com/dcouvin/CRISPRCasFinder)                                 | 4.3.2                                         | Annotation of CRISPR arrays                                                                                            |
+| [cmscan](http://eddylab.org/infernal/)                                                        | 1.1.5                                         | ncRNA predictions                                                                                                      |
+| [Rfam](https://rfam.org/)                                                                     | 14.9                                          | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
+| [tRNAscan-SE](https://github.com/UCSC-LoweLab/tRNAscan-SE)                                    | 2.0.9                                         | tRNA predictions                                                                                                       |
+| [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline)                              | 2.0.0                                         | Viral sequence annotation (runs separately)                                                                            |
+| [Mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline) | 2.0                                           | Mobilome annotation (runs separately)                                                                                  |
 
 <a name="install"></a>
 
@@ -76,16 +78,17 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 The pipeline needs reference databases in order to work, they take roughly 110G.
 
 | Path                | Size |
-| ------------------- | ---- |
+|---------------------|------|
 | amrfinder           | 217M |
 | antismash           | 9.4G |
+| bakta               | 71G  |
 | dbcan               | 7.5G |
 | defense_finder      | 242M |
 | eggnog              | 48G  |
 | interproscan        | 45G  |
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
-| total               | 110G |
+| total               | 180G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
@@ -173,6 +176,9 @@ Reference databases
 Generic options
   --multiqc_methods_description      [string]  Custom MultiQC yaml file containing HTML including a methods description.
 
+Other parameters
+  --bakta                            [boolean] Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.
+
  !! Hiding 17 params, use --validationShowHiddenParams to show them !!
 ------------------------------------------------------
 If you use ebi-metagenomics/mettannotator for your analysis please cite:
@@ -200,6 +206,12 @@ nextflow run ebi-metagenomics/mettannotator \
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
 > provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
 > see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
+
+### Gene caller choice
+By default, `mettannotator` uses Prokka to identify protein-coding genes. Users can choose to use Bakta instead by
+running `mettannotator` with the `--bakta` flag. `mettannotator` runs Bakta without ncRNA and CRISPR
+annotation as these are produced by separate tools in the pipeline. Archaeal genomes will continue to be annotated using
+Prokka as Bakta is only intended for annotation of bacterial genomes.
 
 <a name="test"></a>
 
@@ -282,13 +294,13 @@ Both files include the genome sequence in the FASTA format at the bottom of the 
 Below is an explanation of how each field in column 3 and 9 of the final GFF file is populated. In most cases, information is taken as is from the reporting tool's output.
 
 | Feature (column 3)    | Attribute Name (column 9)                                               | Reporting Tool  | Description                                                                                                                                                                                                 |
-| --------------------- | ----------------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --------------------- | ----------------------------------------------------------------------- |-----------------| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ncRNA                 | all\*                                                                   | cmscan + Rfam   | ncRNA annotation (excluding tRNA)                                                                                                                                                                           |
 | tRNA                  | all\*                                                                   | tRNAscan-SE     | tRNA annotation                                                                                                                                                                                             |
 | LeftFLANK, RightFLANK | all\*                                                                   | CRISPRCasFinder | CRISPR array flanking sequence                                                                                                                                                                              |
 | CRISPRdr              | all\*                                                                   | CRISPRCasFinder | Direct repeat region of a CRISPR array                                                                                                                                                                      |
 | CRISPRspacer          | all\*                                                                   | CRISPRCasFinder | CRISPR spacer                                                                                                                                                                                               |
-| CDS                   | `ID`, `eC_number`, `Name`, `Dbxref`, `gene`, `inference`, `locus_tag`   | Prokka          | Protein annotation                                                                                                                                                                                          |
+| CDS                   | `ID`, `eC_number`, `Name`, `Dbxref`, `gene`, `inference`, `locus_tag`   | Prokka/Bakta    | Protein annotation                                                                                                                                                                                          |
 | CDS                   | `product`                                                               | mettannotator   | Product assigned as described in [ Determining the product ](#product)                                                                                                                                      |
 | CDS                   | `product_source`                                                        | mettannotator   | Tool that reported the product chosen by mettannotator                                                                                                                                                      |
 | CDS                   | `eggNOG`                                                                | eggNOG-mapper   | Seed ortholog from eggNOG                                                                                                                                                                                   |
