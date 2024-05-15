@@ -8,7 +8,7 @@ process DETECT_TRNA {
     container 'quay.io/microbiome-informatics/genomes-pipeline.detect_rrna:v3.2'
 
     input:
-    tuple val(meta), path(fasta)
+    tuple val(meta), path(fasta), path(detected_kingdom)
 
     output:
     tuple val(meta), path('*_trna.out'), emit: trna_out
@@ -28,9 +28,11 @@ process DETECT_TRNA {
     # bash trap to clean the tmp directory
     trap 'rm -r -- "\${PROCESSTMP}"' EXIT
 
+    kingdom_val="\$(head -c1 ${detected_kingdom})"
+
 
     echo "[ Detecting tRNAs ]"
-    tRNAscan-SE -B -Q \
+    tRNAscan-SE -\${kingdom_val} -Q \
     -m ${meta.prefix}_stats.out \
     -o ${meta.prefix}_trna.out \
     --gff ${meta.prefix}_trna.gff \

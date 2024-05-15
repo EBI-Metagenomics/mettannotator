@@ -296,7 +296,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
     DETECT_TRNA(
-        annotations_fna,
+        annotations_fna.join( LOOKUP_KINGDOM.out.detected_kingdom )
     )
 
     ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
