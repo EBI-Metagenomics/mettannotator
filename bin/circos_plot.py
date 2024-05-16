@@ -10,7 +10,8 @@ from matplotlib.patches import Patch
 
 
 def main(infile, outfile, prefix, mobilome):
-    gff = Gff(infile)
+    modified_infile = remove_escaped_characters(infile)
+    gff = Gff(modified_infile)
     seqid2size = gff.get_seqid2size()
     seqid2features = gff.get_seqid2features(feature_type=None)
 
@@ -103,6 +104,18 @@ def main(infile, outfile, prefix, mobilome):
     main_legend = circos.ax.legend(handles=handles, bbox_to_anchor=(0.5, 0.475), loc="center", fontsize=8)
     circos.ax.add_artist(main_legend)
     fig.savefig(outfile, dpi=600)
+
+
+def remove_escaped_characters(infile):
+    outfile = infile + "_modified"
+    with open(infile, "r") as file_in:
+        content = file_in.read()
+        modified_content = content.replace("\\=", "")
+
+    # Open the file in write mode to overwrite it with the modified content
+    with open(outfile, "w") as file_out:
+        file_out.write(modified_content)
+    return outfile
 
 
 def parse_args():
