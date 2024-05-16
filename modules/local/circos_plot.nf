@@ -1,4 +1,4 @@
-process CIRCOS_PLOT
+process CIRCOS_PLOT {
     tag "${meta.prefix}"
 
     label 'process_nano'
