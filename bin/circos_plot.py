@@ -2,17 +2,30 @@
 # coding=utf-8
 
 import argparse
+import logging
+import sys
 
 from pycirclize import Circos
 from pycirclize.parser import Gff
 
 from matplotlib.patches import Patch
 
+logging.basicConfig(level=logging.INFO)
+
 
 def main(infile, outfile, prefix, mobilome):
     modified_infile = remove_escaped_characters(infile)
     gff = Gff(modified_infile)
     seqid2size = gff.get_seqid2size()
+    if len(seqid2size) > 200:
+        logging.info(
+            "Skipping plot generation for file {} due to a large number of contigs: {}. "
+            "Plots are only generated for genomes with up to 200 annotated contigs.".format(
+                infile, len(seqid2size)
+            )
+        )
+        sys.exit()
+
     seqid2features = gff.get_seqid2features(feature_type=None)
 
     circos = Circos(seqid2size, space=2, start=1, end=358)
@@ -21,15 +34,21 @@ def main(infile, outfile, prefix, mobilome):
 
     for sector in circos.sectors:
         # Plot contig labels
-        sector.text(sector.name, orientation='vertical', r=110, size=10, color="dimgrey")
+        sector.text(
+            sector.name, orientation="vertical", r=110, size=10, color="dimgrey"
+        )
         # Plot scale
         position_track = sector.add_track((99, 100))
         position_track.axis(fc="none")
         major_ticks_interval = 500000
         minor_ticks_interval = 50000
         if sector.size > minor_ticks_interval:
-            position_track.xticks_by_interval(major_ticks_interval, label_formatter=lambda v: f"{v / 10 ** 6:.1f} Mb")
-            position_track.xticks_by_interval(minor_ticks_interval, tick_length=1, show_label=False)
+            position_track.xticks_by_interval(
+                major_ticks_interval, label_formatter=lambda v: f"{v / 10 ** 6:.1f} Mb"
+            )
+            position_track.xticks_by_interval(
+                minor_ticks_interval, tick_length=1, show_label=False
+            )
 
         # Initiate feature tracks
         f_cds_track = sector.add_track((93, 98), r_pad_ratio=0.1)
@@ -75,9 +94,15 @@ def main(infile, outfile, prefix, mobilome):
 
             elif feature.type in ["tRNA", "ncRNA"]:
                 rna_track.genomic_features([feature], fc="darkmagenta")
-            elif mobilome and feature.type in ["mobility_island", "cellular_recombinase", "insertion_sequence",
-                                               "conjugative_element", "nested_mobile_element",
-                                               "terminal_inverted_repeat_element", "direct_repeat_element"]:
+            elif mobilome and feature.type in [
+                "mobility_island",
+                "cellular_recombinase",
+                "insertion_sequence",
+                "conjugative_element",
+                "nested_mobile_element",
+                "terminal_inverted_repeat_element",
+                "direct_repeat_element",
+            ]:
                 mobilome_track.genomic_features([feature], fc="lightseagreen")
             elif mobilome and feature.type.lower() == "phage":
                 mobilome_track.genomic_features([feature], fc="blue")
@@ -101,7 +126,9 @@ def main(infile, outfile, prefix, mobilome):
             Patch(color="lightseagreen", label="Mobilome (other)"),
         ]
 
-    main_legend = circos.ax.legend(handles=handles, bbox_to_anchor=(0.5, 0.475), loc="center", fontsize=8)
+    main_legend = circos.ax.legend(
+        handles=handles, bbox_to_anchor=(0.5, 0.475), loc="center", fontsize=8
+    )
     circos.ax.add_artist(main_legend)
     fig.savefig(outfile, dpi=600)
 
@@ -119,15 +146,23 @@ def remove_escaped_characters(infile):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Test script for Circos plots.')
-    parser.add_argument('-i', '--infile', required=True,
-                        help='Path to the GFF file to plot')
-    parser.add_argument('-o', '--outfile', required=True,
-                        help='Path to the output file')
-    parser.add_argument('-p', '--prefix', required=True,
-                        help='Prefix to use for the genome')
-    parser.add_argument('--mobilome', required=False, action='store_true', default=False,
-                        help='Plot the mobilome track. Default: False')
+    parser = argparse.ArgumentParser(description="Test script for Circos plots.")
+    parser.add_argument(
+        "-i", "--infile", required=True, help="Path to the GFF file to plot"
+    )
+    parser.add_argument(
+        "-o", "--outfile", required=True, help="Path to the output file"
+    )
+    parser.add_argument(
+        "-p", "--prefix", required=True, help="Prefix to use for the genome"
+    )
+    parser.add_argument(
+        "--mobilome",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Plot the mobilome track. Default: False",
+    )
     return parser.parse_args()
 
 
