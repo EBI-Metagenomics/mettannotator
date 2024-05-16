@@ -179,18 +179,18 @@ workflow METTANNOTATOR {
 
     LOOKUP_KINGDOM( assemblies )
 
-    assembliesWithKingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map{ meta, file1, file2 -> {
+    assemblies_with_kingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map{ meta, file1, file2 -> {
         def parts = file2.toString().split('/')
-        def fileName = parts[-1]
-        def nameParts = fileName.split('_')
-        def kingdomName = nameParts[0]
-        return [meta, file1, kingdomName]
+        def filename = parts[-1]
+        def name_parts = filename.split('_')
+        def kingdom_name = name_parts[0]
+        return [meta, file1, kingdom_name]
         }
     }
 
 
    if ( params.bakta ) {
-       assembliesWithKingdom.branch {
+       assemblies_with_kingdom.branch {
            bacteria: it[2] == "Bacteria"
            archaea: it[2] == "Archaea"
        }.set { assemblies_to_annotate }
@@ -209,7 +209,7 @@ workflow METTANNOTATOR {
 
    } else {
 
-       PROKKA( assembliesWithKingdom )
+       PROKKA( assemblies_with_kingdom )
 
        ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 
@@ -296,7 +296,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
     DETECT_TRNA(
-        annotations_fna,
+        annotations_fna.join( LOOKUP_KINGDOM.out.detected_kingdom )
     )
 
     ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
