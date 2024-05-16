@@ -9,7 +9,7 @@ process CIRCOS_PLOT {
     tuple val(meta), path(gff)
 
     output:
-    tuple val(meta), path("*.png"), emit: circos_plot
+    tuple val(meta), path("*.png"), emit: circos_plot, optional: true
 
     // For the version, I'm using the latest stable the genomes-annotation pipeline
     script:
