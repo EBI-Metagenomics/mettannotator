@@ -28,7 +28,7 @@ def main(infile, outfile, prefix, mobilome):
 
     seqid2features = gff.get_seqid2features(feature_type=None)
 
-    circos = Circos(seqid2size, space=2, start=1, end=358)
+    circos = Circos(seqid2size, space=1, start=1, end=358)
 
     circos.text("{}\n".format(prefix), size=15, r=30)
 
