@@ -17,7 +17,7 @@ def main(infile, outfile, prefix, mobilome):
     modified_infile = remove_escaped_characters(infile)
     gff = Gff(modified_infile)
     seqid2size = gff.get_seqid2size()
-    if len(seqid2size) > 200:
+    if len(seqid2size) > 100:
         logging.info(
             "Skipping plot generation for file {} due to a large number of contigs: {}. "
             "Plots are only generated for genomes with up to 200 annotated contigs.".format(
