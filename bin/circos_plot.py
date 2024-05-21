@@ -13,15 +13,15 @@ from matplotlib.patches import Patch
 logging.basicConfig(level=logging.INFO)
 
 
-def main(infile, outfile, prefix, mobilome):
+def main(infile, outfile, prefix, contig_num_limit, mobilome):
     modified_infile = remove_escaped_characters(infile)
     gff = Gff(modified_infile)
     seqid2size = gff.get_seqid2size()
-    if len(seqid2size) > 100:
+    if len(seqid2size) > contig_num_limit:
         logging.info(
             "Skipping plot generation for file {} due to a large number of contigs: {}. "
-            "Plots are only generated for genomes with up to 200 annotated contigs.".format(
-                infile, len(seqid2size)
+            "Plots are only generated for genomes with up to {} annotated contigs.".format(
+                infile, len(seqid2size), contig_num_limit
             )
         )
         sys.exit()
@@ -102,6 +102,7 @@ def main(infile, outfile, prefix, mobilome):
                 "nested_mobile_element",
                 "terminal_inverted_repeat_element",
                 "direct_repeat_element",
+                "viral_sequence",
             ]:
                 mobilome_track.genomic_features([feature], fc="lightseagreen")
             elif mobilome and feature.type.lower() == "phage":
@@ -157,6 +158,14 @@ def parse_args():
         "-p", "--prefix", required=True, help="Prefix to use for the genome"
     )
     parser.add_argument(
+        "-l",
+        "--limit",
+        required=False,
+        default=100,
+        help="Only generate a plot if the genome has no more than this number of contigs. Limit introduced because "
+             "highly fragmented genomes do not produce readable plots. Default: 100.",
+    )
+    parser.add_argument(
         "--mobilome",
         required=False,
         action="store_true",
@@ -168,4 +177,4 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.infile, args.outfile, args.prefix, args.mobilome)
+    main(args.infile, args.outfile, args.prefix, args.limit, args.mobilome)
