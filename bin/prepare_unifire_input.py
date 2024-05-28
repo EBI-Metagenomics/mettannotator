@@ -53,7 +53,7 @@ def check_dir(directory_path):
 def reformat_line(line, taxid):
     line = line.lstrip(">").strip()
     id, description = line.split(maxsplit=1)
-    description = description.replace("'", "").replace("\"", "")
+    description = description.replace("\"", "").replace("'", "").replace("‘", "").replace("’", "")
     formatted_line = ">tr|{id}|{description} OX={taxid}\n".format(
         id=id, description=description, taxid=taxid
     )
