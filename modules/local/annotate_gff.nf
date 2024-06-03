@@ -30,7 +30,6 @@ process ANNOTATE_GFF {
     tuple val(meta), path("*_annotations_with_descriptions.gff"), emit: annotated_desc_gff
     path "versions.yml", emit: versions
 
-    // For the version, I'm using the latest stable the genomes-annotation pipeline
     script:
     def sanntis_flag = "";
     def crisprcas_flag = "";
