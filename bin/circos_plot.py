@@ -35,7 +35,7 @@ def main(infile, outfile, prefix, contig_num_limit, mobilome):
     for sector in circos.sectors:
         # Plot contig labels
         sector.text(
-            sector.name, orientation="vertical", r=110, size=10, color="dimgrey"
+            sector.name, orientation="vertical", r=110, size=6, color="dimgrey"
         )
         # Plot scale
         position_track = sector.add_track((99, 100))
