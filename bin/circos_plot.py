@@ -13,7 +13,7 @@ from matplotlib.patches import Patch
 logging.basicConfig(level=logging.INFO)
 
 
-def main(infile, outfile, prefix, contig_num_limit, mobilome):
+def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome):
     modified_infile = remove_escaped_characters(infile)
     gff = Gff(modified_infile)
     seqid2size = gff.get_seqid2size()
@@ -32,11 +32,21 @@ def main(infile, outfile, prefix, contig_num_limit, mobilome):
 
     circos.text("{}\n".format(prefix), size=15, r=30)
 
+    # Skip printing contig names if the names are too long
+    print_contigs = True
+    if contig_trim == 500:  # the user didn't choose truncation, check lengths
+        for sector in circos.sectors:
+            if len(sector.name[:contig_trim]) > 24:
+                print_contigs = False
+    if not print_contigs:
+        logging.info("Not printing contig labels because they are too long. Rerun the script with the "
+                     "--contig-trim flag to truncate the labels if you would like them printed.")
     for sector in circos.sectors:
-        # Plot contig labels
-        sector.text(
-            sector.name, orientation="vertical", r=110, size=6, color="dimgrey"
-        )
+        if print_contigs:
+            # Plot contig labels
+            sector.text(
+                sector.name[:contig_trim], orientation="vertical", r=110, size=6, color="dimgrey"
+            )
         # Plot scale
         position_track = sector.add_track((99, 100))
         position_track.axis(fc="none")
@@ -166,9 +176,18 @@ def parse_args():
         "-l",
         "--limit",
         required=False,
+        type=int,
         default=50,
         help="Only generate a plot if the genome has no more than this number of contigs. Limit introduced because "
              "highly fragmented genomes do not produce readable plots. Default: 50.",
+    )
+    parser.add_argument(
+        "--contig-trim",
+        required=False,
+        default=500,
+        type=int,
+        help="If the contig length is over 24 characters long, contig names will not be printed on the plot. Specify "
+             "the length to trim the contig names down to if you would like the shorter names printed.",
     )
     parser.add_argument(
         "--mobilome",
@@ -182,4 +201,4 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.infile, args.outfile, args.prefix, args.limit, args.mobilome)
+    main(args.infile, args.outfile, args.prefix, args.limit, args.contig_trim, args.mobilome)
