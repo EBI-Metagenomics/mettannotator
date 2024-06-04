@@ -43,9 +43,14 @@ def main(infile, outfile, prefix, contig_num_limit, mobilome):
         major_ticks_interval = 500000
         minor_ticks_interval = 50000
         if sector.size > minor_ticks_interval:
-            position_track.xticks_by_interval(
-                major_ticks_interval, label_formatter=lambda v: f"{v / 10 ** 6:.1f} Mb"
-            )
+            if sector.size >= minor_ticks_interval * 10:
+                position_track.xticks_by_interval(
+                    major_ticks_interval, label_formatter=lambda v: f"{v / 10 ** 6:.1f} Mb"
+                )
+            else:
+                position_track.xticks_by_interval(
+                    major_ticks_interval, show_label=False
+                )
             position_track.xticks_by_interval(
                 minor_ticks_interval, tick_length=1, show_label=False
             )
