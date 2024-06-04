@@ -208,17 +208,17 @@ def load_unirule_arba(file):
             if not line.startswith("Evidence"):
                 parts = line.strip().split("\t")
                 if len(parts) == 6:
-                    pass  # skip feature lines with start and end coordinates
+                    pass  # don't do anything to feature lines with start and end coordinates
                 else:
-                    evidence, protein_id, annot_type, value = line.strip().split("\t")
-                if (
-                    not annot_type.startswith("comment")
-                    and not annot_type.startswith("protein.domain")
-                    and not annot_type.startswith("protein.component")
-                ):
-                    results_dict.setdefault(protein_id, dict()).setdefault(
-                        annot_type, list()
-                    ).append(value)
+                        evidence, protein_id, annot_type, value = line.strip().split("\t")
+                    if (
+                        not annot_type.startswith("comment")
+                        and not annot_type.startswith("protein.domain")
+                        and not annot_type.startswith("protein.component")
+                    ):
+                        results_dict.setdefault(protein_id, dict()).setdefault(
+                            annot_type, list()
+                        ).append(value)
     for record in results_dict:
         if "keyword" in results_dict[record]:
             if len(results_dict[record]["keyword"]) > 1:
