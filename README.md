@@ -290,7 +290,7 @@ The two main output files for each genome are located in `<OUTDIR>/<PREFIX>/func
 
 Both files include the genome sequence in the FASTA format at the bottom of the file.
 
-Additionally, for genomes with no more than 100 annotated contigs, a Circos plot of the `<PREFIX>_annotations.gff` file is generated and included in the same folder. An example of such plot is shown below:
+Additionally, for genomes with no more than 50 annotated contigs, a Circos plot of the `<PREFIX>_annotations.gff` file is generated and included in the same folder. An example of such plot is shown below:
 
 <img src="media/circos-plot-example.png">
 

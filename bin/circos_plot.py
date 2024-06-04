@@ -166,9 +166,9 @@ def parse_args():
         "-l",
         "--limit",
         required=False,
-        default=100,
+        default=50,
         help="Only generate a plot if the genome has no more than this number of contigs. Limit introduced because "
-             "highly fragmented genomes do not produce readable plots. Default: 100.",
+             "highly fragmented genomes do not produce readable plots. Default: 50.",
     )
     parser.add_argument(
         "--mobilome",
