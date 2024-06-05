@@ -14,11 +14,21 @@ process CIRCOS_PLOT {
     script:
     """
     circos_plot.py -p ${meta.prefix} -i ${gff} -o ${meta.prefix}_plot.png
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        pyCirclize: \$(python -c "import pycirclize; print(pycirclize.__version__)")
+    END_VERSIONS
     """
 
     stub:
     """
     touch ${meta.prefix}_plot.png
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        pyCirclize: \$(python -c "import pycirclize; print(pycirclize.__version__)")
+    END_VERSIONS
 
     """
 }
