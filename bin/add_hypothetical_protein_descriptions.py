@@ -30,7 +30,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
     ipr_info, ipr_memberdb_only, ipr_leveled_info = load_ipr(
         ipr_file, ipr_types, levels
     )
-
+    gene_caller = "Prokka"
     fasta_flag = False
     with open(infile, "r") as file_in, open(outfile, "w") as file_out:
         for line in file_in:
@@ -54,6 +54,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                 eggnog_info,
                                 ipr_info,
                                 ipr_memberdb_only,
+                                gene_caller,
                             )
 
                             if not function_source == "UniFIRE":
@@ -64,6 +65,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                             found_function,
                                             function_source,
                                             attributes_dict,
+                                            gene_caller
                                         )
                                     )
                             found_function = escape_reserved_characters(found_function)
@@ -73,7 +75,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                             )
                         else:
                             attributes_dict = insert_product_source(
-                                attributes_dict, "Prokka"
+                                attributes_dict, gene_caller
                             )
                         col9_updated = update_col9(attributes_dict)
                         file_out.write(
@@ -96,11 +98,13 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                         file_out.write(line)
                 else:
                     file_out.write(line)
+                    if "Bakta" in line:
+                        gene_caller = "Bakta"
             else:
                 file_out.write(line)
 
 
-def keep_or_move_to_note(found_function, function_source, col9_dict):
+def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller):
     """
     Function aims to identify if a description is likely to be a sentence/paragraph rather than
     a succinct function description. If it's the former, move it to note and revert function to
@@ -172,12 +176,12 @@ def keep_or_move_to_note(found_function, function_source, col9_dict):
         if move_to_note:
             col9_dict = move_function_to_note(found_function, col9_dict)
             found_function = "hypothetical protein"
-            function_source = "Prokka"
+            function_source = gene_caller
     else:
         # Product is too long, move to note
         col9_dict = move_function_to_note(found_function, col9_dict)
         found_function = "hypothetical protein"
-        function_source = "Prokka"
+        function_source = gene_caller
     return found_function, function_source, col9_dict
 
 
@@ -248,7 +252,7 @@ def insert_product_source(my_dict, source):
     )
 
 
-def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only):
+def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only, gene_caller):
     """
     Identify function by carrying it over from a db match. The following priority is used:
     Priority 1: UniFIRE protein recommended full name
@@ -306,7 +310,7 @@ def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only
             return func_description, source
     if acc in eggnog_annot:
         return eggnog_annot[acc], "eggNOG"
-    return "hypothetical protein", "Prokka"
+    return "hypothetical protein", gene_caller
 
 
 def get_description_and_source(my_dict, ipr_type):

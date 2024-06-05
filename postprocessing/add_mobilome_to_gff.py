@@ -157,7 +157,10 @@ def load_mobilome(infile):
     with open(infile, "r") as file_in:
         for line in file_in:
             if line.startswith("#"):
-                continue
+                if line.startswith("##FASTA"):
+                    break
+                else:
+                    continue
             contig, tool, feature, start, end, blank1, blank2, blank3, col9 = (
                 line.strip().split("\t")
             )

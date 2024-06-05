@@ -2,6 +2,8 @@ process UNIFIRE {
 
     tag "${meta.prefix}"
 
+    label 'error_retry'
+
     container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2023.4"
     containerOptions "--bind unifire:/volume"
 

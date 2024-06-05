@@ -456,9 +456,12 @@ def load_annotations(
                 line = line.replace("db_xref", "Dbxref")
                 cols = line.split("\t")
                 if len(cols) == 9:
-                    contig, feature, start, annot = cols[0], cols[2], cols[3], cols[8]
+                    contig, caller, feature, start, annot = cols[0], cols[1], cols[2], cols[3], cols[8]
                     if feature != "CDS":
-                        continue
+                        if caller == "Bakta" and feature == "region":
+                            main_gff.setdefault(contig, dict()).setdefault(int(start), list()).append(line)
+                        else:
+                            continue
                     protein = annot.split(";")[0].split("=")[-1]
                     added_annot[protein] = {}
                     try:

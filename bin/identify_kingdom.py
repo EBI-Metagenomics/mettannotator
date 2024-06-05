@@ -17,6 +17,7 @@
 
 import argparse
 import logging
+import os
 import sys
 
 import requests
@@ -25,7 +26,7 @@ from retry import retry
 logging.basicConfig(level=logging.INFO)
 
 
-def main(taxid, outfile):
+def main(taxid, include_kingdom, outfile):
     kingdom = "Bacteria"
     if not taxid.isdigit():
         sys.exit("Invalid format of taxid {}".format(taxid))
@@ -56,6 +57,10 @@ def main(taxid, outfile):
         )
     logging.info("Reporting kingdom {} for taxid {}".format(kingdom, taxid))
     if outfile:
+        if include_kingdom:
+            outfile_path, outfile_name = os.path.split(outfile)
+            outfile_new_name = "{}_{}".format(kingdom, outfile_name)
+            outfile = os.path.join(outfile_path, outfile_new_name)
         with open(outfile, "w") as file_out:
             file_out.write(kingdom)
     else:
@@ -84,12 +89,18 @@ def parse_args():
         help="Taxid to identify the kingdom for.",
     )
     parser.add_argument(
+        "--include-kingdom",
+        action='store_true',
+        help="Add the kingdom name at the beginning of the file name.",
+    )
+    parser.add_argument(
         "-o",
         dest="outfile",
         required=False,
         help=(
-            "Path to the output file where the result will be saved. If none specified, script will print the output "
-            "as STDOUT."
+            "Path to the output file (with file name) where the result will be saved. If the --include-kingdom option "
+            "was specified, the kingdom will be added to the beginning of the chosen output file name. "
+            "If the output file is not specified, the script will print the output as STDOUT."
         ),
     )
     return parser.parse_args()
@@ -99,5 +110,6 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         args.taxid,
+        args.include_kingdom,
         args.outfile,
     )

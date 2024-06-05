@@ -44,6 +44,7 @@ include { UNIFIRE                                    } from '../modules/local/un
 include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
 include { ANTISMASH                                  } from '../modules/local/antismash'
 include { DBCAN                                      } from '../modules/local/dbcan'
+include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
 
@@ -52,6 +53,7 @@ include { DOWNLOAD_DATABASES                         } from '../subworkflows/dow
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { BAKTA_BAKTA                 } from '../modules/nf-core/bakta/bakta/main'
 include { GECCO_RUN                   } from '../modules/nf-core/gecco/run/main'
 include { QUAST                       } from '../modules/nf-core/quast/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
@@ -98,7 +100,7 @@ workflow METTANNOTATOR {
 
     if (params.dbs) {
         // Download databases (if needed) //
-        DOWNLOAD_DATABASES()
+        DOWNLOAD_DATABASES(params.bakta)
 
         amrfinder_plus_db = DOWNLOAD_DATABASES.out.amrfinder_plus_db
 
@@ -115,6 +117,10 @@ workflow METTANNOTATOR {
         eggnog_db = DOWNLOAD_DATABASES.out.eggnog_db
 
         rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
+
+        if (params.bakta) {
+            bakta_db = DOWNLOAD_DATABASES.out.bakta_db
+        }
     } else {
         // Use the parametrized folders and files for the databases //
         amrfinder_plus_db = tuple(
@@ -156,20 +162,66 @@ workflow METTANNOTATOR {
             file(params.rfam_ncrna_models, checkIfExists: true),
             params.rfam_ncrna_models_rfam_version
         )
+        if (params.bakta) {
+            bakta_db = tuple(
+                file(params.bakta_db, checkIfExists: true),
+                params.bakta_db_version
+            )
+        }
     }
 
     ch_versions = Channel.empty()
 
     assemblies = Channel.fromSamplesheet("input")
+    annotations_fna = channel.empty()
+    annotations_gbk = channel.empty()
+    annotations_faa = channel.empty()
+    annotations_gff = channel.empty()
 
     LOOKUP_KINGDOM( assemblies )
 
-    PROKKA( assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ))
+    assemblies_with_kingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map{ meta, file1, file2 -> {
+        def parts = file2.toString().split('/')
+        def filename = parts[-1]
+        def name_parts = filename.split('_')
+        def kingdom_name = name_parts[0]
+        return [meta, file1, kingdom_name]
+        }
+    }
 
-    ch_versions = ch_versions.mix(PROKKA.out.versions.first())
+
+   if ( params.bakta ) {
+       assemblies_with_kingdom.branch {
+           bacteria: it[2] == "Bacteria"
+           archaea: it[2] == "Archaea"
+       }.set { assemblies_to_annotate }
+
+       BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
+
+       PROKKA( assemblies_to_annotate.archaea )
+
+       ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
+       ch_versions = ch_versions.mix(PROKKA.out.versions.first())
+
+       annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( PROKKA.out.fna )
+       annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA.out.gbk )
+       annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA.out.faa )
+       annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA.out.gff )
+
+   } else {
+
+       PROKKA( assemblies_with_kingdom )
+
+       ch_versions = ch_versions.mix(PROKKA.out.versions.first())
+
+       annotations_fna = PROKKA.out.fna
+       annotations_gbk = PROKKA.out.gbk
+       annotations_faa = PROKKA.out.faa
+       annotations_gff = PROKKA.out.gff
+   }
 
     assemblies_for_quast = assemblies.join(
-        PROKKA.out.gff
+        annotations_gff
     ).map { it -> tuple(it[0], it[1], it[2]) }
 
     QUAST(
@@ -184,7 +236,7 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(CRISPRCAS_FINDER.out.versions.first())
 
     // EGGNOG_MAPPER_ORTHOLOGS - needs a third empty file in mode=mapper
-    proteins_for_emapper_orth = PROKKA.out.faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
+    proteins_for_emapper_orth = annotations_faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
 
     EGGNOG_MAPPER_ORTHOLOGS(
         proteins_for_emapper_orth,
@@ -210,16 +262,16 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
     INTERPROSCAN(
-        PROKKA.out.faa,
+        annotations_faa,
         interproscan_db
     )
 
     ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
 
     assemblies_plus_faa_and_gff = assemblies.join(
-        PROKKA.out.faa
+        annotations_faa
     ).join(
-        PROKKA.out.gff
+        annotations_gff
     )
 
     AMRFINDER_PLUS(
@@ -234,57 +286,57 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
 
     DEFENSE_FINDER (
-        PROKKA.out.faa.join( PROKKA.out.gff ),
+        annotations_faa.join( annotations_gff ),
         defense_finder_db
     )
 
     ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
 
-    UNIFIRE ( PROKKA.out.faa )
+    UNIFIRE ( annotations_faa )
 
     ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
     DETECT_TRNA(
-        PROKKA.out.fna,
+        annotations_fna.join( LOOKUP_KINGDOM.out.detected_kingdom )
     )
 
     ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
 
     DETECT_NCRNA(
-        PROKKA.out.fna,
+        annotations_fna,
         rfam_ncrna_models
     )
 
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
 
     SANNTIS(
-        INTERPROSCAN.out.ips_annotations.join(PROKKA.out.gbk)
+        INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
     )
 
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
 
     GECCO_RUN(
-        PROKKA.out.gbk.map { meta, gbk -> [meta, gbk, []] }, []
+        annotations_gbk.map { meta, gbk -> [meta, gbk, []] }, []
     )
 
     ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
 
     ANTISMASH(
-        PROKKA.out.gbk,
+        annotations_gbk,
         antismash_db
     )
 
     ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
 
     DBCAN(
-        PROKKA.out.faa.join( PROKKA.out.gff ),
+        annotations_faa.join( annotations_gff ),
         dbcan_db
     )
 
     ch_versions = ch_versions.mix(DBCAN.out.versions.first())
 
     ANNOTATE_GFF(
-        PROKKA.out.gff.join(
+        annotations_gff.join(
             INTERPROSCAN.out.ips_annotations
         ).join(
            EGGNOG_MAPPER_ANNOTATIONS.out.annotations
@@ -317,6 +369,12 @@ workflow METTANNOTATOR {
     )
 
     ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
+
+    CIRCOS_PLOT (
+        ANNOTATE_GFF.out.annotated_gff
+    )
+
+    ch_versions = ch_versions.mix(CIRCOS_PLOT.out.versions.first())
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
