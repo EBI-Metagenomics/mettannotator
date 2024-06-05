@@ -44,6 +44,7 @@ include { UNIFIRE                                    } from '../modules/local/un
 include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
 include { ANTISMASH                                  } from '../modules/local/antismash'
 include { DBCAN                                      } from '../modules/local/dbcan'
+include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
 
@@ -368,6 +369,12 @@ workflow METTANNOTATOR {
     )
 
     ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
+
+    CIRCOS_PLOT (
+        ANNOTATE_GFF.out.annotated_gff
+    )
+
+    ch_versions = ch_versions.mix(CIRCOS_PLOT.out.versions.first())
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
