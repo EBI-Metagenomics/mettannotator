@@ -408,7 +408,7 @@ Note: if the pipeline completed without errors but some of the tool-specific out
 
 ## Mobilome annotation
 
-The mobilome annotation workflow is not currently integrated into `mettannotator`. However, the outputs produced by `mettannotator` can be used to run [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline) and the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline) and the outputs of these tools can be integrated into the GFF file produced by `mettannotator`.
+The mobilome annotation workflow is not currently integrated into `mettannotator`. However, the outputs produced by `mettannotator` can be used to run [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline) and the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline) and the outputs of these tools can be integrated back into the GFF file produced by `mettannotator`.
 
 After installing both tools, follow these steps to add the mobilome annotation:
 
@@ -429,7 +429,7 @@ nextflow run mobilome-annotation-pipeline/main.nf \
     --virify true # only if the next two VIRify files exist, otherwise skip this line \
     --vir_gff Virify_output_folder/08-final/gff/<prefix>_virify.gff # only if file exists, otherwise skip this line \
     --vir_checkv Virify_output_folder/07-checkv/\*quality_summary.tsv # only if the GFF file above exists, otherwise skip this line \
-    --outdir <mobilome_output_folde> \
+    --outdir <mobilome_output_folder> \
     --skip_crispr true \
     --skip_amr true \
     -profile <profile>"
