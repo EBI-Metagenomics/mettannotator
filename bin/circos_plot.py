@@ -162,7 +162,7 @@ def remove_escaped_characters(infile):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Test script for Circos plots.")
+    parser = argparse.ArgumentParser(description="Script for Circos plot generation.")
     parser.add_argument(
         "-i", "--infile", required=True, help="Path to the GFF file to plot"
     )
