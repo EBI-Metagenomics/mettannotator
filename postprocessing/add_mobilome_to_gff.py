@@ -2,7 +2,6 @@
 
 import argparse
 import re
-import sys
 
 
 def main(mobilome_file, infile, outfile):
