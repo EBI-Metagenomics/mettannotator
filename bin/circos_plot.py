@@ -114,13 +114,16 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, dpi):
                 "cellular_recombinase",
                 "insertion_sequence",
                 "conjugative_element",
+                "conjugative_integron",
+                "integron",
+                "plasmid",
                 "nested_mobile_element",
                 "terminal_inverted_repeat_element",
                 "direct_repeat_element",
                 "viral_sequence",
             ]:
                 mobilome_track.genomic_features([feature], fc="lightseagreen")
-            elif mobilome and feature.type.lower() == "phage":
+            elif mobilome and feature.type.lower() in ["phage", "prophage"]:
                 mobilome_track.genomic_features([feature], fc="blue")
 
     fig = circos.plotfig()
