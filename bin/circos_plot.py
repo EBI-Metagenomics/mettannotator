@@ -155,7 +155,7 @@ def remove_escaped_characters(infile):
         content = file_in.read()
         modified_content = content.replace("\\=", "")
 
-    # Open the file in write mode to overwrite it with the modified content
+    # Write the modified content into a file
     with open(outfile, "w") as file_out:
         file_out.write(modified_content)
     return outfile
