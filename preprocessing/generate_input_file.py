@@ -32,20 +32,26 @@ def main(infile, input_dir, bat_dir, outfile, no_prefix):
     if not os.path.exists(input_dir):
         sys.exit("Input directory {} does not exist!".format(input_dir))
 
-    with open(infile, 'r') as f_in, open(outfile, "w") as f_out:
+    with open(infile, "r") as f_in, open(outfile, "w") as f_out:
         f_out.write("prefix,assembly,taxid\n")
         for line in f_in:
             line = line.strip()
             if line.endswith(("gz", "zip")):
-                sys.exit("Fasta file {} is archived. Please provide only unarchived files.".format(line))
+                sys.exit(
+                    "Fasta file {} is archived. Please provide only unarchived files.".format(
+                        line
+                    )
+                )
             taxid = parse_taxid(line, bat_dir)
             if not no_prefix:
                 prefix = os.path.splitext(line)[0]
                 if len(prefix) > 24:
                     prefix = prefix[:24]
                 if prefix in all_prefixes:
-                    sys.exit("Prefix {} is being used multiple times. Cannot generate output. Either rename the FASTA "
-                             "files or run the script with the --no-prefix option to fill them out manually.")
+                    sys.exit(
+                        "Prefix {} is being used multiple times. Cannot generate output. Either rename the FASTA "
+                        "files or run the script with the --no-prefix option to fill them out manually."
+                    )
                 all_prefixes.append(prefix)
             full_path = os.path.join(input_dir, line)
             if no_prefix:
@@ -60,23 +66,25 @@ def parse_taxid(fasta_file, bat_dir):
     bat_filepath = os.path.join(bat_dir, bat_filename)
     if not os.path.exists(bat_filepath):
         sys.exit("Bat file {} does not exist!".format(bat_filepath))
-    with open(bat_filepath, 'r') as f_in:
+    with open(bat_filepath, "r") as f_in:
         # skip header
         f_in.readline()
         taxid_string = f_in.readline().strip().split("\t")[3]
         taxid = find_taxid_without_asterisk(taxid_string)
         if not taxid:
             taxid = "FILL IN MANUALY"
-            logging.warning("No taxid found for taxid {}. If taxid is known, fill it out manually in the generated "
-                            "output file.".format(taxid))
+            logging.warning(
+                "No taxid found for taxid {}. If taxid is known, fill it out manually in the generated "
+                "output file.".format(taxid)
+            )
     return taxid
 
 
 def find_taxid_without_asterisk(input_string):
-    elements = input_string.split(';')
+    elements = input_string.split(";")
     elements.reverse()
     for element in elements:
-        if not element.endswith('*'):
+        if not element.endswith("*"):
             return element
     return None
 
@@ -97,7 +105,8 @@ def parse_args():
         "-i",
         dest="infile",
         required=True,
-        help="List of genomes files to include (with file extension, unzipped).",
+        help="A file containing a list of genome files to include (file name only, with file extension, unzipped, "
+             "one file per line). ",
     )
     parser.add_argument(
         "-d",
@@ -110,7 +119,7 @@ def parse_args():
         dest="bat_dir",
         required=True,
         help="Folder with BAT results. Results for all genomes should be in the same folder and should be named "
-             "{fasta_base_name}.bin2classification.txt",
+        "{fasta_base_name}.bin2classification.txt",
     )
     parser.add_argument(
         "-o",
@@ -125,7 +134,7 @@ def parse_args():
         action="store_true",
         default=False,
         help="Skip prefix generation and leave the first column of the output file empty for the user to fill out. "
-             "Defaule: False",
+        "Defaule: False",
     )
     return parser.parse_args()
 
@@ -139,4 +148,3 @@ if __name__ == "__main__":
         args.outfile,
         args.no_prefix,
     )
-
