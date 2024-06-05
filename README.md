@@ -146,8 +146,8 @@ mettannotator input csv file. The user has the option to either use the genome f
 (minus the extension) as the prefix for mettannotator or leave the prefix off and fill it
 out themselves after the script generates an input file with just the FASTA location and
 the taxid. It is expected that for all genomes, BAT results are stored in the same folder
-and are named as {fasta_base_name}.bin2classification.txt.The script will use the lowest-level
-taxid without an asterisk as the taxid for the genome.
+and are named as {fasta_base_name}.bin2classification.txt. The script will use the lowest-
+level taxid without an asterisk as the taxid for the genome.
 
 optional arguments:
   -h, --help    show this help message and exit
