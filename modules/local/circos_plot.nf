@@ -10,6 +10,7 @@ process CIRCOS_PLOT {
 
     output:
     tuple val(meta), path("*.png"), emit: circos_plot, optional: true
+    path "versions.yml", emit: versions
 
     script:
     """
