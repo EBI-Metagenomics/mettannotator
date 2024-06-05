@@ -136,7 +136,7 @@ CAT bins -b ${genome_name}.fna -d ${path_to_CAT_database} -t ${path_to_CAT_tax_f
 CAT add_names -i BAT_results/${genome_name}.bin2classification.txt -o BAT_results/${genome_name}.name.txt -t ${path_to_CAT_tax_folder}
 ```
 
-To generate an input file for `mettannotator`, use [generate_input_file.py](https://github.com/EBI-Metagenomics/mettannotator/blob/main/preprocessing/generate_input_file.py):
+To generate an input file for `mettannotator`, use [generate_input_file.py](preprocessing/generate_input_file.py):
 ```
 python3 preprocessing/generate_input_file.py -h
 usage: generate_input_file.py [-h] -i INFILE -d INPUT_DIR -b BAT_DIR -o OUTFILE [--no-prefix]
