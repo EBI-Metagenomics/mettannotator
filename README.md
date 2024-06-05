@@ -35,7 +35,7 @@
 The workflow uses the following tools and databases:
 
 | Tool/Database                                                                                    | Version                                       | Purpose                                                                                                                |
-|--------------------------------------------------------------------------------------------------|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6                                        | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.9.3                                         | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | 2024-01-19 with AMRFinderPlus DB 2024-01-31.1 | Bakta DB (when Bakta is used as the gene caller)                                                                       |
@@ -56,7 +56,7 @@ The workflow uses the following tools and databases:
 | [cmscan](http://eddylab.org/infernal/)                                                           | 1.1.5                                         | ncRNA predictions                                                                                                      |
 | [Rfam](https://rfam.org/)                                                                        | 14.9                                          | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
 | [tRNAscan-SE](https://github.com/UCSC-LoweLab/tRNAscan-SE)                                       | 2.0.9                                         | tRNA predictions                                                                                                       |
-| [pyCirclize](https://github.com/moshi4/pyCirclize)       | 1.4.0                                         | Visualise the merged GFF file                                                                                          |
+| [pyCirclize](https://github.com/moshi4/pyCirclize)                                               | 1.4.0                                         | Visualise the merged GFF file                                                                                          |
 | [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline)                                 | 2.0.0                                         | Viral sequence annotation (runs separately)                                                                            |
 | [Mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline) | 2.0                                           | Mobilome annotation (runs separately)                                                                                  |
 
@@ -79,7 +79,7 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 The pipeline needs reference databases in order to work, they take roughly 110G.
 
 | Path                | Size |
-|---------------------|------|
+| ------------------- | ---- |
 | amrfinder           | 217M |
 | antismash           | 9.4G |
 | bakta               | 71G  |
@@ -123,6 +123,7 @@ maximum length is 24 characters;
 `taxid` is the NCBI TaxId (if the species-level TaxId is not known, a TaxId for a higher taxonomic level can be used). If the taxonomy is known, look up the TaxID [here](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi).
 
 #### Finding TaxIds
+
 If TaxIds for input genomes are not known, a tool such as [CAT/BAT](https://github.com/MGXlab/CAT_pack) can be used.
 Follow the [instructions](https://github.com/MGXlab/CAT_pack?tab=readme-ov-file#installation) for getting the tool and downloading the NCBI nr database for it.
 
@@ -137,6 +138,7 @@ CAT add_names -i BAT_results/${genome_name}.bin2classification.txt -o BAT_result
 ```
 
 To generate an input file for `mettannotator`, use [generate_input_file.py](preprocessing/generate_input_file.py):
+
 ```
 python3 preprocessing/generate_input_file.py -h
 usage: generate_input_file.py [-h] -i INFILE -d INPUT_DIR -b BAT_DIR -o OUTFILE [--no-prefix]
@@ -160,15 +162,16 @@ optional arguments:
   --no-prefix   Skip prefix generation and leave the first column of the output file empty for
                 the user to fill out. Defaule: False
 ```
+
 For example:
+
 ```bash
 python3 generate_input_file.py -i list_of_genome_fasta_files.txt -d /path/to/the/fasta/files/folder/ -b BAT_results/ -o mettannotator_input.csv
 ```
+
 It is always best to check the outputs to ensure the results are as expected. Correct any wrongly detected taxa before starting `mettannotator`.
 
 Note, that by default the script uses FASTA file names as prefixes and truncates them to 24 characters if they exceed the limit.
-
-
 
 ### Running mettannotator
 
@@ -258,6 +261,7 @@ nextflow run ebi-metagenomics/mettannotator \
 > see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
 ### Gene caller choice
+
 By default, `mettannotator` uses Prokka to identify protein-coding genes. Users can choose to use Bakta instead by
 running `mettannotator` with the `--bakta` flag. `mettannotator` runs Bakta without ncRNA and CRISPR
 annotation as these are produced by separate tools in the pipeline. Archaeal genomes will continue to be annotated using
@@ -343,13 +347,12 @@ Additionally, for genomes with no more than 50 annotated contigs, a Circos plot 
 
 <img src="media/circos-plot-example.png">
 
-
 #### Data sources
 
 Below is an explanation of how each field in column 3 and 9 of the final GFF file is populated. In most cases, information is taken as is from the reporting tool's output.
 
 | Feature (column 3)    | Attribute Name (column 9)                                               | Reporting Tool  | Description                                                                                                                                                                                                 |
-| --------------------- | ----------------------------------------------------------------------- |-----------------| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --------------------- | ----------------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ncRNA                 | all\*                                                                   | cmscan + Rfam   | ncRNA annotation (excluding tRNA)                                                                                                                                                                           |
 | tRNA                  | all\*                                                                   | tRNAscan-SE     | tRNA annotation                                                                                                                                                                                             |
 | LeftFLANK, RightFLANK | all\*                                                                   | CRISPRCasFinder | CRISPR array flanking sequence                                                                                                                                                                              |
@@ -413,6 +416,7 @@ The mobilome annotation workflow is not currently integrated into `mettannotator
 After installing both tools, follow these steps to add the mobilome annotation:
 
 1. Run the [viral annotation pipeline](https://github.com/EBI-Metagenomics/emg-viral-pipeline):
+
 ```bash
 nextflow run \
     emg-viral-pipeline/virify.nf \
@@ -420,7 +424,9 @@ nextflow run \
     --fasta <genome_fasta.fna> \
     --output <prefix>
 ```
+
 2. Run the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline):
+
 ```bash
 nextflow run mobilome-annotation-pipeline/main.nf \
     --assembly <genome_fasta.fna> \
@@ -434,7 +440,9 @@ nextflow run mobilome-annotation-pipeline/main.nf \
     --skip_amr true \
     -profile <profile>"
 ```
+
 3. Integrate the output into the `mettannotator` GFF
+
 ```bash
 # Add mobilome to the merged GFF produced by mettannotator
 python3 postprocessing/add_mobilome_to_gff.py \
@@ -448,7 +456,9 @@ python3 postprocessing/add_mobilome_to_gff.py \
     -i <mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_annotations_with_descriptions.gff \
     -o <prefix>_annotations_with_descriptions_with_mobilome.gff
 ```
+
 4. Optional: regenerate the Circos plot with the mobilome track added
+
 ```bash
 pip install pycirclize
 pip install matplotlib
