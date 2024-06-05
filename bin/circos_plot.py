@@ -13,7 +13,7 @@ from matplotlib.patches import Patch
 logging.basicConfig(level=logging.INFO)
 
 
-def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome):
+def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, dpi):
     modified_infile = remove_escaped_characters(infile)
     gff = Gff(modified_infile)
     seqid2size = gff.get_seqid2size()
@@ -146,7 +146,7 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome):
         handles=handles, bbox_to_anchor=(0.5, 0.475), loc="center", fontsize=8
     )
     circos.ax.add_artist(main_legend)
-    fig.savefig(outfile, dpi=600)
+    fig.savefig(outfile, dpi=dpi)
 
 
 def remove_escaped_characters(infile):
@@ -196,9 +196,16 @@ def parse_args():
         default=False,
         help="Plot the mobilome track. Default: False",
     )
+    parser.add_argument(
+        "--dpi",
+        required=False,
+        type=int,
+        default=600,
+        help="Specify the dpi for the plot. Default: 600",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.infile, args.outfile, args.prefix, args.limit, args.contig_trim, args.mobilome)
+    main(args.infile, args.outfile, args.prefix, args.limit, args.contig_trim, args.mobilome, args.dpi)
