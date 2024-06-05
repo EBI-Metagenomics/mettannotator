@@ -120,7 +120,7 @@ maximum length is 24 characters;
 
 `assembly` is the path to where the assembly file in FASTA format is located;
 
-`taxid` is the NCBI TaxId (if the species-level TaxId is not known, a TaxId for a higher taxonomic level can be used).
+`taxid` is the NCBI TaxId (if the species-level TaxId is not known, a TaxId for a higher taxonomic level can be used). If the taxonomy is known, look up the TaxID [here](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi).
 
 #### Finding TaxIds
 If TaxIds for input genomes are not known, a tool such as [CAT/BAT](https://github.com/MGXlab/CAT_pack) can be used.
@@ -408,9 +408,57 @@ Note: if the pipeline completed without errors but some of the tool-specific out
 
 ## Mobilome annotation
 
-The mobilome annotation workflow is not currently integrated into `mettannotator`. However, the outputs produced by `mettannotator` can be used to run [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline) and the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline).
+The mobilome annotation workflow is not currently integrated into `mettannotator`. However, the outputs produced by `mettannotator` can be used to run [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline) and the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline) and the outputs of these tools can be integrated back into the GFF file produced by `mettannotator`.
 
-These post-processing steps will be better integrated in the next release.
+After installing both tools, follow these steps to add the mobilome annotation:
+
+1. Run the [viral annotation pipeline](https://github.com/EBI-Metagenomics/emg-viral-pipeline):
+```bash
+nextflow run \
+    emg-viral-pipeline/virify.nf \
+    -profile <profile> \
+    --fasta <genome_fasta.fna> \
+    --output <prefix>
+```
+2. Run the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline):
+```bash
+nextflow run mobilome-annotation-pipeline/main.nf \
+    --assembly <genome_fasta.fna> \
+    --user_genes true \
+    --prot_gff <mettannotator_results_folder/<prefix>/functional_annotation/merged_gff/<prefix>_annotations.gff \
+    --virify true # only if the next two VIRify files exist, otherwise skip this line \
+    --vir_gff Virify_output_folder/08-final/gff/<prefix>_virify.gff # only if file exists, otherwise skip this line \
+    --vir_checkv Virify_output_folder/07-checkv/\*quality_summary.tsv # only if the GFF file above exists, otherwise skip this line \
+    --outdir <mobilome_output_folder> \
+    --skip_crispr true \
+    --skip_amr true \
+    -profile <profile>"
+```
+3. Integrate the output into the `mettannotator` GFF
+```bash
+# Add mobilome to the merged GFF produced by mettannotator
+python3 postprocessing/add_mobilome_to_gff.py \
+    -m <mobilome_output_folder>/gff_output_files/mobilome_nogenes.gff \
+    -i <mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_annotations.gff \
+    -o <prefix>_annotations_with_mobilome.gff
+
+# Add mobilome to the GFF with descriptions produced by mettannotator
+python3 postprocessing/add_mobilome_to_gff.py \
+    -m <mobilome_output_folder>/gff_output_files/mobilome_nogenes.gff \
+    -i <mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_annotations_with_descriptions.gff \
+    -o <prefix>_annotations_with_descriptions_with_mobilome.gff
+```
+4. Optional: regenerate the Circos plot with the mobilome track added
+```bash
+pip install pycirclize
+pip install matplotlib
+
+python3 bin/circos_plot.py \
+    -i <prefix>_annotations_with_mobilome.gff \
+    -o plot.png \
+    -p <prefix> \
+    --mobilome
+```
 
 <a name="credit"></a>
 
