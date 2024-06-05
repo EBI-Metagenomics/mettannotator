@@ -164,7 +164,7 @@ For example:
 ```bash
 python3 generate_input_file.py -i list_of_genome_fasta_files.txt -d /path/to/the/fasta/files/folder/ -b BAT_results/ -o mettannotator_input.csv
 ```
-It is best to check the outputs to ensure the results are what is expected. Correct any wrongly detected taxa before starting `mettannotator`.
+It is always best to check the outputs to ensure the results are as expected. Correct any wrongly detected taxa before starting `mettannotator`.
 
 Note, that by default the script uses FASTA file names as prefixes and truncates them to 24 characters if they exceed the limit.
 
