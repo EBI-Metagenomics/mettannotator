@@ -374,6 +374,8 @@ workflow METTANNOTATOR {
         ANNOTATE_GFF.out.annotated_gff
     )
 
+    ch_versions = ch_versions.mix(CIRCOS_PLOT.out.versions.first())
+
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
