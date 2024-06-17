@@ -16,8 +16,6 @@ process EGGNOG_MAPPER {
     tuple val(meta), path("*orthologs*"), emit: orthologs, optional: true
     path "versions.yml", emit: versions
 
-    // TODO: add --db-mem
-
     script:
     if ( mode == "mapper" )
         """
@@ -44,6 +42,8 @@ process EGGNOG_MAPPER {
         --data_dir ${eggnog_db_dir} \
         --no_file_comments \
         --cpu ${task.cpus} \
+        --tax_scope 'prokaryota_broad' \
+        --dbmem \
         --annotate_hits_table ${annotation_hit_table} \
         -o ${meta.prefix}
 
