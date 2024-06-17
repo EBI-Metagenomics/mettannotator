@@ -5,6 +5,8 @@ process DETECT_TRNA {
 
     tag "${meta.prefix}"
 
+    label 'process_nano'
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.detect_rrna:v3.2'
 
     input:

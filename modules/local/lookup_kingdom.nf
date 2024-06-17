@@ -2,8 +2,6 @@ process LOOKUP_KINGDOM {
 
     tag "${meta.prefix}"
 
-    label 'process_nano'
-
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
