@@ -16,7 +16,11 @@
 #
 
 import argparse
+import logging
 import re
+import sys
+
+logging.basicConfig(level=logging.INFO)
 
 EVALUE_CUTOFF = 1e-10
 EGGNOG_DESCRIPTION_LENGTH_LIMIT = 12
@@ -25,11 +29,15 @@ MINIMUM_IPR_MATCH = 0.10
 
 def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile):
     eggnog_info = load_eggnog(eggnog_file)
-    levels = load_hierarchy(hierarchy_file)
-    ipr_types = load_ipr_types(ipr_types_file)
-    ipr_info, ipr_memberdb_only, ipr_leveled_info = load_ipr(
-        ipr_file, ipr_types, levels
-    )
+    if ipr_file:
+        levels = load_hierarchy(hierarchy_file)
+        ipr_types = load_ipr_types(ipr_types_file)
+        ipr_info, ipr_memberdb_only, ipr_leveled_info = load_ipr(
+            ipr_file, ipr_types, levels
+        )
+    else:
+        ipr_info = dict()
+        ipr_memberdb_only = dict()
     gene_caller = "Prokka"
     fasta_flag = False
     with open(infile, "r") as file_in, open(outfile, "w") as file_out:
@@ -65,7 +73,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                             found_function,
                                             function_source,
                                             attributes_dict,
-                                            gene_caller
+                                            gene_caller,
                                         )
                                     )
                             found_function = escape_reserved_characters(found_function)
@@ -252,7 +260,9 @@ def insert_product_source(my_dict, source):
     )
 
 
-def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only, gene_caller):
+def get_function(
+    acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only, gene_caller
+):
     """
     Identify function by carrying it over from a db match. The following priority is used:
     Priority 1: UniFIRE protein recommended full name
@@ -369,7 +379,9 @@ def get_best_match(ipr_dict):
                 best_level = ipr_dict[db]["level"]
                 highest_match = dict()
                 highest_match[db] = ipr_dict[db]
-    if "Pfam" not in highest_match and best_fraction > 0.20:  # there is room to reduce best match
+    if (
+        "Pfam" not in highest_match and best_fraction > 0.20
+    ):  # there is room to reduce best match
         if (
             "Pfam" in ipr_dict
             and best_fraction - ipr_dict["Pfam"]["match"] < 0.10
@@ -606,7 +618,7 @@ def escape_reserved_characters(string):
     reserved_characters = [";", "=", "&"]
     for ch in reserved_characters:
         if ch in string:
-            if ch == ';':
+            if ch == ";":
                 string = string.replace(ch, "/")
             else:
                 string = string.replace(ch, "\{}".format(ch))
@@ -687,19 +699,19 @@ def parse_args():
         )
     )
     parser.add_argument(
+        "--ipr-output",
+        required=False,
+        help="The path to the TSV file produced by InterProScan.",
+    )
+    parser.add_argument(
         "--ipr-entries",
-        required=True,
-        help="The path to the entries.list file from InterPro.",
+        required=False,
+        help="The path to the entries.list file from InterPro. Required if --ipr-output is provided.",
     )
     parser.add_argument(
         "--ipr-hierarchy",
-        required=True,
-        help="The path to the ParentChildTreeFile.txt file from InterPro.",
-    )
-    parser.add_argument(
-        "--ipr-output",
-        required=True,
-        help="The path to the TSV file produced by InterProScan.",
+        required=False,
+        help="The path to the ParentChildTreeFile.txt file from InterPro. Required if --ipr-output is provided.",
     )
     parser.add_argument(
         "--eggnog-output",
@@ -723,6 +735,14 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    if args.ipr_output:
+        if not args.ipr_entries or not args.ipr_hierarchy:
+            sys.exit(
+                "If parsing of InterProScan output is required, both --ipr-hierarchy and --ipr-entries must be "
+                "provided."
+            )
+    else:
+        logging.info("InterProScan output is not provided, will proceed without.")
     main(
         args.ipr_entries,
         args.ipr_output,
