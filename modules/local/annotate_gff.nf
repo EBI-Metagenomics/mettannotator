@@ -38,6 +38,7 @@ process ANNOTATE_GFF {
     def gecco_flag = "";
     def dbcan_flag = "";
     def df_flag = "";
+    def ips_flag = "";
     if ( sanntis_annotations_gff ) {
         sanntis_flag = "-s ${sanntis_annotations_gff} ";
     }
@@ -59,16 +60,18 @@ process ANNOTATE_GFF {
     if ( df_gff ) {
         df_flag = "--defense-finder ${df_gff}"
     }
+    if ( ips_annotations_tsv ) {
+        ips_flag = "-i ${ips_annotations_tsv}"
+    }
     """
     annotate_gff.py \
     -g ${gff} \
-    -i ${ips_annotations_tsv} \
     -e ${eggnog_annotations_tsv} \
     -r ${ncrna_tsv} \
     -t ${trna_gff} \
     -o ${meta.prefix}_temp.gff \
     ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} \
-    ${antismash_flag} ${gecco_flag} ${dbcan_flag} ${df_flag}
+    ${antismash_flag} ${gecco_flag} ${dbcan_flag} ${df_flag} ${ips_flag}
 
     process_unifire_output.py \\
     -g ${meta.prefix}_temp.gff \\
