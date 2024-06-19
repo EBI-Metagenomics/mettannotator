@@ -373,8 +373,9 @@ workflow METTANNOTATOR {
     } else {
         // We need to add multiples empty elements
         annotate_gff_input = annotate_gff_input.map { it -> {
-            // IPS, SanntiS, UniFire{arba,unirule,pirsr}
-            it + [[],[],[],[],[]]
+                // IPS, SanntiS, UniFire{arba,unirule,pirsr}
+                it + [[],[],[],[],[]]
+            }
         }
     }
 
