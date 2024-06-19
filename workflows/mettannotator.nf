@@ -181,15 +181,12 @@ workflow METTANNOTATOR {
     LOOKUP_KINGDOM( assemblies )
     ch_versions = ch_versions.mix(LOOKUP_KINGDOM.out.versions.first())
 
-    assemblies_with_kingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map { meta, assembly, kingdom -> {
-            [meta + ["kingdom": kingdom], assembly]
-        }
-    }
+    assemblies_with_kingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom )
 
    if ( params.bakta ) {
        assemblies_with_kingdom.branch {
-           bacteria: it[0].kingdom == "Bacteria"
-           archaea: it[0].kingdom == "Archaea"
+           bacteria: it[2] == "Bacteria"
+           archaea: it[2] == "Archaea"
        }.set { assemblies_to_annotate }
 
        BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
