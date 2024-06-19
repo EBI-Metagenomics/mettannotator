@@ -138,10 +138,12 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             " to be ",
             " does ",
             "probably ",
-            "might be ",
+            "might ",
             "in addition to",
             "evidence by homology",
             " that ",
+            "cleaves ",
+            "most likely"
         ]
         starts_to_avoid = [
             "mediates ",
@@ -149,10 +151,16 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "reduces ",
             "located ",
             "controls ",
+            "due to ",
+            "during ",
             "contacts ",
             "conducts ",
             "binds ",
+            "destroys ",
+            "displays ",
             "transfers ",
+            "effects ",
+            "affects ",
             "this ",
             "makes ",
             "introduces ",
@@ -161,9 +169,12 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "hydrolyses ",
             "initiates ",
             "required for ",
+            "required during ",
             "recognizes ",
             "recognises ",
             "has ",
+            "is ",
+            "its ",
             "functions ",
             "enhances ",
             "confers ",
@@ -173,6 +184,28 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "evidence ",
             "represses ",
             "related to",
+            "best ",
+            "can ",
+            "enables ",
+            "encoded ",
+            "encodes ",
+            "excises ",
+            "exhibits ",
+            "facilitates ",
+            "found ",
+            "forms ",
+            "including ",
+            "in ",
+            "modulates ",
+            "participates ",
+            "that it ",
+            "that is ",
+            "there are ",
+            "the result ",
+            "thought ",
+            "to ",
+            "when ",
+            "which ",
         ]
         if any(phrase.lower() in found_function.lower() for phrase in text_to_avoid):
             move_to_note = True
@@ -433,21 +466,45 @@ def load_eggnog(file):
                     "psort location",
                     "may contain a frame shift",
                     "annotation was generated",
+                    "no Hp match",
+                    "No similarity found",
+                    "No significant database",
                 ]
                 exclude_eggnog_full = [
                     "-",
                     "domain, protein",
+                    "domain protein",
+                    "Encoded by",
                     "Family of unknown function",
                     "Domain of unknown function",
                     "Protein of unknown function",
                     "Uncharacterised protein family",
                     "Uncharacterized protein family",
+                    "by glimmer",
+                    "by sequence",
+                    "by modhmm",
+                    "component",
+                    "Family of",
+                    "Family membership",
+                    "I and II",
+                    "implicated in the recycling of the",
+                    "manually curated",
+                    "multi-drug",
+                    "protein involved in",
                 ]
-                if all(
-                    phrase.lower() not in cols[7].lower()
-                    for phrase in exclude_eggnog_partial
-                ) and all(
-                    phrase.lower() != cols[7].lower() for phrase in exclude_eggnog_full
+                exclude_eggnog_start = ["of ", "but ", "But ", "however", "However"]
+                if (
+                    all(
+                        phrase.lower() not in cols[7].lower()
+                        for phrase in exclude_eggnog_partial
+                    )
+                    and all(
+                        phrase.lower() != cols[7].lower()
+                        for phrase in exclude_eggnog_full
+                    )
+                    and not any(
+                        cols[7].startswith(phrase) for phrase in exclude_eggnog_start
+                    )
                 ):
                     function = cols[7]
                     # trim function from the left if it doesn't start with a letter or a digit
