@@ -28,7 +28,7 @@ process ANNOTATE_GFF {
     output:
     tuple val(meta), path("*_annotations.gff"),                                   emit: annotated_gff
     tuple val(meta), path("*_annotations_with_descriptions.gff"), optional: true, emit: annotated_desc_gff
-    path "versions.yml",                                                          emit: version
+    path "versions.yml",                                                          emit: versions
 
     script:
     def crisprcas_flag = "";
