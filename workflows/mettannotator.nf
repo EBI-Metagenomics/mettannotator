@@ -368,7 +368,6 @@ workflow METTANNOTATOR {
             UNIFIRE.out.pirsr, remainder: true
         )
     } else {
-        // We need to add multiples empty elements
         annotate_gff_input = annotate_gff_input.map { it -> {
                 // IPS, SanntiS, UniFire{arba,unirule,pirsr}
                 // meta, <files> //
