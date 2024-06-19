@@ -112,6 +112,15 @@ def build_gff(regions_json, antismash_version):
         ]
         orf: ORF
         for orf in bgc.orfs:
+            ninth_column = [
+                f"ID={orf.locus_tag}",
+                f"Parent={bgc.bgc_name}",
+            ]
+            if orf.product:
+                ninth_column.append(f"product={orf.product}")
+            if orf.type:
+                ninth_column.append(f"function={orf.type}")
+
             yield [
                 bgc.contig_name,
                 f"antiSMASH:{antismash_version}",
@@ -121,14 +130,7 @@ def build_gff(regions_json, antismash_version):
                 ".",  # TODO, it should be possible to get the confidence score from the antismash gbk result file
                 "+" if orf.strand == 1 else "-",
                 ".",
-                ";".join(
-                    [
-                        f"ID={orf.locus_tag}",
-                        f"Parent={bgc.bgc_name}",
-                        f"product={orf.product}",
-                        f"function={orf.type}",
-                    ]
-                ),
+                ";".join( ),
             ]
 
 
