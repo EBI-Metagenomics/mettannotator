@@ -15,7 +15,7 @@ process LOOKUP_KINGDOM {
 
     script:
     """
-    detected_kingdom=$(identify_kingdom.py -t ${meta.taxid} --include-kingdom)
+    detected_kingdom=\$(identify_kingdom.py -t ${meta.taxid} --include-kingdom)
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
