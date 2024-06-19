@@ -62,12 +62,16 @@ process ANNOTATE_GFF {
         ips_flag = "-i ${ips_annotations_tsv}"
         hypothetical_ips_flags = [
             "--ipr-entries ${interpro_entry_list}/entry.list",
-            "--ipr-hierarchy ${interpro_entry_list}/ParentChildTreeFile.txt ",
-            "--ipr-output ${ips_annotations_tsv} ",
+            "--ipr-hierarchy ${interpro_entry_list}/ParentChildTreeFile.txt",
+            "--ipr-output ${ips_annotations_tsv}",
         ].join(" ")
     }
     if ( sanntis_annotations_gff ) {
         sanntis_flag = "-s ${sanntis_annotations_gff} ";
+    }
+    def hypothetical_tmp_gff = "${meta.prefix}_temp_with_unifire.gff"
+    if ( params.fast ) {
+        hypothetical_tmp_gff = "${meta.prefix}_temp.gff"
     }
     """
     annotate_gff.py \
@@ -90,7 +94,7 @@ process ANNOTATE_GFF {
 
     add_hypothetical_protein_descriptions.py \\
     --eggnog-output ${eggnog_annotations_tsv} \\
-    -i ${meta.prefix}_temp_with_unifire.gff \\
+    -i ${hypothetical_tmp_gff} \\
     -o ${meta.prefix}_annotations.gff ${hypothetical_ips_flags}
 
     if [ "${params.fast}" == "false" ]; then

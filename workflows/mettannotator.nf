@@ -371,7 +371,7 @@ workflow METTANNOTATOR {
         annotate_gff_input = annotate_gff_input.map { it -> {
                 // IPS, SanntiS, UniFire{arba,unirule,pirsr}
                 // meta, <files> //
-                [ it[0], it[1] + [null, null, null, null, null] ]
+                it + [[], [], [], [], []]
             }
         }
     }
