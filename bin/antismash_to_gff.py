@@ -130,7 +130,7 @@ def build_gff(regions_json, antismash_version):
                 ".",  # TODO, it should be possible to get the confidence score from the antismash gbk result file
                 "+" if orf.strand == 1 else "-",
                 ".",
-                ";".join( ),
+                ";".join(ninth_column),
             ]
 
 

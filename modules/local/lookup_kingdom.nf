@@ -10,17 +10,21 @@ process LOOKUP_KINGDOM {
     tuple val(meta), path(fasta)
 
     output:
-    tuple val(meta), path("*.txt"), emit: detected_kingdom
+    tuple val(meta), env("detected_kingdom"), emit: detected_kingdom
+    path "versions.yml",                      emit: version
 
-    // For the version, I'm using the latest stable the genomes-annotation pipeline
     script:
     """
-    identify_kingdom.py -t ${meta.taxid} --include-kingdom -o ${meta.prefix}_kingdom.txt
+    detected_kingdom=$(identify_kingdom.py -t ${meta.taxid} --include-kingdom)
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version 2>&1 | sed 's/Python //g')
+    END_VERSIONS
     """
 
     stub:
     """
-    touch Bacteria.txt
-
+    detected_kingdom="Bacteria"
     """
 }

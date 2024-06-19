@@ -13,8 +13,9 @@ process CIRCOS_PLOT {
     path "versions.yml", emit: versions
 
     script:
+    def skip_sanntis_flag = params.fast ? "--skip-sanntis" : ""
     """
-    circos_plot.py -p ${meta.prefix} -i ${gff} -o ${meta.prefix}_plot.png
+    circos_plot.py -p ${meta.prefix} -i ${gff} -o ${meta.prefix}_plot.png ${skip_sanntis_flag}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -179,21 +179,17 @@ workflow METTANNOTATOR {
     annotations_gff = channel.empty()
 
     LOOKUP_KINGDOM( assemblies )
+    ch_versions = ch_versions.mix(LOOKUP_KINGDOM.out.versions.first())
 
-    assemblies_with_kingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map{ meta, file1, file2 -> {
-        def parts = file2.toString().split('/')
-        def filename = parts[-1]
-        def name_parts = filename.split('_')
-        def kingdom_name = name_parts[0]
-        return [meta, file1, kingdom_name]
+    assemblies_with_kingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom ).map { meta, assembly, kingdom -> {
+            [meta + ["kingdom": kingdom], assembly]
         }
     }
 
-
    if ( params.bakta ) {
        assemblies_with_kingdom.branch {
-           bacteria: it[2] == "Bacteria"
-           archaea: it[2] == "Archaea"
+           bacteria: it[0].kingdom == "Bacteria"
+           archaea: it[0].kingdom == "Archaea"
        }.set { assemblies_to_annotate }
 
        BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
@@ -261,12 +257,13 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
-    INTERPROSCAN(
-        annotations_faa,
-        interproscan_db
-    )
-
-    ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
+    if ( !params.fast ) {
+        INTERPROSCAN(
+            annotations_faa,
+            interproscan_db
+        )
+        ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
+    }
 
     assemblies_plus_faa_and_gff = assemblies.join(
         annotations_faa
@@ -292,9 +289,10 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
 
-    UNIFIRE ( annotations_faa )
-
-    ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
+    if ( !params.fast ) {
+        UNIFIRE ( annotations_faa )
+        ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
+    }
 
     DETECT_TRNA(
         annotations_fna.join( LOOKUP_KINGDOM.out.detected_kingdom )
@@ -309,11 +307,13 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
 
-    SANNTIS(
-        INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
-    )
+    if ( !params.fast ) {
+        SANNTIS(
+            INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
+        )
+        ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
+    }
 
-    ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
 
     GECCO_RUN(
         annotations_gbk.map { meta, gbk -> [meta, gbk, []] }, []
@@ -335,36 +335,51 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(DBCAN.out.versions.first())
 
-    ANNOTATE_GFF(
-        annotations_gff.join(
+    /**********************************************/
+    /* Combine the results into a single GFF file */
+    /**********************************************/
+    annotate_gff_input = annotations_gff.join(
+        EGGNOG_MAPPER_ANNOTATIONS.out.annotations
+    ).join(
+        DETECT_NCRNA.out.ncrna_tblout
+    ).join(
+        DETECT_TRNA.out.trna_gff
+    ).join(
+        CRISPRCAS_FINDER.out.hq_gff, remainder: true
+    ).join(
+        AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
+    ).join(
+        ANTISMASH.out.gff, remainder: true
+    ).join(
+        GECCO_RUN.out.gff, remainder: true
+    ).join(
+        DBCAN.out.dbcan_gff, remainder: true
+    ).join(
+        DEFENSE_FINDER.out.gff, remainder: true
+    )
+
+    if ( !params.fast ) {
+        annotate_gff_input = annotate_gff_input.join(
             INTERPROSCAN.out.ips_annotations
         ).join(
-           EGGNOG_MAPPER_ANNOTATIONS.out.annotations
-        ).join(
             SANNTIS.out.sanntis_gff, remainder: true
-        ).join(
-            DETECT_NCRNA.out.ncrna_tblout
-        ).join(
-            DETECT_TRNA.out.trna_gff
-        ).join(
-            CRISPRCAS_FINDER.out.hq_gff, remainder: true
-        ).join(
-            AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
-        ).join(
-            ANTISMASH.out.gff, remainder: true
-        ).join(
-            GECCO_RUN.out.gff, remainder: true
-        ).join(
-            DBCAN.out.dbcan_gff, remainder: true
-        ).join(
-            DEFENSE_FINDER.out.gff, remainder: true
         ).join(
             UNIFIRE.out.arba, remainder: true
         ).join(
             UNIFIRE.out.unirule, remainder: true
         ).join(
             UNIFIRE.out.pirsr, remainder: true
-        ),
+        )
+    } else {
+        // We need to add multiples empty elements
+        annotate_gff_input = annotate_gff_input.map { it -> {
+            // IPS, SanntiS, UniFire{arba,unirule,pirsr}
+            it + [[],[],[],[],[]]
+        }
+    }
+
+    ANNOTATE_GFF(
+        annotate_gff_input,
         interpro_entry_list
     )
 
