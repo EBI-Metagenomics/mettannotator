@@ -78,6 +78,8 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                     )
                             found_function = escape_reserved_characters(found_function)
                             attributes_dict["product"] = found_function
+                            if gene_caller == "Bakta" and attributes_dict["Name"] == "hypothetical protein":
+                                attributes_dict["Name"] = found_function
                             attributes_dict = insert_product_source(
                                 attributes_dict, function_source
                             )
