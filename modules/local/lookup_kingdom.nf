@@ -11,7 +11,7 @@ process LOOKUP_KINGDOM {
 
     output:
     tuple val(meta), env("detected_kingdom"), emit: detected_kingdom
-    path "versions.yml",                      emit: version
+    path "versions.yml",                      emit: versions
 
     script:
     """
