@@ -24,6 +24,7 @@ logging.basicConfig(level=logging.INFO)
 
 EVALUE_CUTOFF = 1e-10
 EGGNOG_DESCRIPTION_LENGTH_LIMIT = 12
+EGGNOG_NOTE_LENGTH_LIMIT = 70
 MINIMUM_IPR_MATCH = 0.10
 
 
@@ -78,7 +79,10 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                     )
                             found_function = escape_reserved_characters(found_function)
                             attributes_dict["product"] = found_function
-                            if gene_caller == "Bakta" and attributes_dict["Name"] == "hypothetical protein":
+                            if (
+                                gene_caller == "Bakta"
+                                and attributes_dict["Name"] == "hypothetical protein"
+                            ):
                                 attributes_dict["Name"] = found_function
                             attributes_dict = insert_product_source(
                                 attributes_dict, function_source
@@ -140,12 +144,19 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             " to be ",
             " does ",
             "probably ",
+            "possibly",
             "might ",
             "in addition to",
             "evidence by homology",
             " that ",
             "cleaves ",
-            "most likely"
+            "most likely",
+            "fasta scores",
+            "typically",
+            "Curated by",
+            "identical to residues",
+            "shows ",
+            "seems ",
         ]
         starts_to_avoid = [
             "mediates ",
@@ -176,6 +187,7 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "recognises ",
             "has ",
             "is ",
+            "it ",
             "its ",
             "functions ",
             "enhances ",
@@ -200,14 +212,32 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "in ",
             "modulates ",
             "participates ",
-            "that it ",
-            "that is ",
             "there are ",
             "the result ",
             "thought ",
             "to ",
             "when ",
             "which ",
+            "protein conserved in ",
+            "once ",
+            "now ",
+            "not ",
+            "by ",
+            "as ",
+            "works ",
+            "upon ",
+            "specifically",
+            "Some similarities",
+            "provides ",
+            "promotes ",
+            "possible ",
+            "necessary for ",
+            "Identified ",
+            "contains ",
+            "causes ",
+            "Best Blast",
+            "believed",
+            "because",
         ]
         if any(phrase.lower() in found_function.lower() for phrase in text_to_avoid):
             move_to_note = True
@@ -471,11 +501,19 @@ def load_eggnog(file):
                     "no Hp match",
                     "No similarity found",
                     "No significant database",
+                    "No significant BLAST",
+                    "open reading frame",
+                    "Blast hits to",
                 ]
                 exclude_eggnog_full = [
                     "-",
                     "domain, protein",
                     "domain protein",
+                    "domain, family member",
+                    "domain) protein",
+                    "domain) containing",
+                    "domain only",
+                    "protein domain containing",
                     "Encoded by",
                     "Family of unknown function",
                     "Domain of unknown function",
@@ -483,11 +521,22 @@ def load_eggnog(file):
                     "Uncharacterised protein family",
                     "Uncharacterized protein family",
                     "by glimmer",
+                    "by glimmer2",
+                    "by glimmer3",
                     "by sequence",
                     "by modhmm",
+                    "by jigsaw",
+                    "by TMHMM2.0 at aa",
+                    "by MetaGeneAnnotator",
+                    "by GeneMark",
                     "component",
                     "Family of",
                     "Family membership",
+                    "family member",
+                    "superfamily protein",
+                    "superfamily. Protein",
+                    "superfamily",
+                    "superfamily, member",
                     "I and II",
                     "implicated in the recycling of the",
                     "manually curated",
@@ -497,9 +546,78 @@ def load_eggnog(file):
                     "amino acid",
                     "Weak similarity to UniProt",
                     "overlaps another CDS with the same product name",
+                    "No homology to any previously reported sequences",
+                    "There are 9 addittional ORFs identical to this one",
                     "Product inferred by homology to UniProt",
+                    "protein domain associated with",
+                    "acid) synthase",
+                    "unnamed protein",
+                    "this gene contains a nucleotide ambiguity which may be the result of a sequencing error",
+                    "source UniProtKB",
+                    "some similarities with uniprot",
+                    "silverDB",
+                    "sequence",
+                    "protein).. Source PGD",
+                    "protein). Source PGD",
+                    "protein)-related protein",
+                    "protein)-like",
+                    "protein with multiple",
+                    "previously reported",
+                    "multiple",
+                    "multiple 6",
+                    "multiple 7",
+                    "multiple 8",
+                    "molecule",
+                    "molecule 1",
+                    "molecule 2",
+                    "function. Source PGD",
+                    "function",
+                    "essential",
+                    "electron",
+                    "containing protein",
+                    "chromosome",
+                    "Highly divergent",
+                    "Belongs to the",
                 ]
-                exclude_eggnog_start = ["of ", "but ", "But ", "however", "However", "to "]
+                exclude_eggnog_start = [
+                    "of ",
+                    "but ",
+                    "But ",
+                    "however",
+                    "However",
+                    "to ",
+                    "with ",
+                    "which ",
+                    "thus ",
+                    "then ",
+                    "that ",
+                    "or ",
+                    "more specifically ",
+                    "due ",
+                    "deleted ",
+                    "bases in ",
+                    "are ",
+                    "and ",
+                    "and, ",
+                    "across ",
+                    "aa, and",
+                    " aa)",
+                    "aa and ",
+                    "Best DB hits BLAST",
+                ]
+                exclude_eggnog_end = [
+                    " and",
+                    " which",
+                    " with",
+                    " to",
+                    " of",
+                    " is",
+                    " the",
+                    " for",
+                    " in",
+                    " or",
+                    " a",
+                ]
                 if (
                     all(
                         phrase.lower() not in cols[7].lower()
@@ -512,6 +630,10 @@ def load_eggnog(file):
                     and not any(
                         cols[7].startswith(phrase) for phrase in exclude_eggnog_start
                     )
+                    and not any(
+                        cols[7].endswith(phrase) for phrase in exclude_eggnog_end
+                    )
+                    and not len(cols[7].split(" ")) > EGGNOG_NOTE_LENGTH_LIMIT
                 ):
                     function = cols[7]
                     # trim function from the left if it doesn't start with a letter or a digit
@@ -541,6 +663,16 @@ def clean_up_eggnog_function(func_description):
     )
     if func_description.endswith("ase activity") and len(func_description.split()) < 5:
         func_description = func_description.replace("ase activity", "ase-like protein")
+    if "kinase" in func_description.lower():
+        func_description = re.sub(
+            r"\b(kinase)(\s+\1)+\b", "kinase", func_description, flags=re.IGNORECASE
+        )
+    if func_description.startswith("activity. It is involved in the biological"):
+        func_description = re.sub(
+            "activity. It is involved in the biological",
+            "involved in the biological",
+            func_description,
+        )
     return func_description
 
 
