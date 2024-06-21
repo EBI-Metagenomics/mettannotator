@@ -25,7 +25,7 @@
         },
         "fast": {
           "type": "boolean",
-          "description": "Run the pipeline in fast mode. In this mode, InterProScan, UniProt, and SanntiS won't be executed, saving resources and speeding up the pipeline..",
+          "description": "Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, and SanntiS won't be executed, saving resources and speeding up the pipeline.",
           "fa_icon": "fas fa-fast-forward"
         },
         "outdir": {
