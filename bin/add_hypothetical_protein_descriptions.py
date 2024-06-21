@@ -493,8 +493,13 @@ def load_eggnog(file):
                     "manually curated",
                     "multi-drug",
                     "protein involved in",
+                    "Alternative locus ID",
+                    "amino acid",
+                    "Weak similarity to UniProt",
+                    "overlaps another CDS with the same product name",
+                    "Product inferred by homology to UniProt",
                 ]
-                exclude_eggnog_start = ["of ", "but ", "But ", "however", "However"]
+                exclude_eggnog_start = ["of ", "but ", "But ", "however", "However", "to "]
                 if (
                     all(
                         phrase.lower() not in cols[7].lower()
