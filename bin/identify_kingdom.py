@@ -64,7 +64,7 @@ def main(taxid, include_kingdom, outfile):
         with open(outfile, "w") as file_out:
             file_out.write(kingdom)
     else:
-        print(kingdom)
+        print(kingdom.strip())
 
 
 @retry(tries=5, delay=10, backoff=1.5)
