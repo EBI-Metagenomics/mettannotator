@@ -238,6 +238,12 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "Best Blast",
             "believed",
             "because",
+            "Although",
+            "Also ",
+            "allows ",
+            "Aids ",
+            "After ",
+            "Adds ",
         ]
         if any(phrase.lower() in found_function.lower() for phrase in text_to_avoid):
             move_to_note = True
@@ -564,12 +570,7 @@ def load_eggnog(file):
                     "protein with multiple",
                     "previously reported",
                     "multiple",
-                    "multiple 6",
-                    "multiple 7",
-                    "multiple 8",
                     "molecule",
-                    "molecule 1",
-                    "molecule 2",
                     "function. Source PGD",
                     "function",
                     "essential",
@@ -578,6 +579,14 @@ def load_eggnog(file):
                     "chromosome",
                     "Highly divergent",
                     "Belongs to the",
+                    "as a",
+                    "6) homolog",
+                    "Source PGD",
+                    "protein.. Source PGD",
+                    "gene. Source PGD",
+                    "family protein. Source PGD",
+                    "a. Source PGD",
+                    "-domain-containing protein",
                 ]
                 exclude_eggnog_start = [
                     "of ",
@@ -601,7 +610,7 @@ def load_eggnog(file):
                     "and, ",
                     "across ",
                     "aa, and",
-                    " aa)",
+                    "aa)",
                     "aa and ",
                     "Best DB hits BLAST",
                 ]
@@ -618,6 +627,13 @@ def load_eggnog(file):
                     " or",
                     " a",
                 ]
+                patterns = [
+                    r"^[0-9]+[.)]* Source PGD$",  # e.g., "2). Source PGD"
+                    r"^[0-9]+ homolog$",  # e.g., "2 homolog"
+                    r"^[0-9]+ like [0-9]+$",  # e.g., "2 like 1"
+                    r"^multiple [0-9]+$",  # e.g., "multiple 2"
+                    r"^molecule [0-9]+$",  # e.g., "molecule 2"
+                ]
                 if (
                     all(
                         phrase.lower() not in cols[7].lower()
@@ -633,6 +649,7 @@ def load_eggnog(file):
                     and not any(
                         cols[7].endswith(phrase) for phrase in exclude_eggnog_end
                     )
+                    and not any(re.match(p, cols[7]) for p in patterns)
                     and not len(cols[7].split(" ")) > EGGNOG_NOTE_LENGTH_LIMIT
                 ):
                     function = cols[7]
