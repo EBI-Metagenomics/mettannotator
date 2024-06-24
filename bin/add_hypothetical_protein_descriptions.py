@@ -219,6 +219,13 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "when ",
             "which ",
             "protein conserved in ",
+            "uncharacterized protein conserved in ",
+            "Uncharacterised protein family",
+            "protein of unknown function",
+            "family of unknown function",
+            "domain of unknown function",
+            "hmm "
+            "protein of uncharacterised function",
             "once ",
             "now ",
             "not ",
@@ -245,12 +252,34 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "After ",
             "Adds ",
         ]
+        full_desc_to_avoid = [
+            "PFAM conserved",
+            "Conserved hypothetical protein",
+            "conserved protein",
+            "Uncharacterised conserved protein",
+            "conserved domain",
+        ]
         if any(phrase.lower() in found_function.lower() for phrase in text_to_avoid):
             move_to_note = True
         if any(
             found_function.lower().startswith(phrase.lower())
             for phrase in starts_to_avoid
         ):
+            move_to_note = True
+        if any(
+            found_function.lower() == phrase.lower() for phrase in full_desc_to_avoid
+        ):
+            move_to_note = True
+        # if  length is 1 word and looks like this: tigr02436, move to note
+        if len(found_function.split(" ")) == 1 and found_function.lower().startswith(
+            "tigr"
+        ):
+            move_to_note = True
+        # if length is 1 word and it's a DUF, move to note
+        if len(found_function.split(" ")) == 1 and "DUF" in found_function:
+            move_to_note = True
+        # Move records that are InterPro IDs with no/little other information to note
+        if len(found_function.split(" ")) < 5 and "InterPro" in found_function and "IPR" in found_function:
             move_to_note = True
         if move_to_note:
             col9_dict = move_function_to_note(found_function, col9_dict)
@@ -587,6 +616,10 @@ def load_eggnog(file):
                     "family protein. Source PGD",
                     "a. Source PGD",
                     "-domain-containing protein",
+                    "Corresponds to locus_tag",
+                    "Function proposed based on presence of conserved amino acid motif, structural feature or limited homology",
+                    "Conserved gene of",
+                    "IMG reference gene",
                 ]
                 exclude_eggnog_start = [
                     "of ",
@@ -664,11 +697,12 @@ def load_eggnog(file):
 
 
 def clean_up_eggnog_function(func_description):
-    # remove initial non-alphanumeric characters
-    for i, char in enumerate(func_description):
-        if char.isalnum():
-            func_description = func_description[i:]
-            break
+    # remove initial non-alphanumeric characters except an opening bracket
+    if not func_description.startswith("(") and not func_description[0].isalnum():
+        for i, char in enumerate(func_description):
+            if char.isalnum() or char == "(":
+                func_description = func_description[i:]
+                break
     if (
         func_description.lower().startswith("belongs to the")
         and len(func_description.split()) < EGGNOG_DESCRIPTION_LENGTH_LIMIT
@@ -681,6 +715,7 @@ def clean_up_eggnog_function(func_description):
     if func_description.endswith("ase activity") and len(func_description.split()) < 5:
         func_description = func_description.replace("ase activity", "ase-like protein")
     if "kinase" in func_description.lower():
+        # replace multiple occurrences of the word kinase
         func_description = re.sub(
             r"\b(kinase)(\s+\1)+\b", "kinase", func_description, flags=re.IGNORECASE
         )
@@ -690,6 +725,8 @@ def clean_up_eggnog_function(func_description):
             "involved in the biological",
             func_description,
         )
+    if func_description.lower() == "membrane":
+        func_description = "membrane protein"
     return func_description
 
 
