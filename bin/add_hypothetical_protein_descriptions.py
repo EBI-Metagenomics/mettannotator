@@ -640,6 +640,7 @@ def load_eggnog(file):
                     "bases in ",
                     "are ",
                     "and ",
+                    "And ",
                     "and, ",
                     "across ",
                     "aa, and",
