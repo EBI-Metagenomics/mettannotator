@@ -220,10 +220,13 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "which ",
             "protein conserved in ",
             "uncharacterized protein conserved in ",
+            "uncharacterised protein conserved in ",
             "Uncharacterised protein family",
+            "Uncharacterized protein family",
             "protein of unknown function",
             "family of unknown function",
             "domain of unknown function",
+            "short repeat of unknown function"
             "hmm "
             "protein of uncharacterised function",
             "once ",
