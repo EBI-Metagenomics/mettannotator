@@ -29,6 +29,11 @@
           "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
           "fa_icon": "fas fa-folder-open"
         },
+        "fast": {
+          "type": "boolean",
+          "description": "Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, and SanntiS won't be executed, saving resources and speeding up the pipeline.",
+          "fa_icon": "fas fa-fast-forward"
+        },
         "email": {
           "type": "string",
           "description": "Email address for completion summary.",
@@ -155,7 +160,8 @@
           "default": "2024-01-19",
           "description": "The Bakta reference database version."
         }
-      }
+      },
+      "fa_icon": "fas fa-database"
     },
     "max_job_request_options": {
       "title": "Max job request options",

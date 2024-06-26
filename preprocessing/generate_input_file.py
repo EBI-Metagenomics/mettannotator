@@ -134,7 +134,7 @@ def parse_args():
         action="store_true",
         default=False,
         help="Skip prefix generation and leave the first column of the output file empty for the user to fill out. "
-        "Defaule: False",
+        "Default: False",
     )
     return parser.parse_args()
 

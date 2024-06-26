@@ -107,6 +107,8 @@ def check_for_additional_keys(ncrnas, trnas, crispr_annotations, contig_list):
 
 def get_iprs(ipr_annot):
     iprs = {}
+    if not ipr_annot:
+        return iprs
     with open(ipr_annot, "r") as f:
         for line in f:
             cols = line.strip().split("\t")
@@ -460,6 +462,7 @@ def load_annotations(
                     if feature != "CDS":
                         if caller == "Bakta" and feature == "region":
                             main_gff.setdefault(contig, dict()).setdefault(int(start), list()).append(line)
+                            continue
                         else:
                             continue
                     protein = annot.split(";")[0].split("=")[-1]
@@ -675,7 +678,7 @@ def parse_args():
         "-i",
         dest="ips",
         help="InterproScan annotations results for the cluster rep",
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "-e",
