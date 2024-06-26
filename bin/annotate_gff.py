@@ -562,7 +562,7 @@ def get_ncrnas(ncrnas_file):
                 counts += 1
                 contig = cols[3]
                 locus = "{}_ncRNA{}".format(contig, counts)
-                product = " ".join(cols[26:])
+                product = cols[-1]
                 model = cols[2]
                 if model == "RF00005":
                     # Skip tRNAs, we add them from tRNAscan-SE
