@@ -267,7 +267,7 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
         if any(
             found_function.lower().startswith(phrase.lower())
             for phrase in starts_to_avoid
-        ):
+        ) and not found_function == "ThiS family protein":
             move_to_note = True
         if any(
             found_function.lower() == phrase.lower() for phrase in full_desc_to_avoid
@@ -623,6 +623,8 @@ def load_eggnog(file):
                     "Function proposed based on presence of conserved amino acid motif, structural feature or limited homology",
                     "Conserved gene of",
                     "IMG reference gene",
+                    "An automated process has identified a potential problem with this gene model",
+                    "aa) fasta scores E()",
                 ]
                 exclude_eggnog_start = [
                     "of ",
