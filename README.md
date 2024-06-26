@@ -76,7 +76,7 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 
 ### Reference databases
 
-The pipeline needs reference databases in order to work, they take roughly 110G.
+The pipeline needs reference databases in order to work, they take roughly 180G.
 
 | Path                | Size |
 | ------------------- | ---- |
@@ -124,7 +124,7 @@ maximum length is 24 characters;
 
 #### Finding TaxIds
 
-If TaxIds for input genomes are not known, a tool such as [CAT/BAT](https://github.com/MGXlab/CAT_pack) can be used.
+If NCBI taxonomies of input genomes are not known, a tool such as [CAT/BAT](https://github.com/MGXlab/CAT_pack) can be used.
 Follow the [instructions](https://github.com/MGXlab/CAT_pack?tab=readme-ov-file#installation) for getting the tool and downloading the NCBI nr database for it.
 
 If using CAT/BAT, here is the suggested process for making the `mettannotator` input file:
@@ -160,7 +160,7 @@ optional arguments:
                 and should be named {fasta_base_name}.bin2classification.txt
   -o OUTFILE    Path to the file where the output will be saved to.
   --no-prefix   Skip prefix generation and leave the first column of the output file empty for
-                the user to fill out. Defaule: False
+                the user to fill out. Default: False
 ```
 
 For example:
@@ -194,6 +194,8 @@ Input/output options
   --input                            [string]  Path to comma-separated file containing information about the assemblies with the prefix to be used.
   --outdir                           [string]  The output directory where the results will be saved. You have to use absolute paths to storage on Cloud
                                                infrastructure.
+  --fast                             [boolean] Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, and SanntiS won't be executed, saving
+                                               resources and speeding up the pipeline.
   --email                            [string]  Email address for completion summary.
   --multiqc_title                    [string]  MultiQC report title. Printed as page header, used for filename if not otherwise specified.
 
@@ -267,6 +269,16 @@ running `mettannotator` with the `--bakta` flag. `mettannotator` runs Bakta with
 annotation as these are produced by separate tools in the pipeline. Archaeal genomes will continue to be annotated using
 Prokka as Bakta is only intended for annotation of bacterial genomes.
 
+### Fast mode
+
+To reduce the compute time and the amount of resources used, the pipeline can be executed with the `--fast` flag. When
+run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE and SanntiS. This could be a suitable option
+for a first-pass of annotation or if computational resources are limited, however, we recommend running the full version
+of the pipeline whenever possible.
+
+When generating an input file for a fast mode run, it is sufficient to indicate the taxid of the superkingdom (`2` for
+bacteria and `2157` for Archaea) in the "taxid" column rather than the taxid of the lowest known taxon.
+
 <a name="test"></a>
 
 ## Test
@@ -339,7 +351,7 @@ The two main output files for each genome are located in `<OUTDIR>/<PREFIX>/func
 
 - `<PREFIX>_annotations.gff`: annotations produced by all tools merged into a single file
 
-- `<PREFIX>_annotations_with_descriptions.gff`: a version of the GFF file above that includes descriptions of all InterPro terms to make the annotations human-readable.
+- `<PREFIX>_annotations_with_descriptions.gff`: a version of the GFF file above that includes descriptions of all InterPro terms to make the annotations human-readable. Not generated if `--fast` flag was used.
 
 Both files include the genome sequence in the FASTA format at the bottom of the file.
 
@@ -400,6 +412,8 @@ Below is an explanation of how each field in column 3 and 9 of the final GFF fil
 The following logic is used by `mettannotator` to fill out the `product` field in the 9th column of the GFF:
 
 <img src="media/mettannotator-product.png">
+
+If the pipeline is executed with the `--fast` flag, only the output of eggNOG-mapper is used to determine the product of proteins that were labeled as hypothetical by the gene caller.
 
 ### Contents of the tool output folders
 
