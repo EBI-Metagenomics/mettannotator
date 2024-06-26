@@ -23,16 +23,16 @@
           "help_text": "You will need to create a design file with information about the assemblies running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
           "fa_icon": "fas fa-file-csv"
         },
-        "fast": {
-          "type": "boolean",
-          "description": "Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, and SanntiS won't be executed, saving resources and speeding up the pipeline.",
-          "fa_icon": "fas fa-fast-forward"
-        },
         "outdir": {
           "type": "string",
           "format": "directory-path",
           "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
           "fa_icon": "fas fa-folder-open"
+        },
+        "fast": {
+          "type": "boolean",
+          "description": "Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, and SanntiS won't be executed, saving resources and speeding up the pipeline.",
+          "fa_icon": "fas fa-fast-forward"
         },
         "email": {
           "type": "string",
