@@ -223,9 +223,6 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "uncharacterised protein conserved in ",
             "Uncharacterised protein family",
             "Uncharacterized protein family",
-            "protein of unknown function",
-            "family of unknown function",
-            "domain of unknown function",
             "short repeat of unknown function"
             "hmm "
             "protein of uncharacterised function",
@@ -261,13 +258,19 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "conserved protein",
             "Uncharacterised conserved protein",
             "conserved domain",
+            "protein of unknown function",
+            "family of unknown function",
+            "domain of unknown function",
         ]
         if any(phrase.lower() in found_function.lower() for phrase in text_to_avoid):
             move_to_note = True
-        if any(
-            found_function.lower().startswith(phrase.lower())
-            for phrase in starts_to_avoid
-        ) and not found_function == "ThiS family protein":
+        if (
+            any(
+                found_function.lower().startswith(phrase.lower())
+                for phrase in starts_to_avoid
+            )
+            and not found_function == "ThiS family protein"
+        ):
             move_to_note = True
         if any(
             found_function.lower() == phrase.lower() for phrase in full_desc_to_avoid
@@ -278,11 +281,12 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "tigr"
         ):
             move_to_note = True
-        # if length is 1 word and it's a DUF, move to note
-        if len(found_function.split(" ")) == 1 and "DUF" in found_function:
-            move_to_note = True
         # Move records that are InterPro IDs with no/little other information to note
-        if len(found_function.split(" ")) < 5 and "InterPro" in found_function and "IPR" in found_function:
+        if (
+            len(found_function.split(" ")) < 5
+            and "InterPro" in found_function
+            and "IPR" in found_function
+        ):
             move_to_note = True
         if move_to_note:
             col9_dict = move_function_to_note(found_function, col9_dict)
@@ -733,6 +737,12 @@ def clean_up_eggnog_function(func_description):
         )
     if func_description.lower() == "membrane":
         func_description = "membrane protein"
+    if len(func_description.split(" ")) == 1 and "DUF" in func_description:
+        func_description = func_description.replace("(", "").replace(")", "")
+        if func_description.startswith("DUF"):
+            func_description = func_description + " domain-containing protein"
+    if all(text in func_description.lower() for text in ["duf", "domain of unknown function"]):
+        func_description = cleanup_duf(func_description)
     return func_description
 
 
@@ -795,6 +805,16 @@ def load_ipr(file, ipr_types, ipr_levels):
                 ipr_description = "-"
             if db == "PANTHER":
                 sig_description = clean_panther(sig_description)
+            if all(
+                text in sig_description.lower()
+                for text in ["duf", "domain of unknown function"]
+            ):
+                sig_description = cleanup_duf(sig_description)
+            if all(
+                text in ipr_description.lower()
+                for text in ["duf", "domain of unknown function"]
+            ):
+                ipr_description = cleanup_duf(ipr_description)
             if sig_description == "-" and ipr_description == "-":
                 continue
             perc_match = (int(end) - int(start)) / int(len)
@@ -923,6 +943,15 @@ def reformat_domain(string):
         return string.replace("domain", "domain-containing protein")
     else:
         return string
+
+
+def cleanup_duf(description):
+    if len(description.split(' ')) == 5:  # there is no other text except for DUF and domain of unknown function
+        pattern = r'\bDUF\d+\b'
+        match = re.search(pattern, description)
+        if match:
+            description = match.group() + " domain-containing protein"
+    return description
 
 
 def clean_panther(sig_description):
