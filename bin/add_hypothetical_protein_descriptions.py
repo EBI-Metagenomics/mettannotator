@@ -794,13 +794,13 @@ def load_ipr(file, ipr_types, ipr_levels):
             if db in ["ProSiteProfiles", "Coils", "MobiDBLite", "PRINTS"]:
                 continue
             if (
-                sig_description.lower == "uncharacterized"
-                or sig_description.lower == "uncharacterised"
+                sig_description.lower() == "uncharacterized"
+                or sig_description.lower() == "uncharacterised"
             ):
                 sig_description = "-"
             if (
-                ipr_description.lower == "uncharacterized"
-                or ipr_description.lower == "uncharacterised"
+                ipr_description.lower() == "uncharacterized"
+                or ipr_description.lower() == "uncharacterised"
             ):
                 ipr_description = "-"
             if db == "PANTHER":
