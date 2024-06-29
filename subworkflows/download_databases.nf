@@ -62,7 +62,7 @@ workflow DOWNLOAD_DATABASES {
 
         if (defense_finder_dir.exists()) {
             log.info("Defense Finder models exists, or at least the expected folder.")
-            defense_finder_dir_db = tuple(
+            defense_finder_db = tuple(
                 defense_finder_dir,
                 file("${defense_finder_dir}/VERSION.txt", checkIfExists: true).text // the DB version
             )
