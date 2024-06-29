@@ -34,6 +34,11 @@
           "description": "Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, and SanntiS won't be executed, saving resources and speeding up the pipeline.",
           "fa_icon": "fas fa-fast-forward"
         },
+        "bakta": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes."
+        },
         "email": {
           "type": "string",
           "description": "Email address for completion summary.",
@@ -322,11 +327,5 @@
     {
       "$ref": "#/definitions/generic_options"
     }
-  ],
-  "properties": {
-    "bakta": {
-      "type": "boolean",
-      "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes."
-    }
-  }
+  ]
 }

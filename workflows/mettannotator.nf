@@ -100,7 +100,7 @@ workflow METTANNOTATOR {
 
     if (params.dbs) {
         // Download databases (if needed) //
-        DOWNLOAD_DATABASES(params.bakta)
+        DOWNLOAD_DATABASES()
 
         amrfinder_plus_db = DOWNLOAD_DATABASES.out.amrfinder_plus_db
 
