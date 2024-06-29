@@ -794,13 +794,13 @@ def load_ipr(file, ipr_types, ipr_levels):
             if db in ["ProSiteProfiles", "Coils", "MobiDBLite", "PRINTS"]:
                 continue
             if (
-                sig_description.lower == "uncharacterized"
-                or sig_description.lower == "uncharacterised"
+                sig_description.lower() == "uncharacterized"
+                or sig_description.lower() == "uncharacterised"
             ):
                 sig_description = "-"
             if (
-                ipr_description.lower == "uncharacterized"
-                or ipr_description.lower == "uncharacterised"
+                ipr_description.lower() == "uncharacterized"
+                or ipr_description.lower() == "uncharacterised"
             ):
                 ipr_description = "-"
             if db == "PANTHER":
@@ -861,10 +861,10 @@ def save_to_dict(
 ):
     entry = res_dict.setdefault(acc, {}).setdefault(ipr_type, {}).setdefault(db, {})
 
-    if "level" in entry and type(level) == int:
+    if "level" in entry and isinstance(entry["level"], int):
         # For Family and Domain entries, prioritise replacement with a lower level term rather than a better percent
         # match. Lower level has a higher numerical value (level 2 is lower than 0). Only replace with a better
-        # percent match of the level is not lower.
+        # percent match if the level is not lower.
         if (ipr_type in ["Family", "Domain"] and level > entry["level"]) or (
             perc_match > entry["match"] and level == entry["level"]
         ):
