@@ -741,7 +741,10 @@ def clean_up_eggnog_function(func_description):
         func_description = func_description.replace("(", "").replace(")", "")
         if func_description.startswith("DUF"):
             func_description = func_description + " domain-containing protein"
-    if all(text in func_description.lower() for text in ["duf", "domain of unknown function"]):
+    if all(
+        text in func_description.lower()
+        for text in ["duf", "domain of unknown function"]
+    ):
         func_description = cleanup_duf(func_description)
     return func_description
 
@@ -946,8 +949,10 @@ def reformat_domain(string):
 
 
 def cleanup_duf(description):
-    if len(description.split(' ')) == 5:  # there is no other text except for DUF and domain of unknown function
-        pattern = r'\bDUF\d+\b'
+    if (
+        len(description.split(" ")) == 5
+    ):  # there is no other text except for DUF and domain of unknown function
+        pattern = r"\bDUF\d+\b"
         match = re.search(pattern, description)
         if match:
             description = match.group() + " domain-containing protein"
