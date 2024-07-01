@@ -127,7 +127,7 @@ workflow DOWNLOAD_DATABASES {
         }
 
         if (params.bakta) {
-            if (bakta_db.exists()) {
+            if (bakta_dir.exists()) {
                 log.info("Bakta database exists, or at least the expected folders.")
                 bakta_db = tuple(
                     bakta_dir,
