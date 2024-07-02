@@ -62,7 +62,7 @@ workflow DOWNLOAD_DATABASES {
 
         if (defense_finder_dir.exists()) {
             log.info("Defense Finder models exists, or at least the expected folder.")
-            defense_finder_dir_db = tuple(
+            defense_finder_db = tuple(
                 defense_finder_dir,
                 file("${defense_finder_dir}/VERSION.txt", checkIfExists: true).text // the DB version
             )
@@ -106,7 +106,7 @@ workflow DOWNLOAD_DATABASES {
 
         if (eggnog_data_dir.exists()) {
             log.info("EggNOG mapper database exists, or at least the expected folder.")
-            eggnog_data = tuple(
+            eggnog_db = tuple(
                 eggnog_data_dir,
                 file("${eggnog_data_dir}/VERSION.txt", checkIfExists: true).text
             )
@@ -126,15 +126,17 @@ workflow DOWNLOAD_DATABASES {
             )
         }
 
-        if (bakta_db.exists()) {
-            log.info("Bakta database exists, or at least the expected folders.")
-            bakta_db = tuple(
-                bakta_dir,
-                file("${bakta_dir}/VERSION.txt", checkIfExists: true).text
-            )
-        } else {
-            BAKTA_GETDB()
-            bakta_db = BAKTA_GETDB.out.bakta_db.first()
+        if (params.bakta) {
+            if (bakta_dir.exists()) {
+                log.info("Bakta database exists, or at least the expected folders.")
+                bakta_db = tuple(
+                    bakta_dir,
+                    file("${bakta_dir}/VERSION.txt", checkIfExists: true).text
+                )
+            } else {
+                BAKTA_GETDB()
+                bakta_db = BAKTA_GETDB.out.bakta_db.first()
+            }
         }
     emit:
         amrfinder_plus_db = amrfinder_plus_db

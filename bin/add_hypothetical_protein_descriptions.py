@@ -16,20 +16,29 @@
 #
 
 import argparse
+import logging
 import re
+import sys
+
+logging.basicConfig(level=logging.INFO)
 
 EVALUE_CUTOFF = 1e-10
 EGGNOG_DESCRIPTION_LENGTH_LIMIT = 12
+EGGNOG_NOTE_LENGTH_LIMIT = 70
 MINIMUM_IPR_MATCH = 0.10
 
 
 def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile):
     eggnog_info = load_eggnog(eggnog_file)
-    levels = load_hierarchy(hierarchy_file)
-    ipr_types = load_ipr_types(ipr_types_file)
-    ipr_info, ipr_memberdb_only, ipr_leveled_info = load_ipr(
-        ipr_file, ipr_types, levels
-    )
+    if ipr_file:
+        levels = load_hierarchy(hierarchy_file)
+        ipr_types = load_ipr_types(ipr_types_file)
+        ipr_info, ipr_memberdb_only, ipr_leveled_info = load_ipr(
+            ipr_file, ipr_types, levels
+        )
+    else:
+        ipr_info = dict()
+        ipr_memberdb_only = dict()
     gene_caller = "Prokka"
     fasta_flag = False
     with open(infile, "r") as file_in, open(outfile, "w") as file_out:
@@ -65,11 +74,16 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                                             found_function,
                                             function_source,
                                             attributes_dict,
-                                            gene_caller
+                                            gene_caller,
                                         )
                                     )
                             found_function = escape_reserved_characters(found_function)
                             attributes_dict["product"] = found_function
+                            if (
+                                gene_caller == "Bakta"
+                                and attributes_dict["Name"] == "hypothetical protein"
+                            ):
+                                attributes_dict["Name"] = found_function
                             attributes_dict = insert_product_source(
                                 attributes_dict, function_source
                             )
@@ -130,10 +144,19 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             " to be ",
             " does ",
             "probably ",
-            "might be ",
+            "possibly",
+            "might ",
             "in addition to",
             "evidence by homology",
             " that ",
+            "cleaves ",
+            "most likely",
+            "fasta scores",
+            "typically",
+            "Curated by",
+            "identical to residues",
+            "shows ",
+            "seems ",
         ]
         starts_to_avoid = [
             "mediates ",
@@ -141,10 +164,16 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "reduces ",
             "located ",
             "controls ",
+            "due to ",
+            "during ",
             "contacts ",
             "conducts ",
             "binds ",
+            "destroys ",
+            "displays ",
             "transfers ",
+            "effects ",
+            "affects ",
             "this ",
             "makes ",
             "introduces ",
@@ -153,9 +182,13 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "hydrolyses ",
             "initiates ",
             "required for ",
+            "required during ",
             "recognizes ",
             "recognises ",
             "has ",
+            "is ",
+            "it ",
+            "its ",
             "functions ",
             "enhances ",
             "confers ",
@@ -165,12 +198,94 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
             "evidence ",
             "represses ",
             "related to",
+            "best ",
+            "can ",
+            "enables ",
+            "encoded ",
+            "encodes ",
+            "excises ",
+            "exhibits ",
+            "facilitates ",
+            "found ",
+            "forms ",
+            "including ",
+            "in ",
+            "modulates ",
+            "participates ",
+            "there are ",
+            "the result ",
+            "thought ",
+            "to ",
+            "when ",
+            "which ",
+            "protein conserved in ",
+            "uncharacterized protein conserved in ",
+            "uncharacterised protein conserved in ",
+            "Uncharacterised protein family",
+            "Uncharacterized protein family",
+            "short repeat of unknown function"
+            "hmm "
+            "protein of uncharacterised function",
+            "once ",
+            "now ",
+            "not ",
+            "by ",
+            "as ",
+            "works ",
+            "upon ",
+            "specifically",
+            "Some similarities",
+            "provides ",
+            "promotes ",
+            "possible ",
+            "necessary for ",
+            "Identified ",
+            "contains ",
+            "causes ",
+            "Best Blast",
+            "believed",
+            "because",
+            "Although",
+            "Also ",
+            "allows ",
+            "Aids ",
+            "After ",
+            "Adds ",
+        ]
+        full_desc_to_avoid = [
+            "PFAM conserved",
+            "Conserved hypothetical protein",
+            "conserved protein",
+            "Uncharacterised conserved protein",
+            "conserved domain",
+            "protein of unknown function",
+            "family of unknown function",
+            "domain of unknown function",
         ]
         if any(phrase.lower() in found_function.lower() for phrase in text_to_avoid):
             move_to_note = True
+        if (
+            any(
+                found_function.lower().startswith(phrase.lower())
+                for phrase in starts_to_avoid
+            )
+            and not found_function == "ThiS family protein"
+        ):
+            move_to_note = True
         if any(
-            found_function.lower().startswith(phrase.lower())
-            for phrase in starts_to_avoid
+            found_function.lower() == phrase.lower() for phrase in full_desc_to_avoid
+        ):
+            move_to_note = True
+        # if  length is 1 word and looks like this: tigr02436, move to note
+        if len(found_function.split(" ")) == 1 and found_function.lower().startswith(
+            "tigr"
+        ):
+            move_to_note = True
+        # Move records that are InterPro IDs with no/little other information to note
+        if (
+            len(found_function.split(" ")) < 5
+            and "InterPro" in found_function
+            and "IPR" in found_function
         ):
             move_to_note = True
         if move_to_note:
@@ -252,7 +367,9 @@ def insert_product_source(my_dict, source):
     )
 
 
-def get_function(acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only, gene_caller):
+def get_function(
+    acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only, gene_caller
+):
     """
     Identify function by carrying it over from a db match. The following priority is used:
     Priority 1: UniFIRE protein recommended full name
@@ -369,7 +486,9 @@ def get_best_match(ipr_dict):
                 best_level = ipr_dict[db]["level"]
                 highest_match = dict()
                 highest_match[db] = ipr_dict[db]
-    if "Pfam" not in highest_match and best_fraction > 0.20:  # there is room to reduce best match
+    if (
+        "Pfam" not in highest_match and best_fraction > 0.20
+    ):  # there is room to reduce best match
         if (
             "Pfam" in ipr_dict
             and best_fraction - ipr_dict["Pfam"]["match"] < 0.10
@@ -421,21 +540,160 @@ def load_eggnog(file):
                     "psort location",
                     "may contain a frame shift",
                     "annotation was generated",
+                    "no Hp match",
+                    "No similarity found",
+                    "No significant database",
+                    "No significant BLAST",
+                    "open reading frame",
+                    "Blast hits to",
                 ]
                 exclude_eggnog_full = [
                     "-",
                     "domain, protein",
+                    "domain protein",
+                    "domain, family member",
+                    "domain) protein",
+                    "domain) containing",
+                    "domain only",
+                    "protein domain containing",
+                    "Encoded by",
                     "Family of unknown function",
                     "Domain of unknown function",
                     "Protein of unknown function",
                     "Uncharacterised protein family",
                     "Uncharacterized protein family",
+                    "by glimmer",
+                    "by glimmer2",
+                    "by glimmer3",
+                    "by sequence",
+                    "by modhmm",
+                    "by jigsaw",
+                    "by TMHMM2.0 at aa",
+                    "by MetaGeneAnnotator",
+                    "by GeneMark",
+                    "component",
+                    "Family of",
+                    "Family membership",
+                    "family member",
+                    "superfamily protein",
+                    "superfamily. Protein",
+                    "superfamily",
+                    "superfamily, member",
+                    "I and II",
+                    "implicated in the recycling of the",
+                    "manually curated",
+                    "multi-drug",
+                    "protein involved in",
+                    "Alternative locus ID",
+                    "amino acid",
+                    "Weak similarity to UniProt",
+                    "overlaps another CDS with the same product name",
+                    "No homology to any previously reported sequences",
+                    "There are 9 addittional ORFs identical to this one",
+                    "Product inferred by homology to UniProt",
+                    "protein domain associated with",
+                    "acid) synthase",
+                    "unnamed protein",
+                    "this gene contains a nucleotide ambiguity which may be the result of a sequencing error",
+                    "source UniProtKB",
+                    "some similarities with uniprot",
+                    "silverDB",
+                    "sequence",
+                    "protein).. Source PGD",
+                    "protein). Source PGD",
+                    "protein)-related protein",
+                    "protein)-like",
+                    "protein with multiple",
+                    "previously reported",
+                    "multiple",
+                    "molecule",
+                    "function. Source PGD",
+                    "function",
+                    "essential",
+                    "electron",
+                    "containing protein",
+                    "chromosome",
+                    "Highly divergent",
+                    "Belongs to the",
+                    "as a",
+                    "6) homolog",
+                    "Source PGD",
+                    "protein.. Source PGD",
+                    "gene. Source PGD",
+                    "family protein. Source PGD",
+                    "a. Source PGD",
+                    "-domain-containing protein",
+                    "Corresponds to locus_tag",
+                    "Function proposed based on presence of conserved amino acid motif, structural feature or limited homology",
+                    "Conserved gene of",
+                    "IMG reference gene",
+                    "An automated process has identified a potential problem with this gene model",
+                    "aa) fasta scores E()",
                 ]
-                if all(
-                    phrase.lower() not in cols[7].lower()
-                    for phrase in exclude_eggnog_partial
-                ) and all(
-                    phrase.lower() != cols[7].lower() for phrase in exclude_eggnog_full
+                exclude_eggnog_start = [
+                    "of ",
+                    "but ",
+                    "But ",
+                    "however",
+                    "However",
+                    "to ",
+                    "with ",
+                    "which ",
+                    "thus ",
+                    "then ",
+                    "that ",
+                    "or ",
+                    "more specifically ",
+                    "due ",
+                    "deleted ",
+                    "bases in ",
+                    "are ",
+                    "and ",
+                    "And ",
+                    "and, ",
+                    "across ",
+                    "aa, and",
+                    "aa)",
+                    "aa and ",
+                    "Best DB hits BLAST",
+                ]
+                exclude_eggnog_end = [
+                    " and",
+                    " which",
+                    " with",
+                    " to",
+                    " of",
+                    " is",
+                    " the",
+                    " for",
+                    " in",
+                    " or",
+                    " a",
+                ]
+                patterns = [
+                    r"^[0-9]+[.)]* Source PGD$",  # e.g., "2). Source PGD"
+                    r"^[0-9]+ homolog$",  # e.g., "2 homolog"
+                    r"^[0-9]+ like [0-9]+$",  # e.g., "2 like 1"
+                    r"^multiple [0-9]+$",  # e.g., "multiple 2"
+                    r"^molecule [0-9]+$",  # e.g., "molecule 2"
+                ]
+                if (
+                    all(
+                        phrase.lower() not in cols[7].lower()
+                        for phrase in exclude_eggnog_partial
+                    )
+                    and all(
+                        phrase.lower() != cols[7].lower()
+                        for phrase in exclude_eggnog_full
+                    )
+                    and not any(
+                        cols[7].startswith(phrase) for phrase in exclude_eggnog_start
+                    )
+                    and not any(
+                        cols[7].endswith(phrase) for phrase in exclude_eggnog_end
+                    )
+                    and not any(re.match(p, cols[7]) for p in patterns)
+                    and not len(cols[7].split(" ")) > EGGNOG_NOTE_LENGTH_LIMIT
                 ):
                     function = cols[7]
                     # trim function from the left if it doesn't start with a letter or a digit
@@ -449,11 +707,12 @@ def load_eggnog(file):
 
 
 def clean_up_eggnog_function(func_description):
-    # remove initial non-alphanumeric characters
-    for i, char in enumerate(func_description):
-        if char.isalnum():
-            func_description = func_description[i:]
-            break
+    # remove initial non-alphanumeric characters except an opening bracket
+    if not func_description.startswith("(") and not func_description[0].isalnum():
+        for i, char in enumerate(func_description):
+            if char.isalnum() or char == "(":
+                func_description = func_description[i:]
+                break
     if (
         func_description.lower().startswith("belongs to the")
         and len(func_description.split()) < EGGNOG_DESCRIPTION_LENGTH_LIMIT
@@ -465,6 +724,28 @@ def clean_up_eggnog_function(func_description):
     )
     if func_description.endswith("ase activity") and len(func_description.split()) < 5:
         func_description = func_description.replace("ase activity", "ase-like protein")
+    if "kinase" in func_description.lower():
+        # replace multiple occurrences of the word kinase
+        func_description = re.sub(
+            r"\b(kinase)(\s+\1)+\b", "kinase", func_description, flags=re.IGNORECASE
+        )
+    if func_description.startswith("activity. It is involved in the biological"):
+        func_description = re.sub(
+            "activity. It is involved in the biological",
+            "involved in the biological",
+            func_description,
+        )
+    if func_description.lower() == "membrane":
+        func_description = "membrane protein"
+    if len(func_description.split(" ")) == 1 and "DUF" in func_description:
+        func_description = func_description.replace("(", "").replace(")", "")
+        if func_description.startswith("DUF"):
+            func_description = func_description + " domain-containing protein"
+    if all(
+        text in func_description.lower()
+        for text in ["duf", "domain of unknown function"]
+    ) or re.match(r"^Pfam:DUF\d+$", func_description):
+        func_description = cleanup_duf(func_description)
     return func_description
 
 
@@ -516,17 +797,27 @@ def load_ipr(file, ipr_types, ipr_levels):
             if db in ["ProSiteProfiles", "Coils", "MobiDBLite", "PRINTS"]:
                 continue
             if (
-                sig_description.lower == "uncharacterized"
-                or sig_description.lower == "uncharacterised"
+                sig_description.lower() == "uncharacterized"
+                or sig_description.lower() == "uncharacterised"
             ):
                 sig_description = "-"
             if (
-                ipr_description.lower == "uncharacterized"
-                or ipr_description.lower == "uncharacterised"
+                ipr_description.lower() == "uncharacterized"
+                or ipr_description.lower() == "uncharacterised"
             ):
                 ipr_description = "-"
             if db == "PANTHER":
                 sig_description = clean_panther(sig_description)
+            if all(
+                text in sig_description.lower()
+                for text in ["duf", "domain of unknown function"]
+            ):
+                sig_description = cleanup_duf(sig_description)
+            if all(
+                text in ipr_description.lower()
+                for text in ["duf", "domain of unknown function"]
+            ):
+                ipr_description = cleanup_duf(ipr_description)
             if sig_description == "-" and ipr_description == "-":
                 continue
             perc_match = (int(end) - int(start)) / int(len)
@@ -573,10 +864,10 @@ def save_to_dict(
 ):
     entry = res_dict.setdefault(acc, {}).setdefault(ipr_type, {}).setdefault(db, {})
 
-    if "level" in entry and type(level) == int:
+    if "level" in entry and isinstance(entry["level"], int):
         # For Family and Domain entries, prioritise replacement with a lower level term rather than a better percent
         # match. Lower level has a higher numerical value (level 2 is lower than 0). Only replace with a better
-        # percent match of the level is not lower.
+        # percent match if the level is not lower.
         if (ipr_type in ["Family", "Domain"] and level > entry["level"]) or (
             perc_match > entry["match"] and level == entry["level"]
         ):
@@ -606,7 +897,7 @@ def escape_reserved_characters(string):
     reserved_characters = [";", "=", "&"]
     for ch in reserved_characters:
         if ch in string:
-            if ch == ';':
+            if ch == ";":
                 string = string.replace(ch, "/")
             else:
                 string = string.replace(ch, "\{}".format(ch))
@@ -657,6 +948,23 @@ def reformat_domain(string):
         return string
 
 
+def cleanup_duf(description):
+    duf = None
+    # Check if description contains only 5 words and contains DUF followed by digits
+    if len(description.split()) == 5:
+        match = re.search(r"\bDUF\d+\b", description)
+        if match:
+            duf = match.group()
+
+    # Check if description matches "Pfam:DUF<digits>"
+    elif re.match(r"^Pfam:DUF\d+$", description):
+        duf = description.split(":")[1]
+
+    if duf:
+        description = duf + " domain-containing protein"
+    return description
+
+
 def clean_panther(sig_description):
     starts_to_exclude = [
         "meiotically up-regulated gene",
@@ -687,19 +995,19 @@ def parse_args():
         )
     )
     parser.add_argument(
+        "--ipr-output",
+        required=False,
+        help="The path to the TSV file produced by InterProScan.",
+    )
+    parser.add_argument(
         "--ipr-entries",
-        required=True,
-        help="The path to the entries.list file from InterPro.",
+        required=False,
+        help="The path to the entries.list file from InterPro. Required if --ipr-output is provided.",
     )
     parser.add_argument(
         "--ipr-hierarchy",
-        required=True,
-        help="The path to the ParentChildTreeFile.txt file from InterPro.",
-    )
-    parser.add_argument(
-        "--ipr-output",
-        required=True,
-        help="The path to the TSV file produced by InterProScan.",
+        required=False,
+        help="The path to the ParentChildTreeFile.txt file from InterPro. Required if --ipr-output is provided.",
     )
     parser.add_argument(
         "--eggnog-output",
@@ -723,6 +1031,14 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    if args.ipr_output:
+        if not args.ipr_entries or not args.ipr_hierarchy:
+            sys.exit(
+                "If parsing of InterProScan output is required, both --ipr-hierarchy and --ipr-entries must be "
+                "provided."
+            )
+    else:
+        logging.info("InterProScan output is not provided, will proceed without.")
     main(
         args.ipr_entries,
         args.ipr_output,

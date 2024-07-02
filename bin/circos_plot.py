@@ -13,7 +13,7 @@ from matplotlib.patches import Patch
 logging.basicConfig(level=logging.INFO)
 
 
-def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, dpi):
+def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, skip_sanntis, dpi):
     modified_infile = remove_escaped_characters(infile)
     gff = Gff(modified_infile)
     seqid2size = gff.get_seqid2size()
@@ -39,13 +39,19 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, dpi):
             if len(sector.name[:contig_trim]) > 24:
                 print_contigs = False
     if not print_contigs:
-        logging.info("Not printing contig labels because they are too long. Rerun the script with the "
-                     "--contig-trim flag to truncate the labels if you would like them printed.")
+        logging.info(
+            "Not printing contig labels because they are too long. Rerun the script with the "
+            "--contig-trim flag to truncate the labels if you would like them printed."
+        )
     for sector in circos.sectors:
         if print_contigs:
             # Plot contig labels
             sector.text(
-                sector.name[:contig_trim], orientation="vertical", r=110, size=6, color="dimgrey"
+                sector.name[:contig_trim],
+                orientation="vertical",
+                r=110,
+                size=6,
+                color="dimgrey",
             )
         # Plot scale
         position_track = sector.add_track((99, 100))
@@ -55,7 +61,8 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, dpi):
         if sector.size > minor_ticks_interval:
             if sector.size >= minor_ticks_interval * 10:
                 position_track.xticks_by_interval(
-                    major_ticks_interval, label_formatter=lambda v: f"{v / 10 ** 6:.1f} Mb"
+                    major_ticks_interval,
+                    label_formatter=lambda v: f"{v / 10 ** 6:.1f} Mb",
                 )
             else:
                 position_track.xticks_by_interval(
@@ -76,8 +83,9 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, dpi):
         bgc_track_antismash.axis(fc="none", ec="tomato", ls="dashdot", lw=0.15)
         bgc_track_gecco = sector.add_track((76, 78), r_pad_ratio=0.1)
         bgc_track_gecco.axis(fc="none", ec="lightsalmon", ls="dashdot", lw=0.15)
-        bgc_track_sanntis = sector.add_track((74, 76), r_pad_ratio=0.1)
-        bgc_track_sanntis.axis(fc="none", ec="firebrick", ls="dashdot", lw=0.15)
+        if not skip_sanntis:
+            bgc_track_sanntis = sector.add_track((74, 76), r_pad_ratio=0.1)
+            bgc_track_sanntis.axis(fc="none", ec="firebrick", ls="dashdot", lw=0.15)
         dbcan_track = sector.add_track((68, 70), r_pad_ratio=0.1)
         dbcan_track.axis(fc="none", ec="forestgreen", ls="dashdot", lw=0.15)
         amr_track = sector.add_track((62, 64), r_pad_ratio=0.1)
@@ -98,8 +106,9 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, dpi):
                     bgc_track_antismash.genomic_features([feature], fc="tomato")
                 if "gecco_bgc_type" in feature.qualifiers:
                     bgc_track_gecco.genomic_features([feature], fc="lightsalmon")
-                if "nearest_MiBIG" in feature.qualifiers:
-                    bgc_track_sanntis.genomic_features([feature], fc="firebrick")
+                if not skip_sanntis:
+                    if "nearest_MiBIG" in feature.qualifiers:
+                        bgc_track_sanntis.genomic_features([feature], fc="firebrick")
                 if "dbcan_prot_type" in feature.qualifiers:
                     dbcan_track.genomic_features([feature], fc="forestgreen")
                 if "amrfinderplus_scope" in feature.qualifiers:
@@ -134,11 +143,12 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, dpi):
         Patch(color="darkmagenta", label="RNA"),
         Patch(color="tomato", label="BGCs (antiSMASH)"),
         Patch(color="lightsalmon", label="BGCs (GECCO)"),
-        Patch(color="firebrick", label="BGCs (SanntiS)"),
         Patch(color="forestgreen", label="Predicted PULs"),
         Patch(color="dodgerblue", label="AMR genes"),
         Patch(color="orchid", label="Anti-phage defense genes"),
     ]
+    if not skip_sanntis:
+        handles.insert(5, Patch(color="firebrick", label="BGCs (SanntiS)"))
     if mobilome:
         handles = handles + [
             Patch(color="blue", label="Mobilome (phage)"),
@@ -182,7 +192,7 @@ def parse_args():
         type=int,
         default=50,
         help="Only generate a plot if the genome has no more than this number of contigs. Limit introduced because "
-             "highly fragmented genomes do not produce readable plots. Default: 50.",
+        "highly fragmented genomes do not produce readable plots. Default: 50.",
     )
     parser.add_argument(
         "--contig-trim",
@@ -190,7 +200,7 @@ def parse_args():
         default=500,
         type=int,
         help="If the contig length is over 24 characters long, contig names will not be printed on the plot. Specify "
-             "the length to trim the contig names down to if you would like the shorter names printed.",
+        "the length to trim the contig names down to if you would like the shorter names printed.",
     )
     parser.add_argument(
         "--mobilome",
@@ -198,6 +208,13 @@ def parse_args():
         action="store_true",
         default=False,
         help="Plot the mobilome track. Default: False",
+    )
+    parser.add_argument(
+        "--skip-sanntis",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Do not plot the SanntiS track (to be used if SanntiS was not executed). Default: False",
     )
     parser.add_argument(
         "--dpi",
@@ -211,4 +228,13 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.infile, args.outfile, args.prefix, args.limit, args.contig_trim, args.mobilome, args.dpi)
+    main(
+        args.infile,
+        args.outfile,
+        args.prefix,
+        args.limit,
+        args.contig_trim,
+        args.mobilome,
+        args.skip_sanntis,
+        args.dpi,
+    )
