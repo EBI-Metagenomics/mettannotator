@@ -500,6 +500,10 @@ If you would like to contribute to this pipeline, please see the [contributing g
 
 ## Citations
 
+If you use the software, please cite:
+
+Gurbich TA, Beracochea M, De Silva NH, Finn RD. mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies. bioRxiv 2024.07.11.603040; doi: https://doi.org/10.1101/2024.07.11.603040
+
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
 This pipeline uses code developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/master/LICENSE).
