@@ -5,7 +5,13 @@ process UNIFIRE {
     label 'error_retry'
 
     container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2023.4"
-    containerOptions "--bind unifire:/volume"
+    containerOptions {
+        if (workflow.containerEngine == 'singularity') {
+            return "--bind unifire:/volume"
+        } else {
+            return "-v unifire:/volume"
+        }
+    }
 
     input:
     tuple val(meta), path(faa, stageAs: "unifire/*")
