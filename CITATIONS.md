@@ -1,5 +1,9 @@
 # ebi-metagenomics/mettannotator: Citations
 
+## [mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies (pre-print)](https://doi.org/10.1101/2024.07.11.603040)
+
+> Gurbich TA, Beracochea M, De Silva NH, Finn RD. mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies. doi: https://doi.org/10.1101/2024.07.11.603040
+
 ## [MGnify Genomes](https://pubmed.ncbi.nlm.nih.gov/36806692/)
 
 > Gurbich TA, Almeida A, Beracochea M, Burdett T, Burgin J, Cochrane G, Raj S, Richardson L, Rogers AB, Sakharova E, Salazar GA and Finn RD. MGnify Genomes: A Resource for Biome-specific Microbial Genome Catalogues. J Mol Biol. 2023 Jul; 435(14). doi: https://doi.org/10.1016/j.jmb.2023.168016. PubMed PMID:

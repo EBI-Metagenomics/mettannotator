@@ -200,7 +200,9 @@ Input/output options
   --multiqc_title                    [string]  MultiQC report title. Printed as page header, used for filename if not otherwise specified.
 
 Reference databases
-  --dbs                              [string]  Folder for the tools' reference databases used by the pipeline for downloading.
+  --dbs                              [string]  Folder for the tools' reference databases used by the pipeline for downloading. It's important to note that
+                                               mixing the --dbs flag with individual database paths and versions is not allowed; they are mutually
+                                               exclusive.
   --interproscan_db                  [string]  The InterProScan reference database, ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/
   --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.62-94.0]
   --interpro_entry_list              [string]  TSV file listing basic InterPro entry information - the accessions, types and names,
