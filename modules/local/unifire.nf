@@ -5,11 +5,12 @@ process UNIFIRE {
     label 'error_retry'
 
     container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2023.4"
+
     containerOptions {
         if (workflow.containerEngine == 'singularity') {
             return "--bind unifire:/volume"
         } else {
-            return "-v unifire:/volume"
+            return "-v ./unifire:/volume"
         }
     }
 
