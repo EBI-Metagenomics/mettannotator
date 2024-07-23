@@ -264,6 +264,18 @@ nextflow run ebi-metagenomics/mettannotator \
 > provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
 > see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
+#### Local execution
+
+The pipeline can be run on a desktop or laptop, with the caveat that it will take a few hours to complete depending on the resources. There is a local profile in the Nextflow config that limits the total resources the pipeline can use to 8 cores and 12 GB of RAM. In order to run it (Docker or Singularity are still required):
+
+```bash
+nextflow run ebi-metagenomics/mettannotator \
+   -profile local,<docker or singulairty> \
+   --input assemblies_sheet.csv \
+   --outdir <OUTDIR> \
+   --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
+```
+
 ### Gene caller choice
 
 By default, `mettannotator` uses Prokka to identify protein-coding genes. Users can choose to use Bakta instead by
