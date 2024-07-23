@@ -62,7 +62,7 @@
         "dbs": {
           "type": "string",
           "format": "directory-path",
-          "description": "Folder for the tools' reference databases used by the pipeline for downloading.",
+          "description": "Folder for the tools' reference databases used by the pipeline for downloading. It's important to note that mixing the --dbs flag with individual database paths and versions is not allowed; they are mutually exclusive.",
           "help_text": "Set this parameter to trigger the reference database download; otherwise, specify the databases individually."
         },
         "interproscan_db": {

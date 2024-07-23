@@ -11,7 +11,7 @@ process INTERPROSCAN {
         if (workflow.containerEngine == 'singularity') {
             return "--bind ${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"
         } else {
-            return "-v ${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"
+            return "-v ./${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"
         }
     }
 

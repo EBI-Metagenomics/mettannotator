@@ -200,7 +200,9 @@ Input/output options
   --multiqc_title                    [string]  MultiQC report title. Printed as page header, used for filename if not otherwise specified.
 
 Reference databases
-  --dbs                              [string]  Folder for the tools' reference databases used by the pipeline for downloading.
+  --dbs                              [string]  Folder for the tools' reference databases used by the pipeline for downloading. It's important to note that
+                                               mixing the --dbs flag with individual database paths and versions is not allowed; they are mutually
+                                               exclusive.
   --interproscan_db                  [string]  The InterProScan reference database, ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/
   --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.62-94.0]
   --interpro_entry_list              [string]  TSV file listing basic InterPro entry information - the accessions, types and names,
@@ -261,6 +263,18 @@ nextflow run ebi-metagenomics/mettannotator \
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
 > provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
 > see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
+
+#### Local execution
+
+The pipeline can be run on a desktop or laptop, with the caveat that it will take a few hours to complete depending on the resources. There is a local profile in the Nextflow config that limits the total resources the pipeline can use to 8 cores and 12 GB of RAM. In order to run it (Docker or Singularity are still required):
+
+```bash
+nextflow run ebi-metagenomics/mettannotator \
+   -profile local,<docker or singulairty> \
+   --input assemblies_sheet.csv \
+   --outdir <OUTDIR> \
+   --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
+```
 
 ### Gene caller choice
 

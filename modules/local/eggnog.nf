@@ -17,17 +17,25 @@ process EGGNOG_MAPPER {
     path "versions.yml", emit: versions
 
     script:
+    def db_mem_flag = ""
+    /*
+    The required memory of the executor needs to be greater than 44GB
+    to be able to load the eggnog SQLite database into memory.
+    Docs: https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.12#a-few-recipes
+    */
+    if ( task.memory >= 44.GB ) {
+        db_mem_flag = "--dbmem"
+    }
     if ( mode == "mapper" )
         """
         emapper.py -i ${fasta} \
         --database ${eggnog_db_dir}/eggnog.db \
         --dmnd_db ${eggnog_db_dir}/eggnog_proteins.dmnd \
         --data_dir ${eggnog_db_dir} \
-        --dbmem \
         -m diamond \
         --no_file_comments \
         --cpu ${task.cpus} \
-        --no_annot \
+        --no_annot ${db_mem_flag} \
         -o ${meta.prefix}
 
         cat <<-END_VERSIONS > versions.yml
@@ -43,8 +51,7 @@ process EGGNOG_MAPPER {
         --no_file_comments \
         --cpu ${task.cpus} \
         --tax_scope 'prokaryota_broad' \
-        --dbmem \
-        --annotate_hits_table ${annotation_hit_table} \
+        --annotate_hits_table ${annotation_hit_table} ${db_mem_flag} \
         -o ${meta.prefix}
 
         cat <<-END_VERSIONS > versions.yml
