@@ -14,8 +14,7 @@ process AMRFINDER_PLUS {
 
     script:
     """
-    // this is needed as some environments are very picky with the
-    // TMP dir
+    # this is needed as some environments are very picky with the TMP dir
     export TMPDIR="\$PWD/tmp"
     mkdir "\$PWD/tmp"
 

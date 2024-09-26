@@ -18,11 +18,11 @@ process PROKKA {
 
     script:
     """
-    // TMP folder issues in Prokka - https://github.com/tseemann/prokka/issues/402
+    # TMP folder issues in Prokka - https://github.com/tseemann/prokka/issues/402
     export TMPDIR="\$PWD/tmp"
     mkdir "\$PWD/tmp"
 
-    // Disable the Java VM performane gathering tool, for improved performance
+    # Disable the Java VM performane gathering tool, for improved performance
     export JAVA_TOOL_OPTIONS="-XX:-UsePerfData"
 
     cat ${fasta} | tr '-' ' ' > ${meta.prefix}_cleaned.fasta
