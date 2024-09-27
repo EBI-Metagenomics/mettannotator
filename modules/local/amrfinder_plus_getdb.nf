@@ -3,7 +3,9 @@ process AMRFINDER_PLUS_GETDB {
 
     tag "AMR Finder DB 2024-01-31.1"
 
-    container 'quay.io/biocontainers/ncbi-amrfinderplus:3.12.8--h283d18e_0'
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/ncbi-amrfinderplus:3.12.8--h283d18e_0' :
+        'biocontainers/ncbi-amrfinderplus:3.12.8--h283d18e_0' }"
 
     // amrfinder_index won't work if singularity mounts the workdir
     scratch false

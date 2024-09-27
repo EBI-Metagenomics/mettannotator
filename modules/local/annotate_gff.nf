@@ -6,6 +6,9 @@ process ANNOTATE_GFF {
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
+    docker pull quay.io/biocontainers/python:3.8
+    singularity run https://depot.galaxyproject.org/singularity/python:3.8
+
     input:
     tuple val(meta),
         file(gff),

@@ -2,7 +2,9 @@ process DBCAN {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/biocontainers/dbcan:4.1.2--pyhdfd78af_0'
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/dbcan:4.1.2--pyhdfd78af_0' :
+        'biocontainers/dbcan:4.1.2--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(faa), path(gff)

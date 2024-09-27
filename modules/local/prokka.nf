@@ -2,7 +2,9 @@ process PROKKA {
 
     tag "${meta.prefix}"
 
-    container "quay.io/biocontainers/prokka:1.14.6--pl526_0"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/prokka:1.14.6--pl526_0' :
+        'biocontainers/prokka:1.14.6--pl526_0' }"
 
     input:
     tuple val(meta), path(fasta), val(detected_kingdom)

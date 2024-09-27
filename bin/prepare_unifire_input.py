@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright 2023 EMBL - European Bioinformatics Institute
 #
@@ -27,13 +26,11 @@ def main(infile, taxid, outdir):
     check_dir(outdir)
     if not taxid.isdigit():
         sys.exit(
-            "Taxid must consist of digits only. Taxid {} is not valid. Exiting.".format(
-                taxid
-            )
+            f"Taxid must consist of digits only. Taxid {taxid} is not valid. Exiting."
         )
     outfile = "proteins.fasta"
     outpath = os.path.join(outdir, outfile)
-    with open(outpath, "w") as file_out, open(infile, "r") as file_in:
+    with open(outpath, "w") as file_out, open(infile) as file_in:
         for line in file_in:
             if line.startswith(">"):
                 formatted_line = reformat_line(line, taxid)
@@ -53,10 +50,10 @@ def check_dir(directory_path):
 def reformat_line(line, taxid):
     line = line.lstrip(">").strip()
     id, description = line.split(maxsplit=1)
-    description = description.replace("\"", "").replace("'", "").replace("‘", "").replace("’", "")
-    formatted_line = ">tr|{id}|{description} OX={taxid}\n".format(
-        id=id, description=description, taxid=taxid
+    description = (
+        description.replace('"', "").replace("'", "").replace("‘", "").replace("’", "")
     )
+    formatted_line = f">tr|{id}|{description} OX={taxid}\n"
     return formatted_line
 
 
