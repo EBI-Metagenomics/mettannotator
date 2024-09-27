@@ -5,8 +5,8 @@ process ANNOTATE_GFF {
     label 'process_nano'
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'https://depot.galaxyproject.org/singularity/python:3.8' :
-        'biocontainers/python:3.8' }"
+        'https://depot.galaxyproject.org/singularity/python:3.9' :
+        'biocontainers/python:3.9' }"
 
     input:
     tuple val(meta),
