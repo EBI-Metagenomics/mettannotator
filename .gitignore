@@ -1,10 +1,46 @@
+# Ignore Nextflow-specific files, including logs, cache, and temporary files
 .nextflow*
+
+# Ignore Nextflow's work directory where intermediate files are stored
 work/
-data/
+
+# Ignore results directory, as this is typically generated output that can be large and recreated
 results/
+
+# MacOS specific hidden file that stores folder view settings
 .DS_Store
+
 testing/
 testing*
-*.pyc
+
 dbs/
+
 node_modules/
+
+# Optional: ignore any temporary files created by Python or text editors
+__pycache__/  # Python cache directory
+*.pyc
+*.pyo  # Python optimized bytecode files
+*.pkl  # Pickle files (often generated during data processing)
+
+# Ignore any virtual environment directories used to isolate Python dependencies
+venv/
+env/
+*.venv/
+
+# Ignore Jupyter Notebook checkpoints, if notebooks are used for analysis or reporting
+.ipynb_checkpoints/
+
+# Ignore any temporary, swap, or backup files created by editors like Vim or Emacs
+*~
+*.swp
+*.swo
+*.bak
+
+.coverage
+htmlcov/
+*.cover
+reports/
+trace/
+.cache/
+logs/
