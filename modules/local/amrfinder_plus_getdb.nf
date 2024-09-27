@@ -16,7 +16,7 @@ process AMRFINDER_PLUS_GETDB {
     script:
     """
     export TMPDIR="\$PWD/tmp"
-    mkdir "\$PWD/tmp"
+    mkdir -p "\$PWD/tmp"
 
     wget -r -nH --cut-dirs=5 \\
     ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/3.12/2024-01-31.1/

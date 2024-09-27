@@ -16,7 +16,7 @@ process AMRFINDER_PLUS {
     """
     # this is needed as some environments are very picky with the TMP dir
     export TMPDIR="\$PWD/tmp"
-    mkdir "\$PWD/tmp"
+    mkdir -p "\$PWD/tmp"
 
     amrfinder --plus \
     -n ${fna} \
