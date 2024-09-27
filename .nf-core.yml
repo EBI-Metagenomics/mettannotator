@@ -26,6 +26,7 @@ lint:
     - docs/images/nf-core-mettannotator_logo_light.png
     - docs/images/nf-core-mettannotator_logo_dark.png
     - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .gitignore
   nextflow_config: False
     - params.custom_config_version
     - params.custom_config_base
