@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "https://json-schema.org/draft-07/schema",
   "$id": "https://raw.githubusercontent.com/ebi-metagenomics/mettannotator/master/nextflow_schema.json",
   "title": "ebi-metagenomics/mettannotator pipeline parameters",
   "description": "ME TT assembly annotation pipeline",
@@ -309,6 +309,12 @@
         "multiqc_methods_description": {
           "type": "string",
           "description": "Custom MultiQC yaml file containing HTML including a methods description.",
+          "fa_icon": "fas fa-cog"
+        },
+        "singularity_cachedir": {
+          "type": "string",
+          "description:": "The singularity/apptainer cache directory",
+          "default": "",
           "fa_icon": "fas fa-cog"
         }
       }
