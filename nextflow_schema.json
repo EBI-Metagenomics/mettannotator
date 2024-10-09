@@ -36,8 +36,8 @@
         },
         "bakta": {
           "type": "boolean",
-          "default": false,
-          "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes."
+          "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.",
+          "fa_icon": "fas fa-wrench"
         },
         "email": {
           "type": "string",
@@ -313,9 +313,8 @@
         },
         "singularity_cachedir": {
           "type": "string",
-          "description:": "The singularity/apptainer cache directory",
-          "default": "",
-          "fa_icon": "fas fa-cog"
+          "fa_icon": "fab fa-docker",
+          "description": "The singularity/apptainer cache directory"
         }
       }
     }
