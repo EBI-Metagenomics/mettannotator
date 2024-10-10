@@ -15,11 +15,11 @@ Changes in module 'nf-core/bakta/bakta'
 -    tag "$meta.id"
 +    tag "$meta.prefix"
      label 'process_medium'
- 
+
      conda "${moduleDir}/environment.yml"
 @@ -8,22 +8,22 @@
          'biocontainers/bakta:1.9.3--pyhdfd78af_0' }"
- 
+
      input:
 -    tuple val(meta), path(fasta)
 -    path db
@@ -27,7 +27,7 @@ Changes in module 'nf-core/bakta/bakta'
 -    path prodigal_tf
 +    tuple val(meta), path(fasta), path(detected_kingdom)
 +    tuple path(db), val(db_version)
- 
+
      output:
      tuple val(meta), path("${prefix}.embl")             , emit: embl
      tuple val(meta), path("${prefix}.faa")              , emit: faa
@@ -43,10 +43,10 @@ Changes in module 'nf-core/bakta/bakta'
 +    tuple val(meta), path("${prefix}.svg")              , emit: svg
 +    tuple val(meta), path("${prefix}.png")              , emit: png
      path "versions.yml"                                 , emit: versions
- 
+
      when:
 @@ -31,18 +31,22 @@
- 
+
      script:
      def args = task.ext.args   ?: ''
 -    prefix   = task.ext.prefix ?: "${meta.id}"
@@ -71,7 +71,7 @@ Changes in module 'nf-core/bakta/bakta'
 +        --skip-ncrna \\
 +        --skip-ncrna-region \\
 +        --skip-crispr
- 
+
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
 

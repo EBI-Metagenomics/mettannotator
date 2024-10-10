@@ -2,8 +2,8 @@ Changes in module 'nf-core/gecco/run'
 --- modules/nf-core/gecco/run/main.nf
 +++ modules/nf-core/gecco/run/main.nf
 @@ -13,12 +13,12 @@
- 
- 
+
+
      output:
 -    tuple val(meta), path("*.genes.tsv")    , optional: true, emit: genes
 -    tuple val(meta), path("*.features.tsv")                 , emit: features
@@ -17,12 +17,12 @@ Changes in module 'nf-core/gecco/run'
 +    tuple val(meta), path("*clusters*.gff"), optional: true, emit: gff
 +    tuple val(meta), path("*.json"),          optional: true, emit: json
      path "versions.yml"                     , emit: versions
- 
+
      when:
 @@ -39,6 +39,8 @@
          $custom_model \\
          $custom_hmm
- 
+
 +    gecco convert clusters -i ./ --format gff
 +
      cat <<-END_VERSIONS > versions.yml

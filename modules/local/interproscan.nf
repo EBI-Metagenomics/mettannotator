@@ -8,7 +8,7 @@ process INTERPROSCAN {
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.ips:5.62-94.0'
     containerOptions {
-        if (workflow.containerEngine == 'singularity') {
+        if (workflow.containerEngine in ['singularity', 'apptainer']) {
             return "--bind ${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"
         } else {
             return "-v ./${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"

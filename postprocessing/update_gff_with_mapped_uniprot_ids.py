@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
 
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import argparse
-import sys
 import os
-import subprocess
 import re
+import subprocess
+import sys
 
 
 def load_uniprot_descriptions(uniprot_tsv):
     uniprot_descriptions = dict()
     entry_index = None
     protein_name_index = None
-    with open(uniprot_tsv, "r") as file_in:
+    with open(uniprot_tsv) as file_in:
         for line in file_in:
             if line.startswith("Entry"):
                 fields = line.strip().split("\t")
@@ -24,7 +38,9 @@ def load_uniprot_descriptions(uniprot_tsv):
                     sys.exit("Could not get uniprot indices to load descriptions")
             else:
                 fields = line.strip().split("\t")
-                uniprot_descriptions[fields[entry_index]] = escape_reserved_characters(fields[protein_name_index])
+                uniprot_descriptions[fields[entry_index]] = escape_reserved_characters(
+                    fields[protein_name_index]
+                )
     assert len(uniprot_descriptions) > 0, "Uniprot description dictionary is empty."
     return uniprot_descriptions
 
@@ -33,10 +49,10 @@ def escape_reserved_characters(string):
     reserved_characters = [";", "=", "&"]
     for ch in reserved_characters:
         if ch in string:
-            if ch == ';':
+            if ch == ";":
                 string = string.replace(ch, "/")
             else:
-                string = string.replace(ch, "\{}".format(ch))
+                string = string.replace(ch, f"\{ch}")
     return string
 
 
@@ -66,7 +82,7 @@ def run_blast(pipeline_fasta, uniprot_fasta, blast_output):
 
 def extract_best_hits(blast_output):
     best_hits = {}
-    with open(blast_output, "r") as file:
+    with open(blast_output) as file:
         for line in file:
             fields = line.strip().split("\t")
             query_id = fields[0]
@@ -90,13 +106,13 @@ def create_mapping_file(best_hits, mapping_file):
 
 def update_gff_with_mapping(gff_file, mapping_file, output_file, uniprot_descriptions):
     mapping_dict = {}
-    with open(mapping_file, "r") as file:
+    with open(mapping_file) as file:
         next(file)  # Skip header
         for line in file:
             query, result, _, _ = line.strip().split("\t")
             mapping_dict[result] = query
 
-    with open(gff_file, "r") as infile, open(output_file, "w") as outfile:
+    with open(gff_file) as infile, open(output_file, "w") as outfile:
         for line in infile:
             if line.startswith("#"):
                 outfile.write(line)
@@ -116,12 +132,20 @@ def update_gff_with_mapping(gff_file, mapping_file, output_file, uniprot_descrip
                         identifier = identifier[len("CDS:") :]
                     if identifier in mapping_dict:
                         if "Dbxref" in attributes_dict:
-                            attributes_dict["Dbxref"] += f",UniProt:{mapping_dict[identifier]}"
+                            attributes_dict[
+                                "Dbxref"
+                            ] += f",UniProt:{mapping_dict[identifier]}"
                         else:
-                            attributes_dict["Dbxref"] = f"UniProt:{mapping_dict[identifier]}"
+                            attributes_dict["Dbxref"] = (
+                                f"UniProt:{mapping_dict[identifier]}"
+                            )
                         if mapping_dict[identifier] in uniprot_descriptions:
-                            attributes_dict["uniprot_prot_name"] = uniprot_descriptions[mapping_dict[identifier]]
-                        fields[8] = ";".join([f"{key}={value}" for key, value in attributes_dict.items()])
+                            attributes_dict["uniprot_prot_name"] = uniprot_descriptions[
+                                mapping_dict[identifier]
+                            ]
+                        fields[8] = ";".join(
+                            [f"{key}={value}" for key, value in attributes_dict.items()]
+                        )
                 outfile.write("\t".join(fields) + "\n")
 
 
@@ -181,11 +205,7 @@ if __name__ == "__main__":
 
     species = args.species
     if " " in species:
-        sys.exit(
-            "The species parameter {} is invalid. Spaces are not allowed".format(
-                species
-            )
-        )
+        sys.exit(f"The species parameter {species} is invalid. Spaces are not allowed")
     if args.include_description:
         if not args.uniprot_tsv:
             sys.exit("Must provide a UniProt TSV if the --description flag is used")
@@ -213,6 +233,8 @@ if __name__ == "__main__":
 
     # Update GFF with mapping
     if args.include_description:
-        update_gff_with_mapping(gff_file, mapping_file, output_gff_file, uniprot_descriptions)
+        update_gff_with_mapping(
+            gff_file, mapping_file, output_gff_file, uniprot_descriptions
+        )
     else:
         update_gff_with_mapping(gff_file, mapping_file, output_gff_file, dict())

@@ -1,0 +1,5 @@
+pytest==8.3.3
+pytest-workflow==2.1.0
+pytest-datadir==1.5.0
+black==24.8.0
+ruff==0.6.8

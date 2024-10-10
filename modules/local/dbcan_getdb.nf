@@ -2,7 +2,9 @@ process DBCAN_GETDB {
 
     tag "DBCan 4.1.3_V12"
 
-    container 'quay.io/biocontainers/gnu-wget:1.18--h36e9172_9'
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/gnu-wget:1.18--h36e9172_9' :
+        'biocontainers/gnu-wget:1.18--h36e9172_9' }"
 
     publishDir "${params.dbs}", mode: 'copy'
 

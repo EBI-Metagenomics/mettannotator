@@ -3,7 +3,9 @@ process RFAM_GETMODELS {
 
     tag "Rfam models - release 14.9"
 
-    container "quay.io/biocontainers/gnu-wget:1.18--h36e9172_9"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/gnu-wget:1.18--h36e9172_9' :
+        'biocontainers/gnu-wget:1.18--h36e9172_9' }"
 
     publishDir "$params.dbs/rfam_models", mode: 'copy'
 

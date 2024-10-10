@@ -1,6 +1,8 @@
 
 process DETECT_NCRNA {
+
     tag "${meta.prefix}"
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.detect_rrna:v3.2'
 
     input:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright 2024 EMBL - European Bioinformatics Institute
 #
@@ -23,7 +22,7 @@ def main(infile, outfile, liftoff_file, field_from, field_to):
     alias_dictionary = load_aliases(liftoff_file, field_from)
     fasta_flag = False
     fields_to_check = return_fields_to_print_to(field_to)
-    with open(infile, "r") as file_in, open(outfile, "w") as file_out:
+    with open(infile) as file_in, open(outfile, "w") as file_out:
         for line in file_in:
             if line.startswith("#"):
                 if line.startswith("##FASTA"):
@@ -35,14 +34,15 @@ def main(infile, outfile, liftoff_file, field_from, field_to):
                 fields = line.strip().split("\t")
                 if fields[2] in fields_to_check:
                     attributes_dict = dict(
-                        re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", fields[8])
+                        re.split(r"(?<!\\)=", item)
+                        for item in re.split(r"(?<!\\);", fields[8])
                     )
                     if fields[2] == "gene":
                         id = attributes_dict["ID"]
                     else:
                         id = attributes_dict["ID"].split(":")[1]
                     if id in alias_dictionary:
-                        line = line.strip() + ";{}".format(alias_dictionary[id]) + "\n"
+                        line = line.strip() + f";{alias_dictionary[id]}" + "\n"
                 file_out.write(line)
 
 
@@ -55,7 +55,7 @@ def return_fields_to_print_to(field_to):
 
 def load_aliases(liftoff_file, field_from):
     alias_dictionary = dict()
-    with open(liftoff_file, "r") as file_in:
+    with open(liftoff_file) as file_in:
         for line in file_in:
             if line.startswith("#"):
                 continue

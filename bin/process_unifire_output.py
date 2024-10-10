@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-# Copyright 2023 EMBL - European Bioinformatics Institute
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -67,7 +66,7 @@ def combine_and_print(arba_dict, unirule_dict, pirsr_dict, gff, outfile):
 
     fasta_flag = False
     list_of_dicts = [arba_dict, unirule_dict, pirsr_dict]
-    with open(outfile, "w") as file_out, open(gff, "r") as file_in:
+    with open(outfile, "w") as file_out, open(gff) as file_in:
         writer = csv.writer(file_out, delimiter="\t")
         for line in file_in:
             if fasta_flag is True:
@@ -135,7 +134,7 @@ def escape_reserved_characters(combined_dict):
             for ch in reserved_characters:
                 if ch in value:
                     changes_flag = True
-                    value = value.replace(ch, "\{}".format(ch))
+                    value = value.replace(ch, f"\{ch}")
             if changes_flag:
                 remove_values.append(old_value)
                 add_values.append(value)
@@ -165,7 +164,7 @@ def get_id(col9):
 
 def load_pirsr(pirsr):
     results_dict = dict()
-    with open(pirsr, "r") as file_in:
+    with open(pirsr) as file_in:
         for line in file_in:
             if not line.startswith("Evidence"):
                 if any(keyword in line for keyword in ["keyword", "comment.cofactor"]):
@@ -203,7 +202,7 @@ def load_pirsr(pirsr):
 
 def load_unirule_arba(file):
     results_dict = dict()
-    with open(file, "r") as file_in:
+    with open(file) as file_in:
         for line in file_in:
             if not line.startswith("Evidence"):
                 parts = line.strip().split("\t")

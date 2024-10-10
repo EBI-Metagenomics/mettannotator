@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
@@ -29,9 +28,9 @@ logging.basicConfig(level=logging.INFO)
 def main(taxid, include_kingdom, outfile):
     kingdom = "Bacteria"
     if not taxid.isdigit():
-        sys.exit("Invalid format of taxid {}".format(taxid))
+        sys.exit(f"Invalid format of taxid {taxid}")
     try:
-        url = "https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/{}".format(taxid)
+        url = f"https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/{taxid}"
         r = run_request(url)
         res = r.json()
         lineage = res.get("lineage", "")
@@ -46,20 +45,18 @@ def main(taxid, include_kingdom, outfile):
             pass
         else:
             logging.error(
-                "Unknown lineage {}. Reporting default kingdom instead: Bacteria.".format(
-                    lineage
-                )
+                f"Unknown lineage {lineage}. Reporting default kingdom instead: Bacteria."
             )
-    except:
+    except:  # noqa E722
         logging.error(
-            "Unable to identify lineage for taxid {}. "
-            "Reporting default kingdom instead: Bacteria.".format(taxid)
+            f"Unable to identify lineage for taxid {taxid}. "
+            "Reporting default kingdom instead: Bacteria."
         )
-    logging.info("Reporting kingdom {} for taxid {}".format(kingdom, taxid))
+    logging.info(f"Reporting kingdom {kingdom} for taxid {taxid}")
     if outfile:
         if include_kingdom:
             outfile_path, outfile_name = os.path.split(outfile)
-            outfile_new_name = "{}_{}".format(kingdom, outfile_name)
+            outfile_new_name = f"{kingdom}_{outfile_name}"
             outfile = os.path.join(outfile_path, outfile_new_name)
         with open(outfile, "w") as file_out:
             file_out.write(kingdom)
@@ -90,7 +87,7 @@ def parse_args():
     )
     parser.add_argument(
         "--include-kingdom",
-        action='store_true',
+        action="store_true",
         help="Add the kingdom name at the beginning of the file name.",
     )
     parser.add_argument(

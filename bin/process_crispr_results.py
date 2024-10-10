@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-# Copyright 2023 EMBL - European Bioinformatics Institute
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,7 +41,7 @@ def create_gff(
         for gff in gffs:
             filename_base = gff.split("/")[-1].split(".")[0]
             if filename_base in hits:
-                with open(gff, "r") as gff_in:
+                with open(gff) as gff_in:
                     for line in gff_in:
                         if line.startswith("#") or len(line.strip()) == 0:
                             continue
@@ -83,7 +82,7 @@ def fix_capitalisation(line):
 
 
 def remove_leader_attribute(line):
-    """ GFFs produced by CRISPRCasFinder have a "leader" attribute without any value making the GFF invalid"""
+    """GFFs produced by CRISPRCasFinder have a "leader" attribute without any value making the GFF invalid"""
     if ";leader;" in line:
         line = line.replace("leader;", "")
     return line
@@ -107,8 +106,8 @@ def fix_crispr_id(line):
         elif a.startswith("ID="):
             id = a.split("=")[1]
     # swap the values of "name" and "id"
-    fixed_annot = re.sub("ID={}".format(id), "ID={}".format(name), annot)
-    fixed_annot = re.sub("Name={}".format(name), "Name={}".format(id), fixed_annot)
+    fixed_annot = re.sub(f"ID={id}", f"ID={name}", annot)
+    fixed_annot = re.sub(f"Name={name}", f"Name={id}", fixed_annot)
     fields[8] = fixed_annot
     return "\t".join(fields) + "\n"
 
@@ -116,7 +115,7 @@ def fix_crispr_id(line):
 def add_evidence_level(line, evidence_levels):
     crispr_id = get_crispr_id(line)
     try:
-        line = "{}evidence_level={}\n".format(line.strip(), evidence_levels[crispr_id])
+        line = f"{line.strip()}evidence_level={evidence_levels[crispr_id]}\n"
     except Exception:
         logging.error(f"Cannot get evidence level for CRISPR {crispr_id}")
     return line
@@ -183,17 +182,15 @@ def fix_gff_line(line, fasta):
 
 
 def fix_annotation(feature_seq, at_percentage, annotation):
-    annotation = annotation.replace("at%=0;", "at%={};".format(at_percentage))
-    annotation = annotation.replace(
-        "sequence=UNKNOWN", "sequence={}".format(feature_seq)
-    )
+    annotation = annotation.replace("at%=0;", f"at%={at_percentage};")
+    annotation = annotation.replace("sequence=UNKNOWN", f"sequence={feature_seq}")
     return annotation
 
 
 def calc_at_percentage(feature_seq):
     a = feature_seq.upper().count("A")
     t = feature_seq.upper().count("T")
-    return str(int((round((a + t) * 100 / len(feature_seq), 0))))
+    return str(int(round((a + t) * 100 / len(feature_seq), 0)))
 
 
 def check_end_position(contig, end, seq_records):
@@ -211,7 +208,7 @@ def process_tsv(tsv_report, tsv_output):
     hq_hits = list()
     evidence_levels = dict()
     with open(tsv_output, "w") as tsv_out:
-        with open(tsv_report, "r") as tsv_in:
+        with open(tsv_report) as tsv_in:
             for line in tsv_in:
                 # ignore empty lines
                 if len(line.strip()) == 0:
@@ -225,7 +222,7 @@ def process_tsv(tsv_report, tsv_output):
                 # add sequence basename to hits
                 hits.append(parts[2])
                 # make crispr_id that the GFFs use
-                crispr_id = "{}_{}_{}".format(parts[1], parts[5], parts[6])
+                crispr_id = f"{parts[1]}_{parts[5]}_{parts[6]}"
                 # check if evidence level is high (2, 3 or 4)
                 if parts[-1] in ["2", "3", "4"]:
                     # add CRISPR ID (contig_start_end)

@@ -4,7 +4,7 @@ process CRISPRCAS_FINDER {
 
     label 'process_nano'
 
-    container 'quay.io/microbiome-informatics/genomes-pipeline.crisprcasfinder:4.3.2'
+    container 'quay.io/microbiome-informatics/genomes-pipeline.crisprcasfinder:4.3.2patchedv5'
 
     input:
     tuple val(meta), path(fasta)

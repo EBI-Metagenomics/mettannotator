@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import argparse
 import re
 
@@ -10,7 +24,7 @@ def main(mobilome_file, infile, outfile):
         list()
     )  # record which mobilome lines have already been printed to the output file
     fasta_flag = False
-    with open(infile, "r") as file_in, open(outfile, "w") as file_out:
+    with open(infile) as file_in, open(outfile, "w") as file_out:
         previous_contig = ""
         for line in file_in:
             if line.startswith("#"):
@@ -107,9 +121,7 @@ def sanity_check(mobilome_dict, printed_list):
     mobilome_count = sum(len(inner_dict) for inner_dict in mobilome_dict.values())
     assert (
         printed_list_length == mobilome_count
-    ), "The number of mobilome entries added to the GFF does not match the expected count: added {}, expected{}".format(
-        printed_list_length, mobilome_count
-    )
+    ), f"The number of mobilome entries added to the GFF does not match the expected count: added {printed_list_length}, expected{mobilome_count}"
 
 
 def look_for_lines_to_print(mobilome_dict, contig, start, printed_list):
@@ -154,7 +166,7 @@ def check_overlap(dictionary, sequence, start, end):
 
 def load_mobilome(infile):
     mobilome_dict = dict()
-    with open(infile, "r") as file_in:
+    with open(infile) as file_in:
         for line in file_in:
             if line.startswith("#"):
                 if line.startswith("##FASTA"):

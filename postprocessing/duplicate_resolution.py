@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import argparse
 import logging
 import re
@@ -27,14 +41,14 @@ def main(reference, target, outfile, species):
     replacements = dict()  # gene names to change
     replacements_ids = dict()  # changes to make if alias is None
     reverse = list()  # undo some planned changes (remove these from replacements)
-    stats_out = open("{}_stats.txt".format(species), "w")
+    stats_out = open(f"{species}_stats.txt", "w")
     stats_out.write("Gene\tCopy number\tReplaced\tWhy not replaced/ Comment\n")
     for base in dedupl_dict:
         if (
             len(dedupl_dict[base]) > 1
         ):  # there are multiple gene copies, try to deduplicate
             printed_stat = ""
-            printed_stat += "{}\t{}\t".format(base, str(len(dedupl_dict[base])))
+            printed_stat += f"{base}\t{str(len(dedupl_dict[base]))}\t"
             counter += 1
             unknown_counter = 0
             decision_dict = dict()
@@ -55,7 +69,7 @@ def main(reference, target, outfile, species):
             # Decision dictionary has the following format (2 examples here):
             # {'fabHA': ['BACUNI_03004', 'BACUNI_04476']}
             # {'der': ['BACUNI_03006'], 'feoB': ['BACUNI_04461'], 'hydF': ['BACUNI_02997']}}
-            logging.debug("Decision dictionary: {}".format(decision_dict))
+            logging.debug(f"Decision dictionary: {decision_dict}")
             if len(decision_dict) == 0:
                 # unable to resolve duplicates, leave records as they are
                 stats_dict["unknowns_only"] = stats_dict.get("unknowns_only", 0) + 1
@@ -78,18 +92,14 @@ def main(reference, target, outfile, species):
                 else:
                     if alias in replacements:
                         sys.exit(
-                            "Error: something went wrong, alias {} is already in replacements".format(
-                                alias
-                            )
+                            f"Error: something went wrong, alias {alias} is already in replacements"
                         )
                     replacements[alias] = base
                     stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
                     replace = True
                     printed_stat += "Yes\t\n"
             else:
-                logging.debug(
-                    "Case is not clear {} {}".format(dedupl_dict[base], decision_dict)
-                )
+                logging.debug(f"Case is not clear {dedupl_dict[base]} {decision_dict}")
                 unique = check_value_uniqueness(
                     decision_dict
                 )  # check that the alias doesn't repeat
@@ -140,10 +150,10 @@ def main(reference, target, outfile, species):
                             if alias not in replacements:
                                 replacements[alias] = gene_name
                             else:
-                                ("Alias {} is already in replacements".format(alias))
+                                (f"Alias {alias} is already in replacements")
                                 sys.exit()
 
-                        logging.debug("Replaced one for one {}".format(decision_dict))
+                        logging.debug(f"Replaced one for one {decision_dict}")
                         stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
                         replace = True
                         printed_stat += "Yes\t\n"
@@ -192,14 +202,12 @@ def main(reference, target, outfile, species):
         )
     if made_replacements != (len(replacements) + len(replacements_ids)):
         sys.exit(
-            "Made {} replacements but expected {}".format(
-                str(made_replacements), str(len(replacements))
-            )
+            f"Made {str(made_replacements)} replacements but expected {str(len(replacements))}"
         )
-    logging.info("Total number of groups: {}".format(counter))
-    logging.info("Replacements: {}".format(replacements))
-    logging.info("Made replacements: {}".format(made_replacements))
-    logging.info("Reverse {}".format(reverse))
+    logging.info(f"Total number of groups: {counter}")
+    logging.info(f"Replacements: {replacements}")
+    logging.info(f"Made replacements: {made_replacements}")
+    logging.info(f"Reverse {reverse}")
     stats_out.close()
     return stats_dict
 
@@ -234,7 +242,7 @@ def try_to_remove_more_underscores(
                         "remaining after other replacements; no stable ID was assigned to this gene\n",
                     ).format(key)
                     return replacements, printed_stat, replacements_ids
-                if not deduplication_section[key]["alias"] in bacunis_already_replaced:
+                if deduplication_section[key]["alias"] not in bacunis_already_replaced:
                     replacements[deduplication_section[key]["alias"]] = key.split("_")[
                         0
                     ]
@@ -249,8 +257,8 @@ def try_to_remove_more_underscores(
 def make_replacement_file(target, outfile, replacements, replacements_ids, species):
     seq_flag = False
     count_replacements = list()
-    rep_out = open("{}_replacements.txt".format(species), "w")
-    with open(target, "r") as file_in, open(outfile, "w") as file_out:
+    rep_out = open(f"{species}_replacements.txt", "w")
+    with open(target) as file_in, open(outfile, "w") as file_out:
         for line in file_in:
             if line.startswith("#"):
                 if line.startswith("##FASTA"):
@@ -266,7 +274,7 @@ def make_replacement_file(target, outfile, replacements, replacements_ids, speci
                     alias_pattern = r";Alias=(.*?);"
                     try:
                         alias_name = re.search(alias_pattern, fields[8]).group(1)
-                    except:
+                    except:  # noqa: E722
                         alias_name = None
                     gene_alias_name = alias_name
                     gene_id = id
@@ -274,26 +282,24 @@ def make_replacement_file(target, outfile, replacements, replacements_ids, speci
                     gene_pattern = r";gene=(.*?);"
                     try:
                         gene_name = re.search(gene_pattern, fields[8]).group(1)
-                    except:
+                    except:  # noqa E722
                         gene_name = None
                     if fields[2] in ["CDS", "mRNA", "exon"]:
                         alias_name = gene_alias_name
                         id = gene_id
                     if alias_name and alias_name in replacements:
                         if fields[2] == "gene":
-                            rep_out.write(
-                                "{}\t{}\n".format(gene_name, replacements[alias_name])
-                            )
+                            rep_out.write(f"{gene_name}\t{replacements[alias_name]}\n")
                         line = line.replace(gene_name, replacements[alias_name])
                         count_replacements.append(alias_name)
-                    print("ID is {}".format(id))
+                    print(f"ID is {id}")
                     if id in replacements_ids:
                         print("ID IS IN IDS")
                         if fields[2] == "gene":
-                            rep_out.write(
-                                "{}\t{}\n".format(gene_name, replacements_ids[id])
+                            rep_out.write(f"{gene_name}\t{replacements_ids[id]}\n")
+                            print(
+                                "made replacement of", gene_name, replacements_ids[id]
                             )
-                            print("made replacement of", gene_name, replacements_ids[id])
                         line = line.replace(gene_name, replacements_ids[id])
                         count_replacements.append(id)
                     file_out.write(line)
@@ -312,9 +318,7 @@ def resolve_duplicate(
     base,
     printed_stat,
 ):
-    logging.debug(
-        "=============>RESOLVING {} {}".format(genes_to_resolve, reference_dict)
-    )
+    logging.debug(f"=============>RESOLVING {genes_to_resolve} {reference_dict}")
     resolved = dict()
     duplicate_removed = False
     for gene in reference_dict:
@@ -338,7 +342,7 @@ def resolve_duplicate(
         printed_stat += "Yes\t\n"
     else:
         sys.exit("Unknown case")
-    logging.debug("============>Resolved {}".format(resolved))
+    logging.debug(f"============>Resolved {resolved}")
     return replacements, reverse, stats_dict, printed_stat
 
 
@@ -368,7 +372,7 @@ def load_duplicates(infile):
     dedupl_dict = dict()
     gene_occurrence_counter = dict()
     alias_repeats = dict()
-    with open(infile, "r") as file_in:
+    with open(infile) as file_in:
         for line in file_in:
             if not line.startswith("#"):
                 if line.startswith(">"):
@@ -380,15 +384,15 @@ def load_duplicates(infile):
                     alias_pattern = r";Alias=(.*?);"
                     try:
                         gene_name = re.search(gene_pattern, annot).group(1)
-                    except:
+                    except:  # noqa E722
                         gene_name = None
                     try:
                         locus_name = re.search(locus_pattern, annot).group(1)
-                    except:
+                    except:  # noqa E722
                         locus_name = None
                     try:
                         alias_name = re.search(alias_pattern, annot).group(1)
-                    except:
+                    except:  # noqa E722
                         alias_name = None
                     if alias_name:
                         alias_repeats[alias_name] = alias_repeats.get(alias_name, 0) + 1
@@ -426,7 +430,7 @@ def get_prefix(species):
 
 def load_ref_genenames(reference, species_prefix):
     alias_genename_dict = dict()
-    with open(reference, "r") as file_in:
+    with open(reference) as file_in:
         for line in file_in:
             if not line.startswith("#"):
                 _, _, feature, _, _, _, _, _, annot = line.strip().split("\t")

@@ -1,15 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import re
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# ruff: noqa: F841, N806, N803
+
 import argparse
-import sys
-import os.path
-
-
-##### This script merge the coordinates of predicted MGEs using the Mobilome Annotation Pipeline v2.0 and proMGE v2023
-##### Alejandra Escobar, EMBL-EBI
-##### Dec 6, 2023
-##### Apr 12, 2024 -> Fixes on merger function to debug overlapping coordinates of multiple nested MGEs
+import re
 
 
 def gff_parser(current_line):
@@ -49,7 +57,7 @@ def momo_parser(mobannot):
 
     boundaries = ["terminal_inverted_repeat_element", "direct_repeat_element"]
 
-    with open(mobannot, "r") as input_file:
+    with open(mobannot) as input_file:
         for line in input_file:
             line = line.rstrip()
             # Annotation lines have exactly 9 columns
@@ -154,7 +162,7 @@ def promge_parser(promge, meta):
         ("cellular", "cellular_recombinase"),
     ]
     mge_desc = {}
-    with open(meta, "r") as input_meta:
+    with open(meta) as input_meta:
         next(input_meta)
         for line in input_meta:
             (
@@ -182,7 +190,7 @@ def promge_parser(promge, meta):
 
     promge_dict = {}
     mgeR = {}
-    with open(promge, "r") as input_gff:
+    with open(promge) as input_gff:
         for line in input_gff:
             line = line.rstrip()
             # Annotation lines have exactly 9 columns
