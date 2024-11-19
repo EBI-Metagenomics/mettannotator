@@ -7,7 +7,7 @@ process UNIFIRE {
     container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2023.4"
 
     containerOptions {
-        if (workflow.containerEngine == 'singularity') {
+        if (workflow.containerEngine in ['singularity', 'apptainer']) {
             return "--bind unifire:/volume"
         } else {
             return "-v ./unifire:/volume"

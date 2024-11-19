@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
@@ -37,7 +36,7 @@ def load_cgcs(input_folder):
         for line in file_in:
             if not line.startswith("CGC#"):
                 cgc, _, contig, _, start, end, _, _ = line.strip().split("\t")
-                cgc_id = "{}_{}".format(contig, cgc)
+                cgc_id = f"{contig}_{cgc}"
                 if cgc_id in cgc_locations:
                     if cgc_locations[cgc_id]["start"] > int(start):
                         cgc_locations[cgc_id]["start"] = int(start)
@@ -62,9 +61,9 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
                     cgc, gene_type, contig, prot_id, start, end, strand, protein_fam = (
                         line.strip().split("\t")
                     )
-                    cgc_id = "{}_{}".format(contig, cgc)
+                    cgc_id = f"{contig}_{cgc}"
                     protein_fam = protein_fam.replace(" ", "")
-                    if not cgc_id in cgcs_printed:
+                    if cgc_id not in cgcs_printed:
                         substrate = (
                             substrates[cgc_id]
                             if cgc_id in substrates
@@ -82,23 +81,13 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
                         )
                         cgcs_printed.append(cgc_id)
                     file_out.write(
-                        "{}\tdbCAN:{}\t{}\t{}\t{}\t.\t{}\t.\tID={};Parent={};protein_family={}\n".format(
-                            contig,
-                            dbcan_version,
-                            gene_type,
-                            start,
-                            end,
-                            strand,
-                            prot_id,
-                            cgc_id,
-                            protein_fam,
-                        )
+                        f"{contig}\tdbCAN:{dbcan_version}\t{gene_type}\t{start}\t{end}\t.\t{strand}\t.\tID={prot_id};Parent={cgc_id};protein_family={protein_fam}\n"
                     )
 
 
 def load_substrates(input_folder):
     substrates = dict()
-    with open(os.path.join(input_folder, "substrate.out"), "r") as file_in:
+    with open(os.path.join(input_folder, "substrate.out")) as file_in:
         for line in file_in:
             if not line.startswith("#"):
                 parts = line.strip().split("\t")
@@ -117,9 +106,7 @@ def load_substrates(input_folder):
                 if not substrate_ecami:
                     substrate_ecami = "N/A"
                 substrates[cgc] = (
-                    "substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
-                        substrate_pul, substrate_ecami
-                    )
+                    f"substrate_dbcan-pul={substrate_pul};substrate_dbcan-sub={substrate_ecami}"
                 )
     print(substrates)
     return substrates
@@ -129,7 +116,7 @@ def check_folder_completeness(input_folder):
     status = True
     for file in ["cgc_standard.out", "overview.txt", "substrate.out"]:
         if not os.path.exists(os.path.join(input_folder, file)):
-            logging.error("File {} does not exist.".format(file))
+            logging.error(f"File {file} does not exist.")
             status = False
     return status
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-# Copyright 2023 EMBL - European Bioinformatics Institute
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,15 +42,13 @@ def main(indir, outfile):
 
 def load_file(dbname, indir, filename, result):
     if not os.path.exists(os.path.join(indir, filename)):
-        logging.error(
-            "File {} does not exist in folder {}. Aborting.".format(filename, indir)
-        )
+        logging.error(f"File {filename} does not exist in folder {indir}. Aborting.")
         sys.exit()
-    with open(os.path.join(indir, filename), "r") as file_in:
+    with open(os.path.join(indir, filename)) as file_in:
         for line in file_in:
             if not line.startswith("Evidence"):
                 prot = line.split("\t")[1]
-                new_line = "{}\t{}".format(dbname, line)
+                new_line = f"{dbname}\t{line}"
                 result.setdefault(prot, list()).append(new_line)
     return result
 

@@ -4,7 +4,9 @@ process ANNOTATE_GFF {
 
     label 'process_nano'
 
-    container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/python:3.9' :
+        'biocontainers/python:3.9' }"
 
     input:
     tuple val(meta),

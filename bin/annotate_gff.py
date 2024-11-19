@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-# Copyright 2023 EMBL - European Bioinformatics Institute
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,13 +78,13 @@ def write_results_to_file(
                 for my_dict in (ncrnas, trnas, crispr_annotations, main_gff_extended):
                     if contig in my_dict and pos in my_dict[contig]:
                         for line in my_dict[contig][pos]:
-                            if type(line) == str:
-                                file_out.write("{}\n".format(line))
+                            if type(line) is str:
+                                file_out.write(f"{line}\n")
                             else:
                                 for element in line:
                                     file_out.write(element)
         for line in fasta:
-            file_out.write("{}\n".format(line))
+            file_out.write(f"{line}\n")
 
 
 def sort_positions(contig, main_gff_extended, ncrnas, trnas, crispr_annotations):
@@ -109,7 +108,7 @@ def get_iprs(ipr_annot):
     iprs = {}
     if not ipr_annot:
         return iprs
-    with open(ipr_annot, "r") as f:
+    with open(ipr_annot) as f:
         for line in f:
             cols = line.strip().split("\t")
             protein = cols[0]
@@ -133,7 +132,7 @@ def get_iprs(ipr_annot):
 
 def get_eggnog(eggnog_annot):
     eggnogs = {}
-    with open(eggnog_annot, "r") as f:
+    with open(eggnog_annot) as f:
         for line in f:
             line = line.rstrip()
             cols = line.split("\t")
@@ -183,7 +182,7 @@ def get_bgcs(bgc_file, prokka_gff, tool):
         return bgc_annotations
     # save positions of each BGC cluster to dictionary cluster_positions
     # and save the annotations to dictionary bgc_result
-    with open(bgc_file, "r") as bgc_in:
+    with open(bgc_file) as bgc_in:
         for line in bgc_in:
             if not line.startswith("#"):
                 (
@@ -245,7 +244,7 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         {"bgc_function": type_value},
                     )
     # identify CDSs that fall into each of the clusters annotated by the BGC tool
-    with open(prokka_gff, "r") as gff_in:
+    with open(prokka_gff) as gff_in:
         for line in gff_in:
             if not line.startswith("#"):
                 matching_interval = ""
@@ -309,7 +308,7 @@ def get_amr(amr_file):
     amr_annotations = {}
     if not amr_file:
         return amr_annotations
-    with open(amr_file, "r") as f:
+    with open(amr_file) as f:
         for line in f:
             if line.startswith("Protein identifier"):
                 continue
@@ -339,13 +338,13 @@ def get_amr(amr_file):
                 seq_name = seq_name.replace("=", " ")
             amr_annotations[protein_id] = ";".join(
                 [
-                    "amrfinderplus_gene_symbol={}".format(gene_name),
-                    "amrfinderplus_sequence_name={}".format(seq_name),
-                    "amrfinderplus_scope={}".format(scope),
-                    "element_type={}".format(element_type),
-                    "element_subtype={}".format(element_subtype),
-                    "drug_class={}".format(drug_class),
-                    "drug_subclass={}".format(drug_subclass),
+                    f"amrfinderplus_gene_symbol={gene_name}",
+                    f"amrfinderplus_sequence_name={seq_name}",
+                    f"amrfinderplus_scope={scope}",
+                    f"element_type={element_type}",
+                    f"element_subtype={element_subtype}",
+                    f"drug_class={drug_class}",
+                    f"drug_subclass={drug_subclass}",
                 ]
             )
     return amr_annotations
@@ -356,7 +355,7 @@ def get_dbcan(dbcan_file):
     substrates = dict()
     if not dbcan_file:
         return dbcan_annotations
-    with open(dbcan_file, "r") as f:
+    with open(dbcan_file) as f:
         for line in f:
             if "predicted PUL" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
@@ -399,7 +398,7 @@ def get_defense_finder(df_file):
     type_info = dict()
     if not df_file:
         return defense_finder_annotations
-    with open(df_file, "r") as f:
+    with open(df_file) as f:
         for line in f:
             if "Anti-phage system" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
@@ -451,17 +450,25 @@ def load_annotations(
     header = []
     fasta = []
     fasta_flag = False
-    with open(in_gff, "r") as f:
+    with open(in_gff) as f:
         for line in f:
             line = line.strip()
             if line[0] != "#" and not fasta_flag:
                 line = line.replace("db_xref", "Dbxref")
                 cols = line.split("\t")
                 if len(cols) == 9:
-                    contig, caller, feature, start, annot = cols[0], cols[1], cols[2], cols[3], cols[8]
+                    contig, caller, feature, start, annot = (
+                        cols[0],
+                        cols[1],
+                        cols[2],
+                        cols[3],
+                        cols[8],
+                    )
                     if feature != "CDS":
                         if caller == "Bakta" and feature == "region":
-                            main_gff.setdefault(contig, dict()).setdefault(int(start), list()).append(line)
+                            main_gff.setdefault(contig, dict()).setdefault(
+                                int(start), list()
+                            ).append(line)
                             continue
                         else:
                             continue
@@ -536,10 +543,10 @@ def load_annotations(
                         if type(value) is list:
                             value = ",".join(value)
                         if a in ["AMR", "dbCAN", "defense_finder"]:
-                            cols[8] = "{};{}".format(cols[8], value)
+                            cols[8] = f"{cols[8]};{value}"
                         else:
                             if not value == "-":
-                                cols[8] = "{};{}={}".format(cols[8], a, value)
+                                cols[8] = f"{cols[8]};{a}={value}"
                     line = "\t".join(cols)
                     main_gff.setdefault(contig, dict()).setdefault(
                         int(start), list()
@@ -558,13 +565,13 @@ def load_annotations(
 def get_ncrnas(ncrnas_file):
     ncrnas = {}
     counts = 0
-    with open(ncrnas_file, "r") as f:
+    with open(ncrnas_file) as f:
         for line in f:
             if not line.startswith("#"):
                 cols = line.strip().split()
                 counts += 1
                 contig = cols[3]
-                locus = "{}_ncRNA{}".format(contig, counts)
+                locus = f"{contig}_ncRNA{counts}"
                 product = cols[-1]
                 model = cols[2]
                 if model == "RF00005":
@@ -606,7 +613,7 @@ def get_ncrnas(ncrnas_file):
 
 def get_trnas(trnas_file):
     trnas = {}
-    with open(trnas_file, "r") as f:
+    with open(trnas_file) as f:
         for line in f:
             if not line.startswith("#"):
                 cols = line.split("\t")
@@ -621,7 +628,7 @@ def get_trnas(trnas_file):
 
 def load_crispr(crispr_file):
     crispr_annotations = dict()
-    with open(crispr_file, "r") as f:
+    with open(crispr_file) as f:
         record = list()
         left_coord = ""
         loc_contig = ""
@@ -629,7 +636,7 @@ def load_crispr(crispr_file):
         for line in f:
             if not line.startswith("#"):
                 cols = line.strip().split("\t")
-                contig, feature, start, end = (
+                contig, _, start, end = (
                     cols[0],
                     cols[2],
                     int(cols[3]),

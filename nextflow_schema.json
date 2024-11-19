@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "https://json-schema.org/draft-07/schema",
   "$id": "https://raw.githubusercontent.com/ebi-metagenomics/mettannotator/master/nextflow_schema.json",
   "title": "ebi-metagenomics/mettannotator pipeline parameters",
   "description": "ME TT assembly annotation pipeline",
@@ -36,8 +36,8 @@
         },
         "bakta": {
           "type": "boolean",
-          "default": false,
-          "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes."
+          "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.",
+          "fa_icon": "fas fa-wrench"
         },
         "email": {
           "type": "string",
@@ -310,6 +310,11 @@
           "type": "string",
           "description": "Custom MultiQC yaml file containing HTML including a methods description.",
           "fa_icon": "fas fa-cog"
+        },
+        "singularity_cachedir": {
+          "type": "string",
+          "fa_icon": "fab fa-docker",
+          "description": "The singularity/apptainer cache directory"
         }
       }
     }

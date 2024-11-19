@@ -2,7 +2,9 @@ process PROKKA {
 
     tag "${meta.prefix}"
 
-    container "quay.io/biocontainers/prokka:1.14.6--pl526_0"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/prokka:1.14.6--pl526_0' :
+        'biocontainers/prokka:1.14.6--pl526_0' }"
 
     input:
     tuple val(meta), path(fasta), val(detected_kingdom)
@@ -18,6 +20,13 @@ process PROKKA {
 
     script:
     """
+    # TMP folder issues in Prokka - https://github.com/tseemann/prokka/issues/402
+    export TMPDIR="\$PWD/tmp"
+    mkdir -p "\$PWD/tmp"
+
+    # Disable the Java VM performane gathering tool, for improved performance
+    export JAVA_TOOL_OPTIONS="-XX:-UsePerfData"
+
     cat ${fasta} | tr '-' ' ' > ${meta.prefix}_cleaned.fasta
 
     prokka ${meta.prefix}_cleaned.fasta \

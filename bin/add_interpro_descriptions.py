@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright 2024 EMBL - European Bioinformatics Institute
 #
@@ -21,7 +20,7 @@ import re
 
 def main(ipr_types_file, infile, outfile):
     ipr_types_and_descriptions = load_ipr(ipr_types_file)
-    with open(infile, "r") as file_in, open(outfile, "w") as file_out:
+    with open(infile) as file_in, open(outfile, "w") as file_out:
         fasta_flag = False
         for line in file_in:
             if not fasta_flag:
@@ -108,7 +107,7 @@ def load_ipr(ipr_types_file):
         "PTM": "S",
         "Repeat": "R",
     }
-    with open(ipr_types_file, "r") as file_in:
+    with open(ipr_types_file) as file_in:
         for line in file_in:
             if line.startswith("IPR"):
                 acc, ipr_type, desc = line.strip().split("\t")

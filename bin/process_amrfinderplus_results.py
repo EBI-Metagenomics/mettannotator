@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-# Copyright 2023 EMBL - European Bioinformatics Institute
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def main(amr_file, outfile, version):
-    with open(amr_file, "r") as file_in, open(outfile, "w") as file_out:
+    with open(amr_file) as file_in, open(outfile, "w") as file_out:
         writer = csv.writer(file_out, delimiter="\t")
         writer.writerow(["##gff-version 3"])
         for line in file_in:
