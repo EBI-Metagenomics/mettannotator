@@ -177,8 +177,12 @@ Note, that by default the script uses FASTA file names as prefixes and truncates
 
 Running `mettannotator` with the `--help` option will pull the repository and display the help message:
 
+> [!NOTE]
+> We use the `-latest` flag with the `nextflow run` command, which ensures that the latest available version of the pipeline is pulled.
+> If you encounter any issues with the `nextflow run` command, please refer to the [Nextflow documentation](https://www.nextflow.io/docs/latest/reference/cli.html#run).
+
 ```angular2html
-nextflow run ebi-metagenomics/mettannotator/main.nf --help
+$ nextflow run -latest ebi-metagenomics/mettannotator/main.nf --help
 N E X T F L O W  ~  version 23.04.3
 Launching `mettannotator/main.nf` [disturbed_davinci] DSL2 - revision: f2a0e51af6
 
@@ -259,17 +263,25 @@ nextflow run ebi-metagenomics/mettannotator \
    --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
 ```
 
-> **Warning:**
+> [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
 > provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
 > see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
+
+#### Running the Pipeline from the source code
+
+If the Nextflow integration with Git does not work, users can download the tarball from the releases page. After extracting the tarball, the pipeline can be run directly by executing the following command:
+
+```bash
+$ nextflow run path-to-source-code/main.nf --help
+```
 
 #### Local execution
 
 The pipeline can be run on a desktop or laptop, with the caveat that it will take a few hours to complete depending on the resources. There is a local profile in the Nextflow config that limits the total resources the pipeline can use to 8 cores and 12 GB of RAM. In order to run it (Docker or Singularity are still required):
 
 ```bash
-nextflow run ebi-metagenomics/mettannotator \
+nextflow run -latest ebi-metagenomics/mettannotator \
    -profile local,<docker or singulairty> \
    --input assemblies_sheet.csv \
    --outdir <OUTDIR> \
@@ -302,7 +314,7 @@ To run the pipeline using a test dataset, execute the following command:
 ```bash
 wget https://raw.githubusercontent.com/EBI-Metagenomics/mettannotator/master/tests/test.csv
 
-nextflow run ebi-metagenomics/mettannotator \
+nextflow run --latest ebi-metagenomics/mettannotator \
    -profile <docker/singularity/...> \
    --input test.csv \
    --outdir <OUTDIR> \
