@@ -268,7 +268,7 @@ nextflow run ebi-metagenomics/mettannotator \
 > provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
 > see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
-#### Running the Pipeline from the source code
+#### Running the pipeline from the source code
 
 If the Nextflow integration with Git does not work, users can download the tarball from the releases page. After extracting the tarball, the pipeline can be run directly by executing the following command:
 
