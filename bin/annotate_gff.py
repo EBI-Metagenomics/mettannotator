@@ -106,8 +106,9 @@ def check_for_additional_keys(ncrnas, trnas, crispr_annotations, contig_list):
 
 def get_iprs(ipr_annot):
     iprs = {}
+    antifams = list()
     if not ipr_annot:
-        return iprs
+        return iprs, antifams
     with open(ipr_annot) as f:
         for line in f:
             cols = line.strip().split("\t")
@@ -118,6 +119,9 @@ def get_iprs(ipr_annot):
                 continue
             if evalue > 1e-10:
                 continue
+            if cols[3] == "AntiFam":
+                antifams.append(protein)
+                continue
             if protein not in iprs:
                 iprs[protein] = [set(), set()]
             if cols[3] == "Pfam":
@@ -127,7 +131,7 @@ def get_iprs(ipr_annot):
                 ipr = cols[11]
                 if not ipr == "-":
                     iprs[protein][1].add(ipr)
-    return iprs
+    return iprs, antifams
 
 
 def get_eggnog(eggnog_annot):
@@ -438,7 +442,7 @@ def load_annotations(
     defense_finder_file,
 ):
     eggnogs = get_eggnog(eggnog_file)
-    iprs = get_iprs(ipr_file)
+    iprs, antifams = get_iprs(ipr_file)
     sanntis_bgcs = get_bgcs(sanntis_file, in_gff, tool="sanntis")
     gecco_bgcs = get_bgcs(gecco_file, in_gff, tool="gecco")
     antismash_bgcs = get_bgcs(antismash_file, in_gff, tool="antismash")
@@ -472,6 +476,9 @@ def load_annotations(
                             continue
                         else:
                             continue
+                    if protein in antifams:
+                        # Don't print to the final GFF proteins that are known to not be real
+                        continue
                     protein = annot.split(";")[0].split("=")[-1]
                     added_annot[protein] = {}
                     try:
