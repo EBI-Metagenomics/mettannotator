@@ -30,7 +30,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { LOOKUP_KINGDOM                             } from '../modules/local/lookup_kingdom'
-include { PROKKA                                     } from '../modules/local/prokka'
+include { PROKKA as PROKKA_STANDARD                  } from '../modules/local/prokka'
 include { PROKKA as PROKKA_COMPLIANT                 } from '../modules/local/prokka'
 include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
 include { DEFENSE_FINDER                             } from '../modules/local/defense_finder'
@@ -192,30 +192,30 @@ workflow METTANNOTATOR {
 
        BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
 
-       PROKKA( assemblies_to_annotate.archaea, Channel.value("standard") )
+       PROKKA_STANDARD( assemblies_to_annotate.archaea, Channel.value("standard") )
        PROKKA_COMPLIANT( assemblies_to_annotate.archaea, Channel.value("compliant") )
 
        ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
-       ch_versions = ch_versions.mix(PROKKA.out.versions.first())
+       ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
 
-       annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( PROKKA.out.fna )
-       annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA.out.gbk )
-       annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA.out.faa )
-       annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA.out.gff )
+       annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( PROKKA_STANDARD.out.fna )
+       annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_STANDARD.out.gbk )
+       annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
+       annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_STANDARD.out.gff )
 
        compliant_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
 
    } else {
 
-       PROKKA( assemblies_with_kingdom, Channel.value("standard") )
+       PROKKA_STANDARD( assemblies_with_kingdom, Channel.value("standard") )
        PROKKA_COMPLIANT( assemblies_with_kingdom, Channel.value("compliant") )
 
-       ch_versions = ch_versions.mix(PROKKA.out.versions.first())
+       ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
 
-       annotations_fna = PROKKA.out.fna
-       annotations_gbk = PROKKA.out.gbk
-       annotations_faa = PROKKA.out.faa
-       annotations_gff = PROKKA.out.gff
+       annotations_fna = PROKKA_STANDARD.out.fna
+       annotations_gbk = PROKKA_STANDARD.out.gbk
+       annotations_faa = PROKKA_STANDARD.out.faa
+       annotations_gff = PROKKA_STANDARD.out.gff
 
        compliant_gbk = PROKKA_COMPLIANT.out.gbk
    }
