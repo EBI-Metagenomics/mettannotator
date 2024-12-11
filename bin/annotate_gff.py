@@ -476,10 +476,10 @@ def load_annotations(
                             continue
                         else:
                             continue
+                    protein = annot.split(";")[0].split("=")[-1]
                     if protein in antifams:
                         # Don't print to the final GFF proteins that are known to not be real
                         continue
-                    protein = annot.split(";")[0].split("=")[-1]
                     added_annot[protein] = {}
                     try:
                         eggnogs[protein]
