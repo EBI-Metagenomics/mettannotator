@@ -31,6 +31,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 */
 include { LOOKUP_KINGDOM                             } from '../modules/local/lookup_kingdom'
 include { PROKKA                                     } from '../modules/local/prokka'
+include { PROKKA as PROKKA_COMPLIANT                 } from '../modules/local/prokka'
 include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
 include { DEFENSE_FINDER                             } from '../modules/local/defense_finder'
 include { CRISPRCAS_FINDER                           } from '../modules/local/crisprcasfinder'
@@ -191,7 +192,8 @@ workflow METTANNOTATOR {
 
        BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
 
-       PROKKA( assemblies_to_annotate.archaea )
+       PROKKA( assemblies_to_annotate.archaea, Channel.value("standard") )
+       PROKKA_COMPLIANT( assemblies_to_annotate.archaea, Channel.value("compliant") )
 
        ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
        ch_versions = ch_versions.mix(PROKKA.out.versions.first())
@@ -201,9 +203,12 @@ workflow METTANNOTATOR {
        annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA.out.faa )
        annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA.out.gff )
 
+       compliant_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
+
    } else {
 
-       PROKKA( assemblies_with_kingdom )
+       PROKKA( assemblies_with_kingdom, , Channel.value("standard") )
+       PROKKA_COMPLIANT( assemblies_with_kingdom, , Channel.value("compliant") )
 
        ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 
@@ -211,6 +216,8 @@ workflow METTANNOTATOR {
        annotations_gbk = PROKKA.out.gbk
        annotations_faa = PROKKA.out.faa
        annotations_gff = PROKKA.out.gff
+
+       compliant_gbk = PROKKA_COMPLIANT.out.gbk
    }
 
     assemblies_for_quast = assemblies.join(
