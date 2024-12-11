@@ -46,6 +46,7 @@ include { ANNOTATE_GFF                               } from '../modules/local/an
 include { ANTISMASH                                  } from '../modules/local/antismash'
 include { DBCAN                                      } from '../modules/local/dbcan'
 include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
+include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
 
@@ -87,6 +88,8 @@ eggnog_diamond_db = channel.empty()
 eggnog_data = channel.empty()
 
 rfam_ncrna_models = channel.empty()
+
+pseudofinder_db = channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -238,6 +241,13 @@ workflow METTANNOTATOR {
     )
 
     ch_versions = ch_versions.mix(QUAST.out.versions.first())
+
+    PSEUDOFINDER (
+        compliant_gbk,
+        pseudofinder_db
+    )
+
+    ch_versions = ch_versions.mix(PSEUDOFINDER.out.versions.first())
 
     CRISPRCAS_FINDER( assemblies )
 
