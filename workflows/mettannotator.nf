@@ -207,8 +207,8 @@ workflow METTANNOTATOR {
 
    } else {
 
-       PROKKA( assemblies_with_kingdom, , Channel.value("standard") )
-       PROKKA_COMPLIANT( assemblies_with_kingdom, , Channel.value("compliant") )
+       PROKKA( assemblies_with_kingdom, Channel.value("standard") )
+       PROKKA_COMPLIANT( assemblies_with_kingdom, Channel.value("compliant") )
 
        ch_versions = ch_versions.mix(PROKKA.out.versions.first())
 
