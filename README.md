@@ -35,10 +35,12 @@
 The workflow uses the following tools and databases:
 
 | Tool/Database                                                                                    | Version                                       | Purpose                                                                                                                |
-| ------------------------------------------------------------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+|--------------------------------------------------------------------------------------------------|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6                                        | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.9.3                                         | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | 2024-01-19 with AMRFinderPlus DB 2024-01-31.1 | Bakta DB (when Bakta is used as the gene caller)                                                                       |
+| [Pseudofinder](https://github.com/filip-husnik/pseudofinder)                                     | v1.1.0                                        | Identification of possible pseudogenes                                                                                 |                                                                                                                        |
+| [Swiss-Prot](https://www.uniprot.org/help/downloads)                                             | 2024_06                                       | Database for Pseudofinder                                                                                              |
 | [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.62-94.0                                     | Protein annotation (InterPro, Pfam)                                                                                    |
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11                                        | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2                                         | Database for eggNOG-mapper                                                                                             |
@@ -79,7 +81,7 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 The pipeline needs reference databases in order to work, they take roughly 180G.
 
 | Path                | Size |
-| ------------------- | ---- |
+|---------------------|------|
 | amrfinder           | 217M |
 | antismash           | 9.4G |
 | bakta               | 71G  |
@@ -89,7 +91,8 @@ The pipeline needs reference databases in order to work, they take roughly 180G.
 | interproscan        | 45G  |
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
-| total               | 180G |
+| pseudofinder        | 273M |
+| total               | 182G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
@@ -343,6 +346,7 @@ The output folder structure will look as follows:
    │  ├─interproscan
    │  ├─merged_gff
    │  ├─prokka
+   │  ├─pseudofinder
    │  └─unifire
    ├─mobilome
    │  └─crisprcas_finder
