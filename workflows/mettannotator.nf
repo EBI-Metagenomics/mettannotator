@@ -119,6 +119,8 @@ workflow METTANNOTATOR {
 
         rfam_ncrna_models = DOWNLOAD_DATABASES.out.rfam_ncrna_models
 
+        pseudofinder_db = DOWNLOAD_DATABASES.out.pseudofinder_db
+
         if (params.bakta) {
             bakta_db = DOWNLOAD_DATABASES.out.bakta_db
         }
@@ -163,6 +165,12 @@ workflow METTANNOTATOR {
             file(params.rfam_ncrna_models, checkIfExists: true),
             params.rfam_ncrna_models_rfam_version
         )
+
+        pseudofinder_db = tuple(
+            file(params.pseudofinder_db, checkIfExists: true),
+            params.pseudofinder_db_version
+        )
+
         if (params.bakta) {
             bakta_db = tuple(
                 file(params.bakta_db, checkIfExists: true),

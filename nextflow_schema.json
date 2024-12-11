@@ -164,6 +164,16 @@
           "type": "string",
           "default": "2024-01-19",
           "description": "The Bakta reference database version."
+        },
+        "pseudofinder_db": {
+          "type": "string",
+          "description": "Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.",
+          "help_text": "Set this variable to the path of the protein fasta file to be used as the database."
+        },
+        "pseudofinder_db_version": {
+          "type": "string",
+          "default": "2024_06",
+          "description": "SwissProt version."
         }
       },
       "fa_icon": "fas fa-database"

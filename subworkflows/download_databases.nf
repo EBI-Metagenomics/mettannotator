@@ -12,6 +12,7 @@ include { INTEPROSCAN_GETDB        } from '../modules/local/interproscan_getdb'
 include { INTEPRO_ENTRY_LIST_GETDB } from '../modules/local/interpro_list_getdb'
 include { RFAM_GETMODELS           } from '../modules/local/rfam_getmodels'
 include { BAKTA_GETDB              } from '../modules/local/bakta_getdb'
+include { PSEUDOFINDER_GETDB       } from '../modules/local/pseudofinder_getdb'
 
 
 workflow DOWNLOAD_DATABASES {
@@ -26,6 +27,7 @@ workflow DOWNLOAD_DATABASES {
         interpro_entry_list = channel.empty()
         eggnog_db = channel.empty()
         bakta_db = channel.empty()
+        pseudofinder_db = channel.empty()
 
         amrfinder_plus_dir = file("$params.dbs/amrfinder/")
         antismash_dir = file("$params.dbs/antismash")
@@ -36,6 +38,7 @@ workflow DOWNLOAD_DATABASES {
         eggnog_data_dir = file("$params.dbs/eggnog")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
         bakta_dir = file("$params.dbs/bakta")
+        pseudofinder_file = file("$params.dbs/uniprot_sprot_2024_06.fasta")
 
         if (amrfinder_plus_dir.exists()) {
             amrfinder_plus_db = tuple(
@@ -126,6 +129,25 @@ workflow DOWNLOAD_DATABASES {
             )
         }
 
+        if (pseudofinder_file.exists()) {
+            log.info("Pseudofinder database exists, or at least the expected folder.")
+            fileName = pseudofinder_file.getName()
+            match = (fileName =~ /uniprot_sprot_(\d{4}_\d{2})\.fasta/)
+            if (match) {
+                pseudofinder_db_version = match[0][1]
+            } else {
+                log.warn("Failed to extract version from file name ${fileName}")
+                pseudofinder_db_version = "Unknown"
+            }
+            pseudofinder_db = tuple(
+                pseudofinder_file,
+                pseudofinder_db_version // the DB version
+            )
+        } else {
+            PSEUDOFINDER_GETDB()
+            pseudofinder_db = PSEUDOFINDER_GETDB.out.pseudofinder_db.first()
+        }
+
         if (params.bakta) {
             if (bakta_dir.exists()) {
                 log.info("Bakta database exists, or at least the expected folders.")
@@ -148,5 +170,6 @@ workflow DOWNLOAD_DATABASES {
         eggnog_db = eggnog_db
         rfam_ncrna_models = rfam_ncrna_models
         bakta_db = bakta_db
+        pseudofinder_db = pseudofinder_db
 
 }
