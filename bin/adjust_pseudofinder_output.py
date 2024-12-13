@@ -41,7 +41,7 @@ def main(pseudofinder_file, standard_gff, compliant_gff, outfile):
                     # replace chromosome name
                     try:
                         parts[1] = chromosome_dictionary[parts[1]]
-                        line = "\t".join(parts)
+                        line = " ".join(parts)
                     except KeyError:
                         logging.error("Could not convert sequence region {}".format(line))
                     file_out.write(line)
@@ -72,7 +72,7 @@ def main(pseudofinder_file, standard_gff, compliant_gff, outfile):
                     new_col_9 = ""
                     for key, value in attributes_dict.items():
                         new_col_9 += f"{key}={value};"
-                    parts[8] = new_col_9
+                    parts[8] = new_col_9.rstrip(";")
                     parts[0] = chromosome_dictionary[parts[0]]
                     modified_line = "\t".join(parts)
                     file_out.write(modified_line + "\n")
@@ -82,12 +82,14 @@ def make_chromosome_conversion(standard_gff, compliant_gff):
     chromosomes_standard = get_chromosomes(standard_gff)
     chromosomes_compliant = get_chromosomes(compliant_gff)
     chromosome_dictionary = dict()
-    for chr_st, pos_st in chromosomes_standard.items():
-        for chr_comp, pos_comp in chromosomes_compliant.items():
-            if pos_st == pos_comp:
-                chromosome_dictionary[chr_comp] = chr_st
-            else:
-                sys.exit(f'Unable to convert chromosome names. Failed on {chr_st} and {chr_comp}')
+    standard_keys = list(chromosomes_standard.keys())
+    compliant_keys = list(chromosomes_compliant.keys())
+    for i, chr_compliant in enumerate(compliant_keys):
+        chr_standard = standard_keys[i]
+        if chromosomes_standard[chr_standard] == chromosomes_compliant[chr_compliant]:
+            chromosome_dictionary[chr_compliant] = chr_standard
+        else:
+            sys.exit(f'Unable to convert chromosome names. Failed on {chr_standard} and {chr_compliant}')
     return chromosome_dictionary
 
 
