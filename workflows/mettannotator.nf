@@ -47,6 +47,7 @@ include { ANTISMASH                                  } from '../modules/local/an
 include { DBCAN                                      } from '../modules/local/dbcan'
 include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
 include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
+include { PSEUDOFINDER_POSTPROCESSING                } from '../modules/local/pseudofinder'
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
 
@@ -215,6 +216,7 @@ workflow METTANNOTATOR {
        annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_STANDARD.out.gff )
 
        compliant_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
+       compliant_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
 
    } else {
 
@@ -229,6 +231,7 @@ workflow METTANNOTATOR {
        annotations_gff = PROKKA_STANDARD.out.gff
 
        compliant_gbk = PROKKA_COMPLIANT.out.gbk
+       compliant_gff = PROKKA_COMPLIANT.out.gff
    }
 
     assemblies_for_quast = assemblies.join(
@@ -242,12 +245,22 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(QUAST.out.versions.first())
 
-    PSEUDOFINDER (
+    PSEUDOFINDER(
         compliant_gbk,
         pseudofinder_db
     )
 
     ch_versions = ch_versions.mix(PSEUDOFINDER.out.versions.first())
+
+    PSEUDOFINDER_POSTPROCESSING(
+        annotations_gff.join(
+            compliant_gff
+        ).join(
+            PSEUDOFINDER.out.pseudofinder_gff
+        )
+    )
+
+    ch_versions = ch_versions.mix(PSEUDOFINDER_POSTPROCESSING.out.versions.first())
 
     CRISPRCAS_FINDER( assemblies )
 
@@ -304,7 +317,7 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
 
-    DEFENSE_FINDER (
+    DEFENSE_FINDER(
         annotations_faa.join( annotations_gff ),
         defense_finder_db
     )
@@ -408,13 +421,13 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
 
-    CIRCOS_PLOT (
+    CIRCOS_PLOT(
         ANNOTATE_GFF.out.annotated_gff
     )
 
     ch_versions = ch_versions.mix(CIRCOS_PLOT.out.versions.first())
 
-    CUSTOM_DUMPSOFTWAREVERSIONS (
+    CUSTOM_DUMPSOFTWAREVERSIONS(
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
@@ -434,7 +447,7 @@ workflow METTANNOTATOR {
     ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.results.collect { it[1] }.ifEmpty([]) )
 
 
-    MULTIQC (
+    MULTIQC(
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
