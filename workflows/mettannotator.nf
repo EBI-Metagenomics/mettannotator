@@ -190,6 +190,8 @@ workflow METTANNOTATOR {
     annotations_gbk = channel.empty()
     annotations_faa = channel.empty()
     annotations_gff = channel.empty()
+    compliant_gbk = channel.empty()
+    compliant_gff = channel.empty()
 
     LOOKUP_KINGDOM( assemblies )
     ch_versions = ch_versions.mix(LOOKUP_KINGDOM.out.versions.first())
@@ -215,8 +217,8 @@ workflow METTANNOTATOR {
        annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
        annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_STANDARD.out.gff )
 
-       compliant_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
-       compliant_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
+       compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
+       compliant_gff = compliant_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
 
    } else {
 
