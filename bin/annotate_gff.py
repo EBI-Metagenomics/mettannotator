@@ -452,7 +452,7 @@ def get_defense_finder(df_file):
 
 
 def get_pseudogenes(pseudofinder_file):
-    pseudogenes = list()
+    pseudogenes = dict()
     if not pseudofinder_file:
         return pseudogenes
     with open(pseudofinder_file) as file_in:
@@ -463,11 +463,15 @@ def get_pseudogenes(pseudofinder_file):
                     re.split(r"(?<!\\)=", item)
                     for item in re.split(r"(?<!\\);", col9)
                 )
+                if "note" in attributes_dict:
+                    note = attributes_dict["note"]
+                else:
+                    note = ""
                 if "old_locus_tag" in attributes_dict:
                     tags = attributes_dict["old_locus_tag"].split(",")
                     for tag in tags:
                         if "_ign_" not in tag:
-                            pseudogenes.append(tag)
+                            pseudogenes[tag] = note
     return pseudogenes
 
 
@@ -606,7 +610,9 @@ def load_annotations(
                             pseudogene_report_dict.setdefault(protein, dict())
                             pseudogene_report_dict[protein]["gene_caller"] = False
                             pseudogene_report_dict[protein]["pseudofinder"] = True
-                            added_annot[protein]["pseudo"] = "True"
+                            added_annot[protein]["pseudo"] = "true"
+                            if pseudogenes[protein]:
+                                cols[8] = add_pseudogene_to_note(pseudogenes[protein], cols[8])
                     # record antifams
                     if protein in antifams:
                         pseudogene_report_dict.setdefault(protein, dict())
@@ -633,6 +639,23 @@ def load_annotations(
             elif fasta_flag:
                 fasta.append(line)
     return header, main_gff, fasta, pseudogene_report_dict
+
+
+def add_pseudogene_to_note(note_text, col9):
+    col9_dict = dict(
+        re.split(r"(?<!\\)=", item)
+        for item in re.split(r"(?<!\\);", col9)
+    )
+    if "note" in col9_dict.keys():
+        col9_dict["note"] = col9_dict["note"] + f', {note_text}'
+        return ";".join([f"{key}={value}" for key, value in col9_dict.items()])
+    else:
+        # insert note after locus tag
+        keys_list = list(col9_dict.keys())
+        locus_tag_index = keys_list.index("locus_tag")
+        new_dict = {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]} | \
+                   {"note": note_text} | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
+        return ";".join([f"{key}={value}" for key, value in new_dict.items()])
 
 
 def get_ncrnas(ncrnas_file):
