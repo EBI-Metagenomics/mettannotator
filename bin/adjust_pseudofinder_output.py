@@ -89,7 +89,8 @@ def make_chromosome_conversion(standard_gff, compliant_gff):
         if chromosomes_standard[chr_standard] == chromosomes_compliant[chr_compliant]:
             chromosome_dictionary[chr_compliant] = chr_standard
         else:
-            sys.exit(f'Unable to convert chromosome names. Failed on {chr_standard} and {chr_compliant}')
+            sys.exit(f'Pseudofinder port-processing failed: unable to convert chromosome names. '
+                     f'Failed on {chr_standard} and {chr_compliant}')
     return chromosome_dictionary
 
 
