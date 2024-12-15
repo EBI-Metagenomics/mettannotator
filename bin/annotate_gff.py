@@ -97,7 +97,9 @@ def write_results_to_file(
 def print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file):
     with open(pseudogene_report_file, "w") as file_out:
         # Print header
-        file_out.write("ID\tPseudogene according to Bakta/Prokka\tPseudogene according to Pseudofinder\tAntifams hit\n")
+        file_out.write(
+            "ID\tPseudogene according to Bakta/Prokka\tPseudogene according to Pseudofinder\tAntifams hit\n"
+        )
         all_keys = ["gene_caller", "pseudofinder", "antifams"]
         for protein, attributes in pseudogene_report_dict.items():
             # Fill in missing attributes with False
@@ -460,8 +462,7 @@ def get_pseudogenes(pseudofinder_file):
             if not line.startswith("#"):
                 col9 = line.strip().split("\t")[8]
                 attributes_dict = dict(
-                    re.split(r"(?<!\\)=", item)
-                    for item in re.split(r"(?<!\\);", col9)
+                    re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9)
                 )
                 if "Note" in attributes_dict:
                     note = attributes_dict["Note"]
@@ -613,7 +614,9 @@ def load_annotations(
                             pseudogene_report_dict[protein]["pseudofinder"] = True
                             added_annot[protein]["pseudo"] = "true"
                             if pseudogenes[protein]:
-                                cols[8] = add_pseudogene_to_note(pseudogenes[protein], cols[8])
+                                cols[8] = add_pseudogene_to_note(
+                                    pseudogenes[protein], cols[8]
+                                )
                     # record antifams
                     if protein in antifams:
                         pseudogene_report_dict.setdefault(protein, dict())
@@ -644,18 +647,20 @@ def load_annotations(
 
 def add_pseudogene_to_note(note_text, col9):
     col9_dict = dict(
-        re.split(r"(?<!\\)=", item)
-        for item in re.split(r"(?<!\\);", col9)
+        re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9)
     )
     if "Note" in col9_dict.keys():
-        col9_dict["Note"] = col9_dict["Note"] + f', {note_text}'
+        col9_dict["Note"] = col9_dict["Note"] + f", {note_text}"
         return ";".join([f"{key}={value}" for key, value in col9_dict.items()])
     else:
         # insert note after locus tag
         keys_list = list(col9_dict.keys())
         locus_tag_index = keys_list.index("locus_tag")
-        new_dict = {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]} | \
-                   {"Note": note_text} | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
+        new_dict = (
+            {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]}
+            | {"Note": note_text}
+            | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
+        )
         return ";".join([f"{key}={value}" for key, value in new_dict.items()])
 
 
@@ -838,7 +843,9 @@ def parse_args():
         "-t", dest="trnascan", help="tRNAScan-SE results", required=True
     )
     parser.add_argument("-o", dest="outfile", help="Outfile name", required=True)
-    parser.add_argument("--pseudogene-report", help="Pseudogene report filename", required=False)
+    parser.add_argument(
+        "--pseudogene-report", help="Pseudogene report filename", required=False
+    )
 
     return parser.parse_args()
 
