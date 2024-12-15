@@ -463,8 +463,8 @@ def get_pseudogenes(pseudofinder_file):
                     re.split(r"(?<!\\)=", item)
                     for item in re.split(r"(?<!\\);", col9)
                 )
-                if "note" in attributes_dict:
-                    note = attributes_dict["note"]
+                if "Note" in attributes_dict:
+                    note = attributes_dict["Note"]
                 else:
                     note = ""
                 if "old_locus_tag" in attributes_dict:
@@ -507,6 +507,7 @@ def load_annotations(
             line = line.strip()
             if line[0] != "#" and not fasta_flag:
                 line = line.replace("db_xref", "Dbxref")
+                line = line.replace(";note=", ";Note=")
                 cols = line.split("\t")
                 if len(cols) == 9:
                     contig, caller, feature, start, annot = (
@@ -646,15 +647,15 @@ def add_pseudogene_to_note(note_text, col9):
         re.split(r"(?<!\\)=", item)
         for item in re.split(r"(?<!\\);", col9)
     )
-    if "note" in col9_dict.keys():
-        col9_dict["note"] = col9_dict["note"] + f', {note_text}'
+    if "Note" in col9_dict.keys():
+        col9_dict["Note"] = col9_dict["Note"] + f', {note_text}'
         return ";".join([f"{key}={value}" for key, value in col9_dict.items()])
     else:
         # insert note after locus tag
         keys_list = list(col9_dict.keys())
         locus_tag_index = keys_list.index("locus_tag")
         new_dict = {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]} | \
-                   {"note": note_text} | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
+                   {"Note": note_text} | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
         return ";".join([f"{key}={value}" for key, value in new_dict.items()])
 
 
