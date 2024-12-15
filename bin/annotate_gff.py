@@ -531,6 +531,32 @@ def load_annotations(
                         # Don't print to the final GFF proteins that are known to not be real
                         continue
                     added_annot[protein] = {}
+                    # process pseudogenes
+                    if "pseudo=true" in annot.lower():
+                        # fix case
+                        cols[8] = annot.replace("pseudo=True", "pseudo=true")
+                        # gene is already marked as a pseudogene; log it but don't add to the annotation again
+                        pseudogene_report_dict.setdefault(protein, dict())
+                        pseudogene_report_dict[protein]["gene_caller"] = True
+                        if protein in pseudogenes:
+                            pseudogene_report_dict[protein]["pseudofinder"] = True
+                        else:
+                            pseudogene_report_dict[protein]["pseudofinder"] = False
+                    else:
+                        # gene caller did not detect this protein as a pseudogene; check if pseudofinder did
+                        if protein in pseudogenes:
+                            pseudogene_report_dict.setdefault(protein, dict())
+                            pseudogene_report_dict[protein]["gene_caller"] = False
+                            pseudogene_report_dict[protein]["pseudofinder"] = True
+                            added_annot[protein]["pseudo"] = "true"
+                            if pseudogenes[protein]:
+                                cols[8] = add_pseudogene_to_note(
+                                    pseudogenes[protein], cols[8]
+                                )
+                    # record antifams
+                    if protein in antifams:
+                        pseudogene_report_dict.setdefault(protein, dict())
+                        pseudogene_report_dict[protein]["antifams"] = True
                     try:
                         eggnogs[protein]
                         pos = 0
@@ -595,32 +621,6 @@ def load_annotations(
                         )
                     except KeyError:
                         pass
-                    # process pseudogenes
-                    if "pseudo=true" in annot.lower():
-                        # fix case
-                        cols[8] = annot.replace("pseudo=True", "pseudo=true")
-                        # gene is already marked as a pseudogene; log it but don't add to the annotation again
-                        pseudogene_report_dict.setdefault(protein, dict())
-                        pseudogene_report_dict[protein]["gene_caller"] = True
-                        if protein in pseudogenes:
-                            pseudogene_report_dict[protein]["pseudofinder"] = True
-                        else:
-                            pseudogene_report_dict[protein]["pseudofinder"] = False
-                    else:
-                        # gene caller did not detect this protein as a pseudogene; check if pseudofinder did
-                        if protein in pseudogenes:
-                            pseudogene_report_dict.setdefault(protein, dict())
-                            pseudogene_report_dict[protein]["gene_caller"] = False
-                            pseudogene_report_dict[protein]["pseudofinder"] = True
-                            added_annot[protein]["pseudo"] = "true"
-                            if pseudogenes[protein]:
-                                cols[8] = add_pseudogene_to_note(
-                                    pseudogenes[protein], cols[8]
-                                )
-                    # record antifams
-                    if protein in antifams:
-                        pseudogene_report_dict.setdefault(protein, dict())
-                        pseudogene_report_dict[protein]["antifams"] = True
                     for a in added_annot[protein]:
                         value = added_annot[protein][a]
                         if type(value) is list:
