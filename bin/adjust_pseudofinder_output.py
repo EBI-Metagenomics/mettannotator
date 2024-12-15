@@ -27,7 +27,9 @@ logging.basicConfig(level=logging.INFO)
 def main(pseudofinder_file, standard_gff, compliant_gff, outfile):
     # Check if the two GFF files are identical. If they are we don't need to do anything
     if filecmp.cmp(standard_gff, compliant_gff, shallow=False):
-        logging.info("Standard and compliant GFFs are identical, no changed to Pseudofinder output needed")
+        logging.info(
+            "Standard and compliant GFFs are identical, no changed to Pseudofinder output needed"
+        )
         shutil.copyfile(pseudofinder_file, outfile)
     else:
         chromosome_dictionary = make_chromosome_conversion(standard_gff, compliant_gff)
@@ -43,14 +45,17 @@ def main(pseudofinder_file, standard_gff, compliant_gff, outfile):
                         parts[1] = chromosome_dictionary[parts[1]]
                         line = " ".join(parts)
                     except KeyError:
-                        logging.error("Could not convert sequence region {}".format(line))
+                        logging.error(
+                            "Could not convert sequence region {}".format(line)
+                        )
                     file_out.write(line)
                 elif line.startswith("#"):
                     file_out.write(line)
                 else:
                     parts = line.strip().split("\t")
                     attributes_dict = dict(
-                        re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", parts[8])
+                        re.split(r"(?<!\\)=", item)
+                        for item in re.split(r"(?<!\\);", parts[8])
                     )
                     for attribute_name, attribute_value in attributes_dict.items():
                         if attribute_name == "old_locus_tag":
@@ -59,10 +64,14 @@ def main(pseudofinder_file, standard_gff, compliant_gff, outfile):
                             for locus_tag in locus_tags:
                                 if "_ign_" not in locus_tag:
                                     try:
-                                        new_locus_tags.append(name_translation[locus_tag])
+                                        new_locus_tags.append(
+                                            name_translation[locus_tag]
+                                        )
                                     except KeyError:
-                                        logging.error(f"Locus tag {locus_tag} cannot be converted between two GFF "
-                                                      f" files. Skipping")
+                                        logging.error(
+                                            f"Locus tag {locus_tag} cannot be converted between two GFF "
+                                            f" files. Skipping"
+                                        )
                                 else:
                                     # these are in the intergenic regions; they will be in the pseudofinder output
                                     # but not in the final genome annotation file
@@ -89,8 +98,10 @@ def make_chromosome_conversion(standard_gff, compliant_gff):
         if chromosomes_standard[chr_standard] == chromosomes_compliant[chr_compliant]:
             chromosome_dictionary[chr_compliant] = chr_standard
         else:
-            sys.exit(f'Pseudofinder port-processing failed: unable to convert chromosome names. '
-                     f'Failed on {chr_standard} and {chr_compliant}')
+            sys.exit(
+                f"Pseudofinder port-processing failed: unable to convert chromosome names. "
+                f"Failed on {chr_standard} and {chr_compliant}"
+            )
     return chromosome_dictionary
 
 
@@ -102,12 +113,16 @@ def get_chromosomes(gff):
                 _, chromosome, start, end = line.strip().split(" ")
                 if "|" in chromosome:
                     chromosome = chromosome.split("|")[-1]
-                chromosomes[chromosome] = f'{start}-{end}'
+                chromosomes[chromosome] = f"{start}-{end}"
     return chromosomes
 
 
 def match_ids(standard_genes, compliant_genes):
-    name_translation = {compliant_genes[key]: standard_genes[key] for key in compliant_genes if key in standard_genes}
+    name_translation = {
+        compliant_genes[key]: standard_genes[key]
+        for key in compliant_genes
+        if key in standard_genes
+    }
     # log genes that are not found in both dictionaries
     unique_to_standard = set(standard_genes.keys()) - set(compliant_genes.keys())
     unique_to_compliant = set(compliant_genes.keys()) - set(standard_genes.keys())
@@ -131,14 +146,17 @@ def load_gff(gff_file, chromosome_dictionary):
             elif line.startswith("#"):
                 continue
             else:
-                chromosome, _, feature, start, end, _, strand, _, col9 = line.strip().split("\t")
+                chromosome, _, feature, start, end, _, strand, _, col9 = (
+                    line.strip().split("\t")
+                )
                 if "|" in chromosome:
                     chromosome = chromosome.split("|")[-1]
                 if chromosome in chromosome_dictionary:
                     chromosome = chromosome_dictionary[chromosome]
                 if feature == "CDS":
                     attributes_dict = dict(
-                        re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9)
+                        re.split(r"(?<!\\)=", item)
+                        for item in re.split(r"(?<!\\);", col9)
                     )
                     location = "{}={}={}={}".format(chromosome, start, end, strand)
                     genes[location] = attributes_dict["locus_tag"]
@@ -168,7 +186,8 @@ def parse_args():
         help="The path to the compliant GFF that was used for Pseudofinder.",
     )
     parser.add_argument(
-        "-o", "--outfile",
+        "-o",
+        "--outfile",
         required=True,
         help="Path to the output file where the result will be saved.",
     )
