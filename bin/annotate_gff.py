@@ -15,6 +15,7 @@
 #
 
 import argparse
+import re
 import sys
 
 
@@ -29,15 +30,17 @@ def main(
     gecco_file,
     dbcan_file,
     defense_finder_file,
+    pseudofinder_file,
     rfam_file,
     trnascan_file,
     outfile,
+    pseudogene_report_file,
 ):
     # load annotations and add them to existing CDS
     # here header contains leading GFF lines starting with "#",
     # main_gff_extended is a dictionary that contains Prokka GFF lines with added in additional annotations
     # fasta is the fasta portion of the Prokka GFF files
-    header, main_gff_extended, fasta = load_annotations(
+    header, main_gff_extended, fasta, pseudogene_report_dict = load_annotations(
         gff,
         eggnog_file,
         ipr_file,
@@ -47,6 +50,7 @@ def main(
         gecco_file,
         dbcan_file,
         defense_finder_file,
+        pseudofinder_file,
     )
 
     ncrnas = get_ncrnas(rfam_file)
@@ -58,6 +62,9 @@ def main(
     write_results_to_file(
         outfile, header, main_gff_extended, fasta, ncrnas, trnas, crispr_annotations
     )
+
+    if pseudogene_report_file:
+        print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file)
 
 
 def write_results_to_file(
@@ -85,6 +92,20 @@ def write_results_to_file(
                                     file_out.write(element)
         for line in fasta:
             file_out.write(f"{line}\n")
+
+
+def print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file):
+    with open(pseudogene_report_file, "w") as file_out:
+        # Print header
+        file_out.write("ID\tPseudogene according to Bakta/Prokka\tPseudogene according to Pseudofinder\tAntifams hit\n")
+        all_keys = ["gene_caller", "pseudofinder", "antifams"]
+        for protein, attributes in pseudogene_report_dict.items():
+            # Fill in missing attributes with False
+            print(attributes)
+            line = [protein] + [str(attributes.get(key, False)) for key in all_keys]
+            print(line)
+            print("\n")
+            file_out.write("\t".join(line) + "\n")
 
 
 def sort_positions(contig, main_gff_extended, ncrnas, trnas, crispr_annotations):
@@ -430,6 +451,26 @@ def get_defense_finder(df_file):
     return defense_finder_annotations
 
 
+def get_pseudogenes(pseudofinder_file):
+    pseudogenes = list()
+    if not pseudofinder_file:
+        return pseudogenes
+    with open(pseudofinder_file) as file_in:
+        for line in file_in:
+            if not line.startswith("#"):
+                col9 = line.strip().split("\t")[8]
+                attributes_dict = dict(
+                    re.split(r"(?<!\\)=", item)
+                    for item in re.split(r"(?<!\\);", col9)
+                )
+                if "old_locus_tag" in attributes_dict:
+                    tags = attributes_dict["old_locus_tag"].split(",")
+                    for tag in tags:
+                        if "_ign_" not in tag:
+                            pseudogenes.append(tag)
+    return pseudogenes
+
+
 def load_annotations(
     in_gff,
     eggnog_file,
@@ -440,6 +481,7 @@ def load_annotations(
     gecco_file,
     dbcan_file,
     defense_finder_file,
+    pseudofinder_file,
 ):
     eggnogs = get_eggnog(eggnog_file)
     iprs, antifams = get_iprs(ipr_file)
@@ -449,6 +491,8 @@ def load_annotations(
     amr_annotations = get_amr(amr_file)
     dbcan_annotations = get_dbcan(dbcan_file)
     defense_finder_annotations = get_defense_finder(defense_finder_file)
+    pseudogenes = get_pseudogenes(pseudofinder_file)
+    pseudogene_report_dict = dict()
     added_annot = {}
     main_gff = dict()
     header = []
@@ -545,6 +589,28 @@ def load_annotations(
                         )
                     except KeyError:
                         pass
+                    # process pseudogenes
+                    if "pseudo=true" in annot.lower():
+                        # fix case
+                        cols[8] = annot.replace("pseudo=True", "pseudo=true")
+                        # gene is already marked as a pseudogene; log it but don't add to the annotation again
+                        pseudogene_report_dict.setdefault(protein, dict())
+                        pseudogene_report_dict[protein]["gene_caller"] = True
+                        if protein in pseudogenes:
+                            pseudogene_report_dict[protein]["pseudofinder"] = True
+                        else:
+                            pseudogene_report_dict[protein]["pseudofinder"] = False
+                    else:
+                        # gene caller did not detect this protein as a pseudogene; check if pseudofinder did
+                        if protein in pseudogenes:
+                            pseudogene_report_dict.setdefault(protein, dict())
+                            pseudogene_report_dict[protein]["gene_caller"] = False
+                            pseudogene_report_dict[protein]["pseudofinder"] = True
+                            added_annot[protein]["pseudo"] = "True"
+                    # record antifams
+                    if protein in antifams:
+                        pseudogene_report_dict.setdefault(protein, dict())
+                        pseudogene_report_dict[protein]["antifams"] = True
                     for a in added_annot[protein]:
                         value = added_annot[protein][a]
                         if type(value) is list:
@@ -566,7 +632,7 @@ def load_annotations(
                     header.append(line)
             elif fasta_flag:
                 fasta.append(line)
-    return header, main_gff, fasta
+    return header, main_gff, fasta, pseudogene_report_dict
 
 
 def get_ncrnas(ncrnas_file):
@@ -738,11 +804,17 @@ def parse_args():
         help="The GFF file produced by Defense Finder post-processing script",
         required=False,
     )
+    parser.add_argument(
+        "--pseudofinder",
+        help="The GFF file produced by the Pseudofinder post-processing script",
+        required=False,
+    )
     parser.add_argument("-r", dest="rfam", help="Rfam results", required=True)
     parser.add_argument(
         "-t", dest="trnascan", help="tRNAScan-SE results", required=True
     )
     parser.add_argument("-o", dest="outfile", help="Outfile name", required=True)
+    parser.add_argument("--pseudogene-report", help="Pseudogene report filename", required=False)
 
     return parser.parse_args()
 
@@ -760,7 +832,9 @@ if __name__ == "__main__":
         args.gecco,
         args.dbcan,
         args.defense_finder,
+        args.pseudofinder,
         args.rfam,
         args.trnascan,
         args.outfile,
+        args.pseudogene_report,
     )
