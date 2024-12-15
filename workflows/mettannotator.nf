@@ -393,6 +393,8 @@ workflow METTANNOTATOR {
         DBCAN.out.dbcan_gff, remainder: true
     ).join(
         DEFENSE_FINDER.out.gff, remainder: true
+    ).join(
+        PSEUDOFINDER_POSTPROCESSING.out.pseudofinder_processed_gff, remainder: true
     )
 
     if ( !params.fast ) {
