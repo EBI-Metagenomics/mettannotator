@@ -38,7 +38,7 @@ workflow DOWNLOAD_DATABASES {
         eggnog_data_dir = file("$params.dbs/eggnog")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
         bakta_dir = file("$params.dbs/bakta")
-        pseudofinder_file = file("$params.dbs/uniprot_sprot_2024_06.fasta")
+        pseudofinder_dir = file("$params.dbs/uniprot")
 
         if (amrfinder_plus_dir.exists()) {
             amrfinder_plus_db = tuple(
@@ -129,19 +129,11 @@ workflow DOWNLOAD_DATABASES {
             )
         }
 
-        if (pseudofinder_file.exists()) {
+        if (pseudofinder_dir.exists()) {
             log.info("Pseudofinder database exists, or at least the expected folder.")
-            fileName = pseudofinder_file.getName()
-            match = (fileName =~ /uniprot_sprot_(\d{4}_\d{2})\.fasta/)
-            if (match) {
-                pseudofinder_db_version = match[0][1]
-            } else {
-                log.warn("Failed to extract version from file name ${fileName}")
-                pseudofinder_db_version = "Unknown"
-            }
             pseudofinder_db = tuple(
-                pseudofinder_file,
-                pseudofinder_db_version // the DB version
+                "${pseudofinder_dir}/uniprot_sprot.fasta",
+                file("${pseudofinder_dir}/VERSION.txt", checkIfExists: true).text // the DB version
             )
         } else {
             PSEUDOFINDER_GETDB()

@@ -12,7 +12,7 @@ process LOOKUP_KINGDOM {
     tuple val(meta), path(fasta)
 
     output:
-    tuple val(meta), env(detected_kingdom), emit: detected_kingdom  // noqa
+    tuple val(meta), env(detected_kingdom), emit: detected_kingdom
     path "versions.yml",                    emit: versions
 
     script:
