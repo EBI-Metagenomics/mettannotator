@@ -36,7 +36,7 @@ def main(pseudofinder_file, standard_gff, compliant_gff, outfile):
         standard_genes = load_gff(standard_gff, dict())
         compliant_genes = load_gff(compliant_gff, chromosome_dictionary)
         name_translation = match_ids(standard_genes, compliant_genes)
-        with open(outfile, "w") as file_out, open(pseudofinder_file, "r") as file_in:
+        with open(outfile, "w") as file_out, open(pseudofinder_file) as file_in:
             for line in file_in:
                 if line.startswith("##sequence-region"):
                     parts = line.split(" ")
@@ -45,9 +45,7 @@ def main(pseudofinder_file, standard_gff, compliant_gff, outfile):
                         parts[1] = chromosome_dictionary[parts[1]]
                         line = " ".join(parts)
                     except KeyError:
-                        logging.error(
-                            "Could not convert sequence region {}".format(line)
-                        )
+                        logging.error(f"Could not convert sequence region {line}")
                     file_out.write(line)
                 elif line.startswith("#"):
                     file_out.write(line)
@@ -107,7 +105,7 @@ def make_chromosome_conversion(standard_gff, compliant_gff):
 
 def get_chromosomes(gff):
     chromosomes = dict()
-    with open(gff, "r") as file_in:
+    with open(gff) as file_in:
         for line in file_in:
             if line.startswith("##sequence-region"):
                 _, chromosome, start, end = line.strip().split(" ")
@@ -139,7 +137,7 @@ def match_ids(standard_genes, compliant_genes):
 
 def load_gff(gff_file, chromosome_dictionary):
     genes = dict()
-    with open(gff_file, "r") as file_in:
+    with open(gff_file) as file_in:
         for line in file_in:
             if line.startswith("##FASTA"):
                 return genes
@@ -158,7 +156,7 @@ def load_gff(gff_file, chromosome_dictionary):
                         re.split(r"(?<!\\)=", item)
                         for item in re.split(r"(?<!\\);", col9)
                     )
-                    location = "{}={}={}={}".format(chromosome, start, end, strand)
+                    location = f"{chromosome}={start}={end}={strand}"
                     genes[location] = attributes_dict["locus_tag"]
     return genes
 
