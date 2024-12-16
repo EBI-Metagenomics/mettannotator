@@ -99,12 +99,14 @@ def print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file):
     with open(pseudogene_report_file, "w") as file_out:
         writer = csv.writer(file_out, delimiter="\t", lineterminator="\n")
         # Print header
-        writer.writerow([
-            'ID',
-            'Pseudogene according to Bakta/Prokka',
-            'Pseudogene according to Pseudofinder',
-            'AntiFam hit'
-        ])
+        writer.writerow(
+            [
+                "ID",
+                "Pseudogene according to Bakta/Prokka",
+                "Pseudogene according to Pseudofinder",
+                "AntiFam hit",
+            ]
+        )
 
         all_keys = ["gene_caller", "pseudofinder", "antifams"]
         for protein, attributes in pseudogene_report_dict.items():
