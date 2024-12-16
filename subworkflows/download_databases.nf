@@ -38,7 +38,7 @@ workflow DOWNLOAD_DATABASES {
         eggnog_data_dir = file("$params.dbs/eggnog")
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
         bakta_dir = file("$params.dbs/bakta")
-        pseudofinder_dir = file("$params.dbs/uniprot")
+        pseudofinder_dir = file("$params.dbs/uniprot_sprot")
 
         if (amrfinder_plus_dir.exists()) {
             amrfinder_plus_db = tuple(

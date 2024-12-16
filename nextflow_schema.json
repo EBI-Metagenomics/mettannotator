@@ -167,6 +167,7 @@
         },
         "pseudofinder_db": {
           "type": "string",
+          "format": "directory-path",
           "description": "Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.",
           "help_text": "Set this variable to the path of the protein fasta file to be used as the database."
         },
