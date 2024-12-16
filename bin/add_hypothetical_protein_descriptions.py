@@ -103,7 +103,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                             )
                         else:
                             attributes_dict = insert_product_source(
-                                attributes_dict, gene_caller
+                                attributes_dict, gene_caller.value
                             )
                         col9_updated = update_col9(attributes_dict)
                         file_out.write(
