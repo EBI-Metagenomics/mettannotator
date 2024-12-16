@@ -18,7 +18,8 @@ process PSEUDOFINDER {
     -g ${compliant_gbk} \
     -db ${pseudofinder_db} \
     -op ${meta.prefix} \
-    -t ${task.cpus}
+    -t ${task.cpus} \
+    --diamond
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
