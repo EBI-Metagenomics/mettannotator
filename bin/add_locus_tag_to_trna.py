@@ -31,8 +31,12 @@ def main(input_file, output_file):
                 file_out.write(line)
                 continue
 
+            if columns[2] != "tRNA":
+                file_out.write(line)
+                continue
+
             # Parse the attributes (column 9)
-            attributes = columns[8]
+            attributes = columns[8].rstrip(";")
             attributes_dict = dict(
                 re.split(r"(?<!\\)=", item)
                 for item in re.split(r"(?<!\\);", attributes)
@@ -41,7 +45,7 @@ def main(input_file, output_file):
             # Add locus_tag based on the ID field
             if "ID" in attributes_dict:
                 locus_tag = attributes_dict["ID"]
-                attributes = attributes.rstrip(";") + f";locus_tag={locus_tag}"
+                attributes = attributes + f";locus_tag={locus_tag}"
 
             columns[8] = attributes
             file_out.write("\t".join(columns) + "\n")
