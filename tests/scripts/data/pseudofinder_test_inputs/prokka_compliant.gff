@@ -1,0 +1,10 @@
+##gff-version 3
+##sequence-region gnl|Prokka|GCF_001457635.1_1 1 2110968
+gnl|Prokka|GCF_001457635.1_1	prokka	gene	558	758	.	+	.	ID=GCF_001457635.1_00001_gene;locus_tag=GCF_001457635.1_00001
+gnl|Prokka|GCF_001457635.1_1	Prodigal:002006	CDS	558	758	.	+	0	ID=GCF_001457635.1_00001;Parent=GCF_001457635.1_00001_gene;inference=ab initio prediction:Prodigal:002006;locus_tag=GCF_001457635.1_00001;product=hypothetical protein;protein_id=gnl|Prokka|GCF_001457635.1_00001
+gnl|Prokka|GCF_001457635.1_1	prokka	gene	991	1263	.	+	.	ID=GCF_001457635.1_00002_gene;locus_tag=GCF_001457635.1_00002
+gnl|Prokka|GCF_001457635.1_1	Prodigal:002006	CDS	991	1263	.	+	0	ID=GCF_001457635.1_00002;Parent=GCF_001457635.1_00002_gene;inference=ab initio prediction:Prodigal:002006;locus_tag=GCF_001457635.1_00002;product=hypothetical protein;protein_id=gnl|Prokka|GCF_001457635.1_00002
+gnl|Prokka|GCF_001457635.1_1	prokka	gene	1425	1559	.	+	.	ID=GCF_001457635.1_00003_gene;Name=pgk_1;gene=pgk_1;locus_tag=GCF_001457635.1_00003
+gnl|Prokka|GCF_001457635.1_1	Prodigal:002006	CDS	1425	1559	.	+	0	ID=GCF_001457635.1_00003;Parent=GCF_001457635.1_00003_gene;eC_number=2.7.2.3;Name=pgk_1;db_xref=COG:COG0126;gene=pgk_1;inference=ab initio prediction:Prodigal:002006,similar to AA sequence:UniProtKB:Q8DQX8;locus_tag=GCF_001457635.1_00003;product=Phosphoglycerate kinase;protein_id=gnl|Prokka|GCF_001457635.1_00003
+gnl|Prokka|GCF_001457635.1_1	prokka	gene	1958	2302	.	+	.	ID=GCF_001457635.1_00005_gene;Name=pgk_2;gene=pgk_2;locus_tag=GCF_001457635.1_00005
+gnl|Prokka|GCF_001457635.1_1	Prodigal:002006	CDS	1958	2302	.	+	0	ID=GCF_001457635.1_00005;Parent=GCF_001457635.1_00005_gene;eC_number=2.7.2.3;Name=pgk_2;db_xref=COG:COG0126;gene=pgk_2;inference=ab initio prediction:Prodigal:002006,similar to AA sequence:UniProtKB:Q8DQX8;locus_tag=GCF_001457635.1_00005;product=Phosphoglycerate kinase;protein_id=gnl|Prokka|GCF_001457635.1_00005

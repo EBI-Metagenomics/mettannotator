@@ -1,0 +1,4 @@
+##gff-version 3
+#!annotation-date	2024-12-10 16:01:58
+##sequence-region GCF_001457635.1_1 1 2110968
+GCF_001457635.1_1	pseudofinder	gene	1425	2302	.	+	.	note=Pseudogene candidate. Reason(s):Predicted fragmentation of a single gene.;locus_tag=GCF_001457635.1_1_pseudo_00001;old_locus_tag=GCF_001457635.1_00003,GCF_001457635.1_1_ign_00003,GCF_001457635.1_00005
