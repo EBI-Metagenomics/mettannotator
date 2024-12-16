@@ -445,6 +445,15 @@ The following logic is used by `mettannotator` to fill out the `product` field i
 
 If the pipeline is executed with the `--fast` flag, only the output of eggNOG-mapper is used to determine the product of proteins that were labeled as hypothetical by the gene caller.
 
+#### Detection of pseudogenes and spurious ORFs
+
+`mettannotator` uses several approaches to detect pseudogenes and spurious ORFs:
+- If Bakta is used as the initial annotation tool, `mettannotator` will inherit the pseudogene labels assigned by Bakta.
+- `mettannotator` runs Pseudofinder and labels genes that Pseudofinder predicts to be pseudogenes by adding `"pseudo=true"` to the 9th column of the final merged GFF file. If there is a disagreement between Pseudofinder and Bakta and one of the tools calls a gene a pseudogene, it will be labeled as a pseudogene.
+- AntiFam, which is a part of InterPro, is used to identify potential spurious ORFs. If an ORF has an AntiFam hit, `mettannotator` will remove it from the final merged GFF file. These ORFs will still appear in the raw outputs of Bakta/Prokka and may appear in other tool outputs.
+
+`mettannotator` produces a report file which is located in the `merged_gff` folder and includes a list of CDS with AntiFam hits and pseudogenes. For each pseudogene, the report shows which tool predicted it.
+
 ### Contents of the tool output folders
 
 The output folders of each individual tool contain select output files of the third-party tools used by `mettannotator`. For file descriptions, please refer to the tool documentation. For some tools that don't output a GFF, `mettannotator` converts the output into a GFF.
