@@ -103,10 +103,7 @@ def print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file):
         all_keys = ["gene_caller", "pseudofinder", "antifams"]
         for protein, attributes in pseudogene_report_dict.items():
             # Fill in missing attributes with False
-            print(attributes)
             line = [protein] + [str(attributes.get(key, False)) for key in all_keys]
-            print(line)
-            print("\n")
             file_out.write("\t".join(line) + "\n")
 
 
