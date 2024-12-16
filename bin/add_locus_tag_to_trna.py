@@ -19,7 +19,7 @@ import re
 
 
 def main(input_file, output_file):
-    with open(input_file, 'r') as file_in, open(output_file, 'w') as file_out:
+    with open(input_file, "r") as file_in, open(output_file, "w") as file_out:
         for line in file_in:
             if line.startswith("#") or not line.strip():
                 # Write header or empty lines as is
@@ -34,7 +34,8 @@ def main(input_file, output_file):
             # Parse the attributes (column 9)
             attributes = columns[8]
             attributes_dict = dict(
-                re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", attributes)
+                re.split(r"(?<!\\)=", item)
+                for item in re.split(r"(?<!\\);", attributes)
             )
 
             # Add locus_tag based on the ID field
@@ -48,9 +49,7 @@ def main(input_file, output_file):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description=(
-            "The script adds locus tags to the 9th column."
-        )
+        description=("The script adds locus tags to the 9th column.")
     )
     parser.add_argument(
         "-i",
@@ -73,4 +72,3 @@ if __name__ == "__main__":
         args.infile,
         args.outfile,
     )
-
