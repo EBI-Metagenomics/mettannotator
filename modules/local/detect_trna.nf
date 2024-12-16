@@ -36,8 +36,8 @@ process DETECT_TRNA {
     --gff ${meta.prefix}_trna_temp.gff \
     ${fasta}
 
-    add_locus_tag_to_trna.py -i ${meta.prefix}_trna_temp.gff -o ${meta.prefix}_trna_temp.gff
-    
+    add_locus_tag_to_trna.py -i ${meta.prefix}_trna_temp.gff -o ${meta.prefix}_trna.gff
+
     parse_tRNA.py -i ${meta.prefix}_stats.out -o ${meta.prefix}_tRNA_20aa.out
 
     echo "Completed"
