@@ -461,8 +461,8 @@ def get_pseudogenes(pseudofinder_file):
                 attributes_dict = dict(
                     re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9)
                 )
-                if "Note" in attributes_dict:
-                    note = attributes_dict["Note"]
+                if "note" in attributes_dict:
+                    note = attributes_dict["note"]
                 else:
                     note = ""
                 if "old_locus_tag" in attributes_dict:
