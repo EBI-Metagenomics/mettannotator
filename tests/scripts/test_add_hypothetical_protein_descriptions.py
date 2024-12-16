@@ -197,7 +197,7 @@ def test_keep_or_move_to_note_sentence():
     assert result == (
         "hypothetical protein",
         "Prokka",
-        {"ID": "123", "locus_tag": "locus_tag", "note": "eggNOG:This is a protein"},
+        {"ID": "123", "locus_tag": "locus_tag", "Note": "eggNOG:This is a protein"},
     )
 
 
@@ -218,7 +218,7 @@ def test_move_function_to_note_with_existing_note():
         [
             "ID=BU_ATCC8492_03165",
             "locus_tag=BU_ATCC8492_03165",
-            "note=UPF0056 inner membrane protein YhgN",
+            "Note=UPF0056 inner membrane protein YhgN",
             "product=NAAT family transporter",
             "product_source=NCBIfam",
             "eggNOG=585543.HMPREF0969_01099",
@@ -232,7 +232,7 @@ def test_move_function_to_note_with_existing_note():
     expected_result = {
         "ID": "BU_ATCC8492_03165",
         "locus_tag": "BU_ATCC8492_03165",
-        "note": "UPF0056 inner membrane protein YhgN, eggNOG:some function",
+        "Note": "UPF0056 inner membrane protein YhgN, eggNOG:some function",
         "product": "NAAT family transporter",
         "product_source": "NCBIfam",
         "eggNOG": "585543.HMPREF0969_01099",
@@ -260,7 +260,7 @@ def test_move_function_to_note_with_no_note():
         "ID": "BU_ATCC8492_00043",
         "inference": "ab initio prediction:Prodigal:002006",
         "locus_tag": "BU_ATCC8492_00043",
-        "note": "eggNOG:some function",
+        "Note": "eggNOG:some function",
         "product": "Protein of unknown function DUF2961",
         "product_source": "InterPro(Pfam)",
         "eggNOG": "411479.BACUNI_03969",
