@@ -23,7 +23,7 @@ process PSEUDOFINDER {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Pseudofinder: \$(python -c "import pseudofinder; print(pseudofinder.__version__)")
+        Pseudofinder: 1.1.0
         Swiss-Prot: $db_version
     END_VERSIONS
     """
