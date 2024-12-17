@@ -9,7 +9,7 @@ process PSEUDOFINDER_GETDB {
     publishDir "${params.dbs}", mode: "copy"
 
     output:
-    tuple path("uniprot_sprot/uniprot_sprot.fasta"), env("VERSION"), emit: pseudofinder_db
+    tuple path("uniprot_sprot"), env("VERSION"), emit: pseudofinder_db
 
     script:
     """

@@ -132,7 +132,7 @@ workflow DOWNLOAD_DATABASES {
         if (pseudofinder_dir.exists()) {
             log.info("Pseudofinder database exists, or at least the expected folder.")
             pseudofinder_db = tuple(
-                "${pseudofinder_dir}/uniprot_sprot.fasta",
+                pseudofinder_dir,
                 file("${pseudofinder_dir}/VERSION.txt", checkIfExists: true).text // the DB version
             )
         } else {

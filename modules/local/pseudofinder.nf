@@ -16,7 +16,7 @@ process PSEUDOFINDER {
     """
     pseudofinder.py annotate \
     -g ${compliant_gbk} \
-    -db ${pseudofinder_db} \
+    -db ${pseudofinder_db}/uniprot_sprot.fasta \
     -op ${meta.prefix} \
     -t ${task.cpus} \
     --diamond
