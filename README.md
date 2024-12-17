@@ -39,6 +39,8 @@ The workflow uses the following tools and databases:
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6                                        | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.9.3                                         | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | 2024-01-19 with AMRFinderPlus DB 2024-01-31.1 | Bakta DB (when Bakta is used as the gene caller)                                                                       |
+| [Pseudofinder](https://github.com/filip-husnik/pseudofinder)                                     | v1.1.0                                        | Identification of possible pseudogenes                                                                                 |
+| [Swiss-Prot](https://www.uniprot.org/help/downloads)                                             | 2024_06                                       | Database for Pseudofinder                                                                                              |
 | [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.62-94.0                                     | Protein annotation (InterPro, Pfam)                                                                                    |
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11                                        | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2                                         | Database for eggNOG-mapper                                                                                             |
@@ -89,7 +91,8 @@ The pipeline needs reference databases in order to work, they take roughly 180G.
 | interproscan        | 45G  |
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
-| total               | 180G |
+| pseudofinder        | 273M |
+| total               | 182G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
@@ -343,6 +346,7 @@ The output folder structure will look as follows:
    │  ├─interproscan
    │  ├─merged_gff
    │  ├─prokka
+   │  ├─pseudofinder
    │  └─unifire
    ├─mobilome
    │  └─crisprcas_finder
@@ -440,6 +444,16 @@ The following logic is used by `mettannotator` to fill out the `product` field i
 <img src="media/mettannotator-product.png">
 
 If the pipeline is executed with the `--fast` flag, only the output of eggNOG-mapper is used to determine the product of proteins that were labeled as hypothetical by the gene caller.
+
+#### Detection of pseudogenes and spurious ORFs
+
+`mettannotator` uses several approaches to detect pseudogenes and spurious ORFs:
+
+- If Bakta is used as the initial annotation tool, `mettannotator` will inherit the pseudogene labels assigned by Bakta.
+- `mettannotator` runs Pseudofinder and labels genes that Pseudofinder predicts to be pseudogenes by adding `"pseudo=true"` to the 9th column of the final merged GFF file. If there is a disagreement between Pseudofinder and Bakta and one of the tools calls a gene a pseudogene, it will be labeled as a pseudogene.
+- AntiFam, which is a part of InterPro, is used to identify potential spurious ORFs. If an ORF has an AntiFam hit, `mettannotator` will remove it from the final merged GFF file. These ORFs will still appear in the raw outputs of Bakta/Prokka and may appear in other tool outputs.
+
+`mettannotator` produces a report file which is located in the `merged_gff` folder and includes a list of CDS with AntiFam hits and pseudogenes. For each pseudogene, the report shows which tool predicted it.
 
 ### Contents of the tool output folders
 

@@ -15,6 +15,8 @@
 #
 
 import argparse
+import csv
+import re
 import sys
 
 
@@ -29,15 +31,17 @@ def main(
     gecco_file,
     dbcan_file,
     defense_finder_file,
+    pseudofinder_file,
     rfam_file,
     trnascan_file,
     outfile,
+    pseudogene_report_file,
 ):
     # load annotations and add them to existing CDS
     # here header contains leading GFF lines starting with "#",
     # main_gff_extended is a dictionary that contains Prokka GFF lines with added in additional annotations
     # fasta is the fasta portion of the Prokka GFF files
-    header, main_gff_extended, fasta = load_annotations(
+    header, main_gff_extended, fasta, pseudogene_report_dict = load_annotations(
         gff,
         eggnog_file,
         ipr_file,
@@ -47,6 +51,7 @@ def main(
         gecco_file,
         dbcan_file,
         defense_finder_file,
+        pseudofinder_file,
     )
 
     ncrnas = get_ncrnas(rfam_file)
@@ -58,6 +63,9 @@ def main(
     write_results_to_file(
         outfile, header, main_gff_extended, fasta, ncrnas, trnas, crispr_annotations
     )
+
+    if pseudogene_report_file:
+        print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file)
 
 
 def write_results_to_file(
@@ -87,6 +95,26 @@ def write_results_to_file(
             file_out.write(f"{line}\n")
 
 
+def print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file):
+    with open(pseudogene_report_file, "w") as file_out:
+        writer = csv.writer(file_out, delimiter="\t", lineterminator="\n")
+        # Print header
+        writer.writerow(
+            [
+                "ID",
+                "Pseudogene according to Bakta/Prokka",
+                "Pseudogene according to Pseudofinder",
+                "AntiFam hit",
+            ]
+        )
+
+        all_keys = ["gene_caller", "pseudofinder", "antifams"]
+        for protein, attributes in pseudogene_report_dict.items():
+            # Fill in missing attributes with False
+            line = [protein] + [str(attributes.get(key, False)) for key in all_keys]
+            writer.writerow(line)
+
+
 def sort_positions(contig, main_gff_extended, ncrnas, trnas, crispr_annotations):
     sorted_pos_list = list()
     for my_dict in (main_gff_extended, ncrnas, trnas, crispr_annotations):
@@ -106,8 +134,9 @@ def check_for_additional_keys(ncrnas, trnas, crispr_annotations, contig_list):
 
 def get_iprs(ipr_annot):
     iprs = {}
+    antifams = list()
     if not ipr_annot:
-        return iprs
+        return iprs, antifams
     with open(ipr_annot) as f:
         for line in f:
             cols = line.strip().split("\t")
@@ -118,6 +147,9 @@ def get_iprs(ipr_annot):
                 continue
             if evalue > 1e-10:
                 continue
+            if cols[3] == "AntiFam":
+                antifams.append(protein)
+                continue
             if protein not in iprs:
                 iprs[protein] = [set(), set()]
             if cols[3] == "Pfam":
@@ -127,7 +159,7 @@ def get_iprs(ipr_annot):
                 ipr = cols[11]
                 if not ipr == "-":
                     iprs[protein][1].add(ipr)
-    return iprs
+    return iprs, antifams
 
 
 def get_eggnog(eggnog_annot):
@@ -426,6 +458,29 @@ def get_defense_finder(df_file):
     return defense_finder_annotations
 
 
+def get_pseudogenes(pseudofinder_file):
+    pseudogenes = dict()
+    if not pseudofinder_file:
+        return pseudogenes
+    with open(pseudofinder_file) as file_in:
+        for line in file_in:
+            if not line.startswith("#"):
+                col9 = line.strip().split("\t")[8]
+                attributes_dict = dict(
+                    re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9)
+                )
+                if "note" in attributes_dict:
+                    note = attributes_dict["note"]
+                else:
+                    note = ""
+                if "old_locus_tag" in attributes_dict:
+                    tags = attributes_dict["old_locus_tag"].split(",")
+                    for tag in tags:
+                        if "_ign_" not in tag:
+                            pseudogenes[tag] = note
+    return pseudogenes
+
+
 def load_annotations(
     in_gff,
     eggnog_file,
@@ -436,15 +491,18 @@ def load_annotations(
     gecco_file,
     dbcan_file,
     defense_finder_file,
+    pseudofinder_file,
 ):
     eggnogs = get_eggnog(eggnog_file)
-    iprs = get_iprs(ipr_file)
+    iprs, antifams = get_iprs(ipr_file)
     sanntis_bgcs = get_bgcs(sanntis_file, in_gff, tool="sanntis")
     gecco_bgcs = get_bgcs(gecco_file, in_gff, tool="gecco")
     antismash_bgcs = get_bgcs(antismash_file, in_gff, tool="antismash")
     amr_annotations = get_amr(amr_file)
     dbcan_annotations = get_dbcan(dbcan_file)
     defense_finder_annotations = get_defense_finder(defense_finder_file)
+    pseudogenes = get_pseudogenes(pseudofinder_file)
+    pseudogene_report_dict = dict()
     added_annot = {}
     main_gff = dict()
     header = []
@@ -455,6 +513,7 @@ def load_annotations(
             line = line.strip()
             if line[0] != "#" and not fasta_flag:
                 line = line.replace("db_xref", "Dbxref")
+                line = line.replace(";note=", ";Note=")
                 cols = line.split("\t")
                 if len(cols) == 9:
                     contig, caller, feature, start, annot = (
@@ -473,7 +532,36 @@ def load_annotations(
                         else:
                             continue
                     protein = annot.split(";")[0].split("=")[-1]
+                    if protein in antifams:
+                        # Don't print to the final GFF proteins that are known to not be real
+                        continue
                     added_annot[protein] = {}
+                    # process pseudogenes
+                    if "pseudo=true" in annot.lower():
+                        # fix case
+                        cols[8] = annot.replace("pseudo=True", "pseudo=true")
+                        # gene is already marked as a pseudogene; log it but don't add to the annotation again
+                        pseudogene_report_dict.setdefault(protein, dict())
+                        pseudogene_report_dict[protein]["gene_caller"] = True
+                        if protein in pseudogenes:
+                            pseudogene_report_dict[protein]["pseudofinder"] = True
+                        else:
+                            pseudogene_report_dict[protein]["pseudofinder"] = False
+                    else:
+                        # gene caller did not detect this protein as a pseudogene; check if pseudofinder did
+                        if protein in pseudogenes:
+                            pseudogene_report_dict.setdefault(protein, dict())
+                            pseudogene_report_dict[protein]["gene_caller"] = False
+                            pseudogene_report_dict[protein]["pseudofinder"] = True
+                            added_annot[protein]["pseudo"] = "true"
+                            if pseudogenes[protein]:
+                                cols[8] = add_pseudogene_to_note(
+                                    pseudogenes[protein], cols[8]
+                                )
+                    # record antifams
+                    if protein in antifams:
+                        pseudogene_report_dict.setdefault(protein, dict())
+                        pseudogene_report_dict[protein]["antifams"] = True
                     try:
                         eggnogs[protein]
                         pos = 0
@@ -559,7 +647,26 @@ def load_annotations(
                     header.append(line)
             elif fasta_flag:
                 fasta.append(line)
-    return header, main_gff, fasta
+    return header, main_gff, fasta, pseudogene_report_dict
+
+
+def add_pseudogene_to_note(note_text, col9):
+    col9_dict = dict(
+        re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9)
+    )
+    if "Note" in col9_dict.keys():
+        col9_dict["Note"] = col9_dict["Note"] + f", {note_text}"
+        return ";".join([f"{key}={value}" for key, value in col9_dict.items()])
+    else:
+        # insert note after locus tag
+        keys_list = list(col9_dict.keys())
+        locus_tag_index = keys_list.index("locus_tag")
+        new_dict = (
+            {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]}
+            | {"Note": note_text}
+            | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
+        )
+        return ";".join([f"{key}={value}" for key, value in new_dict.items()])
 
 
 def get_ncrnas(ncrnas_file):
@@ -731,11 +838,19 @@ def parse_args():
         help="The GFF file produced by Defense Finder post-processing script",
         required=False,
     )
+    parser.add_argument(
+        "--pseudofinder",
+        help="The GFF file produced by the Pseudofinder post-processing script",
+        required=False,
+    )
     parser.add_argument("-r", dest="rfam", help="Rfam results", required=True)
     parser.add_argument(
         "-t", dest="trnascan", help="tRNAScan-SE results", required=True
     )
     parser.add_argument("-o", dest="outfile", help="Outfile name", required=True)
+    parser.add_argument(
+        "--pseudogene-report", help="Pseudogene report filename", required=False
+    )
 
     return parser.parse_args()
 
@@ -753,7 +868,9 @@ if __name__ == "__main__":
         args.gecco,
         args.dbcan,
         args.defense_finder,
+        args.pseudofinder,
         args.rfam,
         args.trnascan,
         args.outfile,
+        args.pseudogene_report,
     )

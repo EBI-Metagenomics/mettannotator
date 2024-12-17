@@ -1,4 +1,8 @@
 repository_type: pipeline
+org_path: ebi-metagenomics
+template:
+  prefix: ebi-metagenomics
+    - github_badges
 lint:
   files_exist:
     - CODE_OF_CONDUCT.md
@@ -27,11 +31,11 @@ lint:
     - docs/images/nf-core-mettannotator_logo_dark.png
     - .github/ISSUE_TEMPLATE/bug_report.yml
     - .github/workflows/linting.yml
+    - .github/CONTRIBUTING.md
+    - .github/workflows/branch.yml
+    - .github/workflows/linting_comment.yml
+    - .github/PULL_REQUEST_TEMPLATE.md
     - .gitignore
-  nextflow_config: False
-    - params.custom_config_version
-    - params.custom_config_base
-    - manifest.name
-    - manifest.homePage
+  nextflow_config: false
   multiqc_config:
     - report_comment

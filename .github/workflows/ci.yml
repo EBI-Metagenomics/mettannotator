@@ -30,8 +30,8 @@ jobs:
       - name: Check out pipeline code
         uses: actions/checkout@v3
 
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
+      - name: Set up Nextflow
+        uses: nf-core/setup-nextflow@v2
         with:
           version: "${{ matrix.NXF_VER }}"
 

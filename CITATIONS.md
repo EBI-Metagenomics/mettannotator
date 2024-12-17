@@ -62,6 +62,10 @@
 
   > Sanchez S, Rogers JD, Rogers AB, Nassar M, McEntyre J, Welch M, Hollfelder F, Finn RD. Expansion of novel biosynthetic gene clusters from diverse environments using SanntiS. bioRxiv 2023.05.23.540769; doi: https://doi.org/10.1101/2023.05.23.540769
 
+- [Pseudofinder](https://doi.org/10.1093/molbev/msac153)
+
+  > Syberg-Olsen MJ, Garber AI, Keeling PJ, McCutcheon JP, Husnik F. Pseudofinder: Detection of Pseudogenes in Prokaryotic Genomes. Mol Biol Evol. 2022 Jul 2;39(7):msac153. doi: 10.1093/molbev/msac153. PMID: 35801562; PMCID: PMC9336565.
+
 - [run_dbCAN](https://pubmed.ncbi.nlm.nih.gov/37125649/)
 
   > Zheng J, Ge Q, Yan Y, Zhang X, Huang L, Yin Y. dbCAN3: automated carbohydrate-active enzyme and substrate annotation. Nucleic Acids Res. 2023 Jul 5;51(W1):W115-W121. doi: 10.1093/nar/gkad328. PMID: 37125649; PMCID: PMC10320055.

@@ -103,7 +103,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                             )
                         else:
                             attributes_dict = insert_product_source(
-                                attributes_dict, gene_caller
+                                attributes_dict, gene_caller.value
                             )
                         col9_updated = update_col9(attributes_dict)
                         file_out.write(
@@ -317,8 +317,8 @@ def keep_or_move_to_note(
 
 
 def move_function_to_note(found_function, col9_dict):
-    if "note" in col9_dict.keys():
-        col9_dict["note"] = col9_dict["note"] + ", eggNOG:" + found_function
+    if "Note" in col9_dict.keys():
+        col9_dict["Note"] = col9_dict["Note"] + ", eggNOG:" + found_function
         return col9_dict
     else:
         # insert note after locus tag
@@ -326,7 +326,7 @@ def move_function_to_note(found_function, col9_dict):
         locus_tag_index = keys_list.index("locus_tag")
         return (
             {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]}
-            | {"note": "eggNOG:" + found_function}
+            | {"Note": "eggNOG:" + found_function}
             | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
         )
 
