@@ -237,6 +237,8 @@ Reference databases
                                                database for version 4.0 on this ftp location:
                                                ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/dbcan/dbcan_4.0.tar.gz
   --dbcan_db_version                 [string]  The dbCAN reference database version. [default: 4.1.3_V12]
+  --pseudofinder_db                  [string]  Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.
+  --pseudofinder_db_version          [string]  SwissProt version. [default: 2024_06]
 
 Generic options
   --multiqc_methods_description      [string]  Custom MultiQC yaml file containing HTML including a methods description.
