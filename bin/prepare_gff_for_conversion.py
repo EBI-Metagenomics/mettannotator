@@ -126,7 +126,7 @@ def move_to_dbxref(attributes_dict, terms_to_move):
             attributes_dict["Dbxref"] = attributes_dict["Dbxref"] + "," + text_to_add
         else:
             attributes_dict["Dbxref"] = text_to_add
-    attributes_dict["Dbxref"] = attributes_dict["Dbxref"].rstrip(",").strip(",")
+    attributes_dict["Dbxref"] = attributes_dict["Dbxref"].rstrip(",").lstrip(",")
     return attributes_dict
 
 
