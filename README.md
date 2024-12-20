@@ -465,7 +465,7 @@ Note: if the pipeline completed without errors but some of the tool-specific out
 <a name="submission"></a>
 ## Preparing annotations for ENA or GenBank submission
 
-`mettannotator` produces a final annotation file in GFF3 format. To submit the annotations to data archives, it is first necessary to convert the GFF3 file into the required format, using third-party tools available for this conversion. `mettannotator` outputs a specially formatted GFF3 file, named `<prefix>_submission.gff` to be used with converters.
+`mettannotator` produces a final annotation file in GFF3 format. To submit the annotations to data archives, it is first necessary to convert the GFF3 file into the required format, using third-party tools available. `mettannotator` outputs a specially formatted GFF3 file, named `<prefix>_submission.gff` to be used with converters.
 
 ### ENA
 ENA accepts annotations in the EMBL flat-file format.
