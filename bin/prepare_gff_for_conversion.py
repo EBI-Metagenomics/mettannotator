@@ -46,7 +46,7 @@ def modify_line(line):
     # Move all GO terms into Dbxref and deduplicate if needed
     attributes_dict = collect_go_terms(attributes_dict)
 
-    # Move Pfam and Rfam into Dbxref
+    # Move Pfam, Rfam and InterPro into Dbxref
     terms_to_move = ["pfam", "rfam", "interpro"]
     attributes_dict = move_to_dbxref(attributes_dict, terms_to_move)
 
