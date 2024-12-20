@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "https://json-schema.org/draft-07/schema",
   "$id": "https://raw.githubusercontent.com/ebi-metagenomics/mettannotator/master/nextflow_schema.json",
   "title": "ebi-metagenomics/mettannotator pipeline parameters",
   "description": "ME TT assembly annotation pipeline",
@@ -36,8 +36,8 @@
         },
         "bakta": {
           "type": "boolean",
-          "default": false,
-          "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes."
+          "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.",
+          "fa_icon": "fas fa-wrench"
         },
         "email": {
           "type": "string",
@@ -164,6 +164,17 @@
           "type": "string",
           "default": "2024-01-19",
           "description": "The Bakta reference database version."
+        },
+        "pseudofinder_db": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.",
+          "help_text": "Set this variable to the path of the folder containing uniprot_sprot.fasta file to be used as the database."
+        },
+        "pseudofinder_db_version": {
+          "type": "string",
+          "default": "2024_06",
+          "description": "SwissProt version."
         }
       },
       "fa_icon": "fas fa-database"
@@ -310,6 +321,11 @@
           "type": "string",
           "description": "Custom MultiQC yaml file containing HTML including a methods description.",
           "fa_icon": "fas fa-cog"
+        },
+        "singularity_cachedir": {
+          "type": "string",
+          "fa_icon": "fab fa-docker",
+          "description": "The singularity/apptainer cache directory"
         }
       }
     }

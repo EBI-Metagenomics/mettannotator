@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright 2024 EMBL - European Bioinformatics Institute
 #
@@ -19,6 +18,7 @@ import argparse
 import logging
 import re
 import sys
+from enum import Enum
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,29 +28,41 @@ EGGNOG_NOTE_LENGTH_LIMIT = 70
 MINIMUM_IPR_MATCH = 0.10
 
 
+class GeneCaller(Enum):
+    PROKKA = "Prokka"
+    BAKTA = "Bakta"
+
+
 def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile):
     eggnog_info = load_eggnog(eggnog_file)
     if ipr_file:
         levels = load_hierarchy(hierarchy_file)
         ipr_types = load_ipr_types(ipr_types_file)
-        ipr_info, ipr_memberdb_only, ipr_leveled_info = load_ipr(
-            ipr_file, ipr_types, levels
-        )
+        ipr_info, ipr_memberdb_only, _ = load_ipr(ipr_file, ipr_types, levels)
     else:
         ipr_info = dict()
         ipr_memberdb_only = dict()
-    gene_caller = "Prokka"
+
+    gene_caller = GeneCaller.PROKKA
     fasta_flag = False
-    with open(infile, "r") as file_in, open(outfile, "w") as file_out:
+    with open(infile) as file_in, open(outfile, "w") as file_out:
         for line in file_in:
             if not fasta_flag:
                 if line.startswith("##FASTA"):
                     fasta_flag = True
                     file_out.write(line)
                 elif not line.startswith("#"):
-                    contig, tool, feature, start, end, blank1, strand, blank2, col9 = (
-                        line.strip().split("\t")
-                    )
+                    (
+                        contig,
+                        tool,
+                        feature,
+                        start,
+                        end,
+                        blank1,
+                        strand,
+                        blank2,
+                        col9,
+                    ) = line.strip().split("\t")
                     if feature == "CDS":
                         attributes_dict = dict(
                             re.split(r"(?<!\\)=", item)
@@ -69,18 +81,20 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                             if not function_source == "UniFIRE":
                                 found_function = clean_up_function(found_function)
                                 if function_source == "eggNOG":
-                                    found_function, function_source, attributes_dict = (
-                                        keep_or_move_to_note(
-                                            found_function,
-                                            function_source,
-                                            attributes_dict,
-                                            gene_caller,
-                                        )
+                                    (
+                                        found_function,
+                                        function_source,
+                                        attributes_dict,
+                                    ) = keep_or_move_to_note(
+                                        found_function,
+                                        function_source,
+                                        attributes_dict,
+                                        gene_caller,
                                     )
                             found_function = escape_reserved_characters(found_function)
                             attributes_dict["product"] = found_function
                             if (
-                                gene_caller == "Bakta"
+                                gene_caller == GeneCaller.BAKTA
                                 and attributes_dict["Name"] == "hypothetical protein"
                             ):
                                 attributes_dict["Name"] = found_function
@@ -89,7 +103,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                             )
                         else:
                             attributes_dict = insert_product_source(
-                                attributes_dict, gene_caller
+                                attributes_dict, gene_caller.value
                             )
                         col9_updated = update_col9(attributes_dict)
                         file_out.write(
@@ -113,12 +127,14 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
                 else:
                     file_out.write(line)
                     if "Bakta" in line:
-                        gene_caller = "Bakta"
+                        gene_caller = GeneCaller.BAKTA
             else:
                 file_out.write(line)
 
 
-def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller):
+def keep_or_move_to_note(
+    found_function, function_source, col9_dict, gene_caller: GeneCaller
+):
     """
     Function aims to identify if a description is likely to be a sentence/paragraph rather than
     a succinct function description. If it's the former, move it to note and revert function to
@@ -291,18 +307,18 @@ def keep_or_move_to_note(found_function, function_source, col9_dict, gene_caller
         if move_to_note:
             col9_dict = move_function_to_note(found_function, col9_dict)
             found_function = "hypothetical protein"
-            function_source = gene_caller
+            function_source = gene_caller.value
     else:
         # Product is too long, move to note
         col9_dict = move_function_to_note(found_function, col9_dict)
         found_function = "hypothetical protein"
-        function_source = gene_caller
+        function_source = gene_caller.value
     return found_function, function_source, col9_dict
 
 
 def move_function_to_note(found_function, col9_dict):
-    if "note" in col9_dict.keys():
-        col9_dict["note"] = col9_dict["note"] + ", eggNOG:" + found_function
+    if "Note" in col9_dict.keys():
+        col9_dict["Note"] = col9_dict["Note"] + ", eggNOG:" + found_function
         return col9_dict
     else:
         # insert note after locus tag
@@ -310,7 +326,7 @@ def move_function_to_note(found_function, col9_dict):
         locus_tag_index = keys_list.index("locus_tag")
         return (
             {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]}
-            | {"note": "eggNOG:" + found_function}
+            | {"Note": "eggNOG:" + found_function}
             | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
         )
 
@@ -344,7 +360,7 @@ def count_initial_dashes(s):
 def load_hierarchy(parent_child_file):
     counter = dict()
     levels = dict()
-    with open(parent_child_file, "r") as file_in:
+    with open(parent_child_file) as file_in:
         for line in file_in:
             depth = count_initial_dashes(line)
             term = line.lstrip("-").strip().split("::")[0]
@@ -368,7 +384,12 @@ def insert_product_source(my_dict, source):
 
 
 def get_function(
-    acc, attributes_dict, eggnog_annot, ipr_info, ipr_memberdb_only, gene_caller
+    acc,
+    attributes_dict,
+    eggnog_annot,
+    ipr_info,
+    ipr_memberdb_only,
+    gene_caller: GeneCaller,
 ):
     """
     Identify function by carrying it over from a db match. The following priority is used:
@@ -390,7 +411,6 @@ def get_function(
     :param ipr_memberdb_only: annotations that don't have IPR accessions but are from InterPro member databases
     :return: function, source db
     """
-
     if "uf_prot_rec_fullname" in attributes_dict:
         return attributes_dict["uf_prot_rec_fullname"], "UniFIRE"
     if acc in ipr_info and "Family" in ipr_info[acc]:
@@ -407,12 +427,14 @@ def get_function(
         )
         if func_description:
             return func_description, source
+
     if acc in ipr_info and "Homologous_superfamily" in ipr_info[acc]:
         func_description, source = get_superfamily_info(
             ipr_info[acc]["Homologous_superfamily"]
         )
         if func_description:
             return func_description, source
+
     if acc in ipr_memberdb_only and any(
         db in {"SUPERFAMILY", "Gene3D"}
         for db in ipr_memberdb_only[acc]["no_type"].keys()
@@ -423,11 +445,14 @@ def get_function(
             if key in ipr_memberdb_only[acc]["no_type"]:
                 subset_dict[key] = ipr_memberdb_only[acc]["no_type"][key]
         func_description, source = get_superfamily_info(subset_dict)
+
         if func_description:
             return func_description, source
+
     if acc in eggnog_annot:
         return eggnog_annot[acc], "eggNOG"
-    return "hypothetical protein", gene_caller
+
+    return "hypothetical protein", gene_caller.value
 
 
 def get_description_and_source(my_dict, ipr_type):
@@ -463,7 +488,7 @@ def get_superfamily_info(my_dict):
 
 def format_source(db, source):
     if source == "ipr_desc":
-        return "InterPro({})".format(db)
+        return f"InterPro({db})"
     else:
         return db
 
@@ -475,7 +500,7 @@ def get_best_match(ipr_dict):
     for db in ipr_dict:
         if ipr_dict[db]["level"] is None:
             ipr_dict[db]["level"] = 0
-        if not db.lower() in ["superfamily", "gene3d"] and (
+        if db.lower() not in ["superfamily", "gene3d"] and (
             ipr_dict[db]["sig_desc"] != "-" or ipr_dict[db]["ipr_desc"] != "-"
         ):
             if ipr_dict[db]["level"] > best_level or (
@@ -524,13 +549,13 @@ def pull_out_description(my_dict, first_priority, second_priority):
 
 def load_eggnog(file):
     eggnog_info = dict()
-    with open(file, "r") as file_in:
+    with open(file) as file_in:
         for line in file_in:
             if not line.startswith("#"):
                 cols = line.strip().split("\t")
                 try:
                     evalue = float(cols[2])
-                except:
+                except:  # noqa: E722
                     continue
                 if evalue > EVALUE_CUTOFF:
                     continue
@@ -751,7 +776,7 @@ def clean_up_eggnog_function(func_description):
 
 def load_ipr_types(ipr_types_file):
     ipr_types = dict()
-    with open(ipr_types_file, "r") as file_in:
+    with open(ipr_types_file) as file_in:
         for line in file_in:
             if line.startswith("IPR"):
                 acc, type, _ = line.strip().split("\t")
@@ -764,7 +789,7 @@ def load_ipr(file, ipr_types, ipr_levels):
     ipr_leveled_info = dict()
     ipr_memberdb_only = dict()  # hit only exists in a member database
 
-    with open(file, "r") as file_in:
+    with open(file) as file_in:
         for line in file_in:
             cols = line.strip().split("\t")
             (
@@ -900,7 +925,7 @@ def escape_reserved_characters(string):
             if ch == ";":
                 string = string.replace(ch, "/")
             else:
-                string = string.replace(ch, "\{}".format(ch))
+                string = string.replace(ch, f"\{ch}")
     return string
 
 

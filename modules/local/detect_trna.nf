@@ -25,17 +25,18 @@ process DETECT_TRNA {
 
     # tRNAscan-SE needs a tmp folder otherwise it will use the base TMPDIR (with no subfolder)
     # and that causes issues as other detect_trna process will crash when the files are cleaned
-    PROCESSTMP="\$(mktemp -d)"
+    PROCESSTMP="\$PWD/tmp"
+    mkdir -p "\$PWD/tmp"
     export TMPDIR="\${PROCESSTMP}"
-    # bash trap to clean the tmp directory
-    trap 'rm -r -- "\${PROCESSTMP}"' EXIT
 
     echo "[ Detecting tRNAs ]"
     tRNAscan-SE -${detected_kingdom} -Q \
     -m ${meta.prefix}_stats.out \
     -o ${meta.prefix}_trna.out \
-    --gff ${meta.prefix}_trna.gff \
+    --gff ${meta.prefix}_trna_temp.gff \
     ${fasta}
+
+    add_locus_tag_to_trna.py -i ${meta.prefix}_trna_temp.gff -o ${meta.prefix}_trna.gff
 
     parse_tRNA.py -i ${meta.prefix}_stats.out -o ${meta.prefix}_tRNA_20aa.out
 

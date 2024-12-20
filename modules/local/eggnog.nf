@@ -52,7 +52,8 @@ process EGGNOG_MAPPER {
         --cpu ${task.cpus} \
         --tax_scope 'prokaryota_broad' \
         --annotate_hits_table ${annotation_hit_table} ${db_mem_flag} \
-        -o ${meta.prefix}
+        -o ${meta.prefix} \
+        --override
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":

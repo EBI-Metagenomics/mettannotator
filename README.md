@@ -13,6 +13,7 @@
 - [ Usage ](#usage)
 - [ Test ](#test)
 - [ Outputs ](#out)
+- [Preparing annotations for ENA or GenBank submission](#submission)
 - [ Mobilome annotation ](#mobilome)
 - [ Credits ](#credit)
 - [ Contributions and Support ](#contribute)
@@ -39,6 +40,8 @@ The workflow uses the following tools and databases:
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6                                        | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.9.3                                         | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | 2024-01-19 with AMRFinderPlus DB 2024-01-31.1 | Bakta DB (when Bakta is used as the gene caller)                                                                       |
+| [Pseudofinder](https://github.com/filip-husnik/pseudofinder)                                     | v1.1.0                                        | Identification of possible pseudogenes                                                                                 |
+| [Swiss-Prot](https://www.uniprot.org/help/downloads)                                             | 2024_06                                       | Database for Pseudofinder                                                                                              |
 | [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.62-94.0                                     | Protein annotation (InterPro, Pfam)                                                                                    |
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11                                        | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2                                         | Database for eggNOG-mapper                                                                                             |
@@ -89,7 +92,8 @@ The pipeline needs reference databases in order to work, they take roughly 180G.
 | interproscan        | 45G  |
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
-| total               | 180G |
+| pseudofinder        | 273M |
+| total               | 182G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
@@ -177,8 +181,12 @@ Note, that by default the script uses FASTA file names as prefixes and truncates
 
 Running `mettannotator` with the `--help` option will pull the repository and display the help message:
 
+> [!NOTE]
+> We use the `-latest` flag with the `nextflow run` command, which ensures that the latest available version of the pipeline is pulled.
+> If you encounter any issues with the `nextflow run` command, please refer to the [Nextflow documentation](https://www.nextflow.io/docs/latest/reference/cli.html#run).
+
 ```angular2html
-nextflow run ebi-metagenomics/mettannotator/main.nf --help
+$ nextflow run -latest ebi-metagenomics/mettannotator/main.nf --help
 N E X T F L O W  ~  version 23.04.3
 Launching `mettannotator/main.nf` [disturbed_davinci] DSL2 - revision: f2a0e51af6
 
@@ -229,6 +237,8 @@ Reference databases
                                                database for version 4.0 on this ftp location:
                                                ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/dbcan/dbcan_4.0.tar.gz
   --dbcan_db_version                 [string]  The dbCAN reference database version. [default: 4.1.3_V12]
+  --pseudofinder_db                  [string]  Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.
+  --pseudofinder_db_version          [string]  SwissProt version. [default: 2024_06]
 
 Generic options
   --multiqc_methods_description      [string]  Custom MultiQC yaml file containing HTML including a methods description.
@@ -259,17 +269,25 @@ nextflow run ebi-metagenomics/mettannotator \
    --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
 ```
 
-> **Warning:**
+> [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
 > provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
 > see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
+
+#### Running the pipeline from the source code
+
+If the Nextflow integration with Git does not work, users can download the tarball from the releases page. After extracting the tarball, the pipeline can be run directly by executing the following command:
+
+```bash
+$ nextflow run path-to-source-code/main.nf --help
+```
 
 #### Local execution
 
 The pipeline can be run on a desktop or laptop, with the caveat that it will take a few hours to complete depending on the resources. There is a local profile in the Nextflow config that limits the total resources the pipeline can use to 8 cores and 12 GB of RAM. In order to run it (Docker or Singularity are still required):
 
 ```bash
-nextflow run ebi-metagenomics/mettannotator \
+nextflow run -latest ebi-metagenomics/mettannotator \
    -profile local,<docker or singulairty> \
    --input assemblies_sheet.csv \
    --outdir <OUTDIR> \
@@ -302,7 +320,7 @@ To run the pipeline using a test dataset, execute the following command:
 ```bash
 wget https://raw.githubusercontent.com/EBI-Metagenomics/mettannotator/master/tests/test.csv
 
-nextflow run ebi-metagenomics/mettannotator \
+nextflow run -latest ebi-metagenomics/mettannotator \
    -profile <docker/singularity/...> \
    --input test.csv \
    --outdir <OUTDIR> \
@@ -331,6 +349,7 @@ The output folder structure will look as follows:
    │  ├─interproscan
    │  ├─merged_gff
    │  ├─prokka
+   │  ├─pseudofinder
    │  └─unifire
    ├─mobilome
    │  └─crisprcas_finder
@@ -429,11 +448,48 @@ The following logic is used by `mettannotator` to fill out the `product` field i
 
 If the pipeline is executed with the `--fast` flag, only the output of eggNOG-mapper is used to determine the product of proteins that were labeled as hypothetical by the gene caller.
 
+#### Detection of pseudogenes and spurious ORFs
+
+`mettannotator` uses several approaches to detect pseudogenes and spurious ORFs:
+
+- If Bakta is used as the initial annotation tool, `mettannotator` will inherit the pseudogene labels assigned by Bakta.
+- `mettannotator` runs Pseudofinder and labels genes that Pseudofinder predicts to be pseudogenes by adding `"pseudo=true"` to the 9th column of the final merged GFF file. If there is a disagreement between Pseudofinder and Bakta and one of the tools calls a gene a pseudogene, it will be labeled as a pseudogene.
+- AntiFam, which is a part of InterPro, is used to identify potential spurious ORFs. If an ORF has an AntiFam hit, `mettannotator` will remove it from the final merged GFF file. These ORFs will still appear in the raw outputs of Bakta/Prokka and may appear in other tool outputs.
+
+`mettannotator` produces a report file which is located in the `merged_gff` folder and includes a list of CDS with AntiFam hits and pseudogenes. For each pseudogene, the report shows which tool predicted it.
+
 ### Contents of the tool output folders
 
 The output folders of each individual tool contain select output files of the third-party tools used by `mettannotator`. For file descriptions, please refer to the tool documentation. For some tools that don't output a GFF, `mettannotator` converts the output into a GFF.
 
 Note: if the pipeline completed without errors but some of the tool-specific output folders are empty, those particular tools did not generate any annotations to output.
+
+<a name="submission"></a>
+
+## Preparing annotations for ENA or GenBank submission
+
+`mettannotator` produces a final annotation file in GFF3 format. To submit the annotations to data archives, it is first necessary to convert the GFF3 file into the required format, using third-party tools available. `mettannotator` outputs a specially formatted GFF3 file, named `<prefix>_submission.gff` to be used with converters.
+
+### ENA
+
+ENA accepts annotations in the EMBL flat-file format.
+Please use [EMBLmyGFF3](https://github.com/NBISweden/EMBLmyGFF3) to perform the conversion; the repository includes detailed instructions. The two files required for conversion are:
+
+- the genome FASTA file
+- `<mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_submission.gff`
+
+Please note that it is necessary to register the project and locus tags in ENA prior to conversion. Follow links in the [EMBLmyGFF3](https://github.com/NBISweden/EMBLmyGFF3) repository for more details.
+
+### GenBank
+
+To convert annotations for GenBank submission, please use [table2asn](https://www.ncbi.nlm.nih.gov/genbank/table2asn/).
+Three files are required:
+
+- the genome FASTA file
+- `<mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_submission.gff`
+- Submission template file (can be generated [here](https://submit.ncbi.nlm.nih.gov/genbank/template/submission/))
+
+More instructions on running `table2asn` are available via [GenBank](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff/).
 
 <a name="mobilome"></a>
 

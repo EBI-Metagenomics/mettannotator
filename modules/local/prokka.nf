@@ -2,10 +2,13 @@ process PROKKA {
 
     tag "${meta.prefix}"
 
-    container "quay.io/biocontainers/prokka:1.14.6--pl526_0"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/prokka:1.14.6--pl526_0' :
+        'biocontainers/prokka:1.14.6--pl526_0' }"
 
     input:
     tuple val(meta), path(fasta), val(detected_kingdom)
+    val(mode) // standard or compliant
 
     output:
     tuple val(meta), file("${meta.prefix}_prokka/${meta.prefix}.gff"), emit: gff
@@ -17,7 +20,20 @@ process PROKKA {
     path "versions.yml" , emit: versions
 
     script:
+    def compliant_flag = "";
+    def rfam_flag = "";
+    if ( mode == "compliant" ){
+        compliant_flag = "--compliant"
+        rfam_flag = "--rfam"
+    }
     """
+    # TMP folder issues in Prokka - https://github.com/tseemann/prokka/issues/402
+    export TMPDIR="\$PWD/tmp"
+    mkdir -p "\$PWD/tmp"
+
+    # Disable the Java VM performane gathering tool, for improved performance
+    export JAVA_TOOL_OPTIONS="-XX:-UsePerfData"
+
     cat ${fasta} | tr '-' ' ' > ${meta.prefix}_cleaned.fasta
 
     prokka ${meta.prefix}_cleaned.fasta \
@@ -26,7 +42,9 @@ process PROKKA {
     --outdir ${meta.prefix}_prokka \
     --prefix ${meta.prefix} \
     --force \
-    --locustag ${meta.prefix}
+    --locustag ${meta.prefix} \
+    ${compliant_flag} \
+    ${rfam_flag}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

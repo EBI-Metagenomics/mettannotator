@@ -1,28 +1,26 @@
 #!/usr/bin/env python3
-# coding=utf-8
 
 import argparse
 import logging
 import sys
 
+from matplotlib.patches import Patch
 from pycirclize import Circos
 from pycirclize.parser import Gff
-
-from matplotlib.patches import Patch
 
 logging.basicConfig(level=logging.INFO)
 
 
-def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, skip_sanntis, dpi):
+def main(
+    infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, skip_sanntis, dpi
+):
     modified_infile = remove_escaped_characters(infile)
     gff = Gff(modified_infile)
     seqid2size = gff.get_seqid2size()
     if len(seqid2size) > contig_num_limit:
         logging.info(
-            "Skipping plot generation for file {} due to a large number of contigs: {}. "
-            "Plots are only generated for genomes with up to {} annotated contigs.".format(
-                infile, len(seqid2size), contig_num_limit
-            )
+            f"Skipping plot generation for file {infile} due to a large number of contigs: {len(seqid2size)}. "
+            f"Plots are only generated for genomes with up to {contig_num_limit} annotated contigs."
         )
         sys.exit()
 
@@ -30,7 +28,7 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, skip_
 
     circos = Circos(seqid2size, space=1, start=1, end=358)
 
-    circos.text("{}\n".format(prefix), size=15, r=30)
+    circos.text(f"{prefix}\n", size=15, r=30)
 
     # Skip printing contig names if the names are too long
     print_contigs = True
@@ -116,7 +114,7 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, skip_
                 if "defense_finder_type" in feature.qualifiers:
                     antiphage_track.genomic_features([feature], fc="orchid")
 
-            elif feature.type in ["tRNA", "ncRNA"]:
+            elif feature.type in ["tRNA", "ncRNA", "rRNA"]:
                 rna_track.genomic_features([feature], fc="darkmagenta")
             elif mobilome and feature.type in [
                 "mobility_island",
@@ -164,7 +162,7 @@ def main(infile, outfile, prefix, contig_num_limit, contig_trim, mobilome, skip_
 
 def remove_escaped_characters(infile):
     outfile = infile + "_modified"
-    with open(infile, "r") as file_in:
+    with open(infile) as file_in:
         content = file_in.read()
         modified_content = content.replace("\\=", "")
 

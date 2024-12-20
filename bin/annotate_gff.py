@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-# Copyright 2023 EMBL - European Bioinformatics Institute
+# Copyright 2023-2024 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +15,8 @@
 #
 
 import argparse
+import csv
+import re
 import sys
 
 
@@ -30,15 +31,17 @@ def main(
     gecco_file,
     dbcan_file,
     defense_finder_file,
+    pseudofinder_file,
     rfam_file,
     trnascan_file,
     outfile,
+    pseudogene_report_file,
 ):
     # load annotations and add them to existing CDS
     # here header contains leading GFF lines starting with "#",
     # main_gff_extended is a dictionary that contains Prokka GFF lines with added in additional annotations
     # fasta is the fasta portion of the Prokka GFF files
-    header, main_gff_extended, fasta = load_annotations(
+    header, main_gff_extended, fasta, pseudogene_report_dict = load_annotations(
         gff,
         eggnog_file,
         ipr_file,
@@ -48,6 +51,7 @@ def main(
         gecco_file,
         dbcan_file,
         defense_finder_file,
+        pseudofinder_file,
     )
 
     ncrnas = get_ncrnas(rfam_file)
@@ -59,6 +63,9 @@ def main(
     write_results_to_file(
         outfile, header, main_gff_extended, fasta, ncrnas, trnas, crispr_annotations
     )
+
+    if pseudogene_report_file:
+        print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file)
 
 
 def write_results_to_file(
@@ -79,13 +86,33 @@ def write_results_to_file(
                 for my_dict in (ncrnas, trnas, crispr_annotations, main_gff_extended):
                     if contig in my_dict and pos in my_dict[contig]:
                         for line in my_dict[contig][pos]:
-                            if type(line) == str:
-                                file_out.write("{}\n".format(line))
+                            if type(line) is str:
+                                file_out.write(f"{line}\n")
                             else:
                                 for element in line:
                                     file_out.write(element)
         for line in fasta:
-            file_out.write("{}\n".format(line))
+            file_out.write(f"{line}\n")
+
+
+def print_pseudogene_report(pseudogene_report_dict, pseudogene_report_file):
+    with open(pseudogene_report_file, "w") as file_out:
+        writer = csv.writer(file_out, delimiter="\t", lineterminator="\n")
+        # Print header
+        writer.writerow(
+            [
+                "ID",
+                "Pseudogene according to Bakta/Prokka",
+                "Pseudogene according to Pseudofinder",
+                "AntiFam hit",
+            ]
+        )
+
+        all_keys = ["gene_caller", "pseudofinder", "antifams"]
+        for protein, attributes in pseudogene_report_dict.items():
+            # Fill in missing attributes with False
+            line = [protein] + [str(attributes.get(key, False)) for key in all_keys]
+            writer.writerow(line)
 
 
 def sort_positions(contig, main_gff_extended, ncrnas, trnas, crispr_annotations):
@@ -107,9 +134,10 @@ def check_for_additional_keys(ncrnas, trnas, crispr_annotations, contig_list):
 
 def get_iprs(ipr_annot):
     iprs = {}
+    antifams = list()
     if not ipr_annot:
-        return iprs
-    with open(ipr_annot, "r") as f:
+        return iprs, antifams
+    with open(ipr_annot) as f:
         for line in f:
             cols = line.strip().split("\t")
             protein = cols[0]
@@ -118,6 +146,9 @@ def get_iprs(ipr_annot):
             except ValueError:
                 continue
             if evalue > 1e-10:
+                continue
+            if cols[3] == "AntiFam":
+                antifams.append(protein)
                 continue
             if protein not in iprs:
                 iprs[protein] = [set(), set()]
@@ -128,12 +159,12 @@ def get_iprs(ipr_annot):
                 ipr = cols[11]
                 if not ipr == "-":
                     iprs[protein][1].add(ipr)
-    return iprs
+    return iprs, antifams
 
 
 def get_eggnog(eggnog_annot):
     eggnogs = {}
-    with open(eggnog_annot, "r") as f:
+    with open(eggnog_annot) as f:
         for line in f:
             line = line.rstrip()
             cols = line.split("\t")
@@ -183,7 +214,7 @@ def get_bgcs(bgc_file, prokka_gff, tool):
         return bgc_annotations
     # save positions of each BGC cluster to dictionary cluster_positions
     # and save the annotations to dictionary bgc_result
-    with open(bgc_file, "r") as bgc_in:
+    with open(bgc_file) as bgc_in:
         for line in bgc_in:
             if not line.startswith("#"):
                 (
@@ -245,7 +276,7 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         {"bgc_function": type_value},
                     )
     # identify CDSs that fall into each of the clusters annotated by the BGC tool
-    with open(prokka_gff, "r") as gff_in:
+    with open(prokka_gff) as gff_in:
         for line in gff_in:
             if not line.startswith("#"):
                 matching_interval = ""
@@ -309,7 +340,7 @@ def get_amr(amr_file):
     amr_annotations = {}
     if not amr_file:
         return amr_annotations
-    with open(amr_file, "r") as f:
+    with open(amr_file) as f:
         for line in f:
             if line.startswith("Protein identifier"):
                 continue
@@ -339,13 +370,13 @@ def get_amr(amr_file):
                 seq_name = seq_name.replace("=", " ")
             amr_annotations[protein_id] = ";".join(
                 [
-                    "amrfinderplus_gene_symbol={}".format(gene_name),
-                    "amrfinderplus_sequence_name={}".format(seq_name),
-                    "amrfinderplus_scope={}".format(scope),
-                    "element_type={}".format(element_type),
-                    "element_subtype={}".format(element_subtype),
-                    "drug_class={}".format(drug_class),
-                    "drug_subclass={}".format(drug_subclass),
+                    f"amrfinderplus_gene_symbol={gene_name}",
+                    f"amrfinderplus_sequence_name={seq_name}",
+                    f"amrfinderplus_scope={scope}",
+                    f"element_type={element_type}",
+                    f"element_subtype={element_subtype}",
+                    f"drug_class={drug_class}",
+                    f"drug_subclass={drug_subclass}",
                 ]
             )
     return amr_annotations
@@ -356,7 +387,7 @@ def get_dbcan(dbcan_file):
     substrates = dict()
     if not dbcan_file:
         return dbcan_annotations
-    with open(dbcan_file, "r") as f:
+    with open(dbcan_file) as f:
         for line in f:
             if "predicted PUL" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
@@ -399,7 +430,7 @@ def get_defense_finder(df_file):
     type_info = dict()
     if not df_file:
         return defense_finder_annotations
-    with open(df_file, "r") as f:
+    with open(df_file) as f:
         for line in f:
             if "Anti-phage system" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
@@ -427,6 +458,29 @@ def get_defense_finder(df_file):
     return defense_finder_annotations
 
 
+def get_pseudogenes(pseudofinder_file):
+    pseudogenes = dict()
+    if not pseudofinder_file:
+        return pseudogenes
+    with open(pseudofinder_file) as file_in:
+        for line in file_in:
+            if not line.startswith("#"):
+                col9 = line.strip().split("\t")[8]
+                attributes_dict = dict(
+                    re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9)
+                )
+                if "note" in attributes_dict:
+                    note = attributes_dict["note"]
+                else:
+                    note = ""
+                if "old_locus_tag" in attributes_dict:
+                    tags = attributes_dict["old_locus_tag"].split(",")
+                    for tag in tags:
+                        if "_ign_" not in tag:
+                            pseudogenes[tag] = note
+    return pseudogenes
+
+
 def load_annotations(
     in_gff,
     eggnog_file,
@@ -437,36 +491,78 @@ def load_annotations(
     gecco_file,
     dbcan_file,
     defense_finder_file,
+    pseudofinder_file,
 ):
     eggnogs = get_eggnog(eggnog_file)
-    iprs = get_iprs(ipr_file)
+    iprs, antifams = get_iprs(ipr_file)
     sanntis_bgcs = get_bgcs(sanntis_file, in_gff, tool="sanntis")
     gecco_bgcs = get_bgcs(gecco_file, in_gff, tool="gecco")
     antismash_bgcs = get_bgcs(antismash_file, in_gff, tool="antismash")
     amr_annotations = get_amr(amr_file)
     dbcan_annotations = get_dbcan(dbcan_file)
     defense_finder_annotations = get_defense_finder(defense_finder_file)
+    pseudogenes = get_pseudogenes(pseudofinder_file)
+    pseudogene_report_dict = dict()
     added_annot = {}
     main_gff = dict()
     header = []
     fasta = []
     fasta_flag = False
-    with open(in_gff, "r") as f:
+    with open(in_gff) as f:
         for line in f:
             line = line.strip()
             if line[0] != "#" and not fasta_flag:
                 line = line.replace("db_xref", "Dbxref")
+                line = line.replace(";note=", ";Note=")
+                line = line.replace("‘", "'").replace("’", "'")
                 cols = line.split("\t")
                 if len(cols) == 9:
-                    contig, caller, feature, start, annot = cols[0], cols[1], cols[2], cols[3], cols[8]
+                    contig, caller, feature, start, annot = (
+                        cols[0],
+                        cols[1],
+                        cols[2],
+                        cols[3],
+                        cols[8],
+                    )
                     if feature != "CDS":
                         if caller == "Bakta" and feature == "region":
-                            main_gff.setdefault(contig, dict()).setdefault(int(start), list()).append(line)
+                            main_gff.setdefault(contig, dict()).setdefault(
+                                int(start), list()
+                            ).append(line)
                             continue
                         else:
                             continue
                     protein = annot.split(";")[0].split("=")[-1]
+                    if protein in antifams:
+                        # Don't print to the final GFF proteins that are known to not be real
+                        continue
                     added_annot[protein] = {}
+                    # process pseudogenes
+                    if "pseudo=true" in annot.lower():
+                        # fix case
+                        cols[8] = annot.replace("pseudo=True", "pseudo=true")
+                        # gene is already marked as a pseudogene; log it but don't add to the annotation again
+                        pseudogene_report_dict.setdefault(protein, dict())
+                        pseudogene_report_dict[protein]["gene_caller"] = True
+                        if protein in pseudogenes:
+                            pseudogene_report_dict[protein]["pseudofinder"] = True
+                        else:
+                            pseudogene_report_dict[protein]["pseudofinder"] = False
+                    else:
+                        # gene caller did not detect this protein as a pseudogene; check if pseudofinder did
+                        if protein in pseudogenes:
+                            pseudogene_report_dict.setdefault(protein, dict())
+                            pseudogene_report_dict[protein]["gene_caller"] = False
+                            pseudogene_report_dict[protein]["pseudofinder"] = True
+                            added_annot[protein]["pseudo"] = "true"
+                            if pseudogenes[protein]:
+                                cols[8] = add_pseudogene_to_note(
+                                    pseudogenes[protein], cols[8]
+                                )
+                    # record antifams
+                    if protein in antifams:
+                        pseudogene_report_dict.setdefault(protein, dict())
+                        pseudogene_report_dict[protein]["antifams"] = True
                     try:
                         eggnogs[protein]
                         pos = 0
@@ -536,10 +632,10 @@ def load_annotations(
                         if type(value) is list:
                             value = ",".join(value)
                         if a in ["AMR", "dbCAN", "defense_finder"]:
-                            cols[8] = "{};{}".format(cols[8], value)
+                            cols[8] = f"{cols[8]};{value}"
                         else:
                             if not value == "-":
-                                cols[8] = "{};{}={}".format(cols[8], a, value)
+                                cols[8] = f"{cols[8]};{a}={value}"
                     line = "\t".join(cols)
                     main_gff.setdefault(contig, dict()).setdefault(
                         int(start), list()
@@ -552,20 +648,39 @@ def load_annotations(
                     header.append(line)
             elif fasta_flag:
                 fasta.append(line)
-    return header, main_gff, fasta
+    return header, main_gff, fasta, pseudogene_report_dict
+
+
+def add_pseudogene_to_note(note_text, col9):
+    col9_dict = dict(
+        re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9)
+    )
+    if "Note" in col9_dict.keys():
+        col9_dict["Note"] = col9_dict["Note"] + f", {note_text}"
+        return ";".join([f"{key}={value}" for key, value in col9_dict.items()])
+    else:
+        # insert note after locus tag
+        keys_list = list(col9_dict.keys())
+        locus_tag_index = keys_list.index("locus_tag")
+        new_dict = (
+            {k: col9_dict[k] for k in keys_list[: locus_tag_index + 1]}
+            | {"Note": note_text}
+            | {k: col9_dict[k] for k in keys_list[locus_tag_index + 1 :]}
+        )
+        return ";".join([f"{key}={value}" for key, value in new_dict.items()])
 
 
 def get_ncrnas(ncrnas_file):
     ncrnas = {}
     counts = 0
-    with open(ncrnas_file, "r") as f:
+    with open(ncrnas_file) as f:
         for line in f:
             if not line.startswith("#"):
                 cols = line.strip().split()
                 counts += 1
                 contig = cols[3]
-                locus = "{}_ncRNA{}".format(contig, counts)
-                product = cols[-1]
+                locus = f"{contig}_ncRNA{counts}"
+                product = " ".join(cols[28:])
                 model = cols[2]
                 if model == "RF00005":
                     # Skip tRNAs, we add them from tRNAscan-SE
@@ -577,6 +692,7 @@ def get_ncrnas(ncrnas_file):
                 else:
                     start = int(cols[10])
                     end = int(cols[9])
+                rna_feature_name, ncrna_class = prepare_rna_gff_fields(cols)
                 annot = [
                     "ID=" + locus,
                     "inference=Rfam:14.9",
@@ -584,12 +700,14 @@ def get_ncrnas(ncrnas_file):
                     "product=" + product,
                     "rfam=" + model,
                 ]
+                if ncrna_class:
+                    annot.append(f"ncRNA_class={ncrna_class}")
                 annot = ";".join(annot)
                 newline = "\t".join(
                     [
                         contig,
                         "INFERNAL:1.1.4",
-                        "ncRNA",
+                        rna_feature_name,
                         str(start),
                         str(end),
                         ".",
@@ -604,9 +722,165 @@ def get_ncrnas(ncrnas_file):
     return ncrnas
 
 
+def prepare_rna_gff_fields(cols):
+    rna_feature_name = "ncRNA"
+    if cols[1] in ["LSU_rRNA_bacteria", "SSU_rRNA_bacteria", "5S_rRNA"]:
+        rna_feature_name = "rRNA"
+    ncrna_class = ""
+    rna_types = {
+        "antisense_RNA": [
+            "RF00039",
+            "RF00042",
+            "RF00057",
+            "RF00106",
+            "RF00107",
+            "RF00236",
+            "RF00238",
+            "RF00240",
+            "RF00242",
+            "RF00262",
+            "RF00388",
+            "RF00489",
+            "RF01695",
+            "RF01794",
+            "RF01797",
+            "RF01809",
+            "RF01813",
+            "RF02194",
+            "RF02235",
+            "RF02236",
+            "RF02237",
+            "RF02238",
+            "RF02239",
+            "RF02519",
+            "RF02550",
+            "RF02558",
+            "RF02559",
+            "RF02560",
+            "RF02563",
+            "RF02592",
+            "RF02662",
+            "RF02674",
+            "RF02735",
+            "RF02743",
+            "RF02792",
+            "RF02793",
+            "RF02812",
+            "RF02818",
+            "RF02819",
+            "RF02820",
+            "RF02839",
+            "RF02843",
+            "RF02844",
+            "RF02846",
+            "RF02850",
+            "RF02851",
+            "RF02855",
+            "RF02873",
+            "RF02874",
+            "RF02875",
+            "RF02876",
+            "RF02891",
+            "RF02892",
+            "RF02903",
+            "RF02908",
+        ],
+        "autocatalytically_spliced_intron": ["RF01807"],
+        "ribozyme": [
+            "RF00621",
+            "RF01787",
+            "RF01788",
+            "RF01865",
+            "RF02678",
+            "RF02679",
+            "RF02681",
+            "RF02682",
+            "RF02684",
+            "RF03154",
+            "RF03160",
+            "RF04188",
+        ],
+        "hammerhead_ribozyme": [
+            "RF00008",
+            "RF00163",
+            "RF02275",
+            "RF02276",
+            "RF02277",
+            "RF03152",
+        ],
+        "RNase_P_RNA": [
+            "RF00009",
+            "RF00010",
+            "RF00011",
+            "RF00373",
+            "RF01577",
+            "RF02357",
+        ],
+        "RNase_MRP_RNA": ["RF00030", "RF02472"],
+        "telomerase_RNA": ["RF00024", "RF00025", "RF01050", "RF02462"],
+        "scaRNA": [
+            "RF00231",
+            "RF00283",
+            "RF00286",
+            "RF00422",
+            "RF00423",
+            "RF00424",
+            "RF00426",
+            "RF00427",
+            "RF00478",
+            "RF00492",
+            "RF00553",
+            "RF00564",
+            "RF00565",
+            "RF00582",
+            "RF00601",
+            "RF00602",
+            "RF01268",
+            "RF01295",
+            "RF02665",
+            "RF02666",
+            "RF02667",
+            "RF02668",
+            "RF02669",
+            "RF02670",
+            "RF02718",
+            "RF02719",
+            "RF02720",
+            "RF02721",
+            "RF02722",
+        ],
+        "snRNA": ["RF01802"],
+        "SRP_RNA": [
+            "RF00017",
+            "RF00169",
+            "RF01502",
+            "RF01570",
+            "RF01854",
+            "RF01855",
+            "RF01856",
+            "RF01857",
+            "RF04183",
+        ],
+        "vault_RNA": ["RF00006"],
+        "Y_RNA": ["RF00019", "RF02553", "RF01053", "RF02565"],
+    }
+
+    if rna_feature_name == "ncRNA":
+        for rna_type, rfams in rna_types.items():
+            if cols[2] in rfams:
+                ncrna_class = rna_type
+                break
+        if not ncrna_class:
+            if "microRNA" in cols[-1]:
+                ncrna_class = "pre_miRNA"
+            else:
+                ncrna_class = "other"
+    return rna_feature_name, ncrna_class
+
+
 def get_trnas(trnas_file):
     trnas = {}
-    with open(trnas_file, "r") as f:
+    with open(trnas_file) as f:
         for line in f:
             if not line.startswith("#"):
                 cols = line.split("\t")
@@ -621,7 +895,7 @@ def get_trnas(trnas_file):
 
 def load_crispr(crispr_file):
     crispr_annotations = dict()
-    with open(crispr_file, "r") as f:
+    with open(crispr_file) as f:
         record = list()
         left_coord = ""
         loc_contig = ""
@@ -629,7 +903,7 @@ def load_crispr(crispr_file):
         for line in f:
             if not line.startswith("#"):
                 cols = line.strip().split("\t")
-                contig, feature, start, end = (
+                contig, _, start, end = (
                     cols[0],
                     cols[2],
                     int(cols[3]),
@@ -724,11 +998,19 @@ def parse_args():
         help="The GFF file produced by Defense Finder post-processing script",
         required=False,
     )
+    parser.add_argument(
+        "--pseudofinder",
+        help="The GFF file produced by the Pseudofinder post-processing script",
+        required=False,
+    )
     parser.add_argument("-r", dest="rfam", help="Rfam results", required=True)
     parser.add_argument(
         "-t", dest="trnascan", help="tRNAScan-SE results", required=True
     )
     parser.add_argument("-o", dest="outfile", help="Outfile name", required=True)
+    parser.add_argument(
+        "--pseudogene-report", help="Pseudogene report filename", required=False
+    )
 
     return parser.parse_args()
 
@@ -746,7 +1028,9 @@ if __name__ == "__main__":
         args.gecco,
         args.dbcan,
         args.defense_finder,
+        args.pseudofinder,
         args.rfam,
         args.trnascan,
         args.outfile,
+        args.pseudogene_report,
     )

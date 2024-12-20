@@ -4,14 +4,16 @@ process LOOKUP_KINGDOM {
 
     label 'process_nano'
 
-    container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'oras://community.wave.seqera.io/library/pip_requests_retry:4b6e4901d175ea72' :
+        'community.wave.seqera.io/library/pip_requests_retry:d1a6734506332b90' }"
 
     input:
     tuple val(meta), path(fasta)
 
     output:
     tuple val(meta), env(detected_kingdom), emit: detected_kingdom
-    path "versions.yml",                      emit: versions
+    path "versions.yml",                    emit: versions
 
     script:
     """

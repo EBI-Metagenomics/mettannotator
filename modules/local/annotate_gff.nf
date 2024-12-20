@@ -4,7 +4,9 @@ process ANNOTATE_GFF {
 
     label 'process_nano'
 
-    container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/python:3.9' :
+        'biocontainers/python:3.9' }"
 
     input:
     tuple val(meta),
@@ -18,6 +20,7 @@ process ANNOTATE_GFF {
         file(gecco_gff),
         file(dbcan_gff),
         file(df_gff),
+        file(pseudofinder_gff),
         file(ips_annotations_tsv),     // empty in fast mode
         file(sanntis_annotations_gff), // empty in fast mode
         file(arba),                    // empty in fast mode
@@ -28,6 +31,8 @@ process ANNOTATE_GFF {
     output:
     tuple val(meta), path("*_annotations.gff"),                                   emit: annotated_gff
     tuple val(meta), path("*_annotations_with_descriptions.gff"), optional: true, emit: annotated_desc_gff
+    tuple val(meta), path("*_submission.gff"),                                    emit: submission_gff
+    tuple val(meta), path("*_pseudogene_report.txt"),                             emit: pseudogene_report
     path "versions.yml",                                                          emit: versions
 
     script:
@@ -37,6 +42,7 @@ process ANNOTATE_GFF {
     def gecco_flag = "";
     def dbcan_flag = "";
     def df_flag = "";
+    def pseudofinder_flag = "";
     def ips_flag = "";
     def hypothetical_ips_flags = "";
     def sanntis_flag = "";
@@ -57,6 +63,9 @@ process ANNOTATE_GFF {
     }
     if ( df_gff ) {
         df_flag = "--defense-finder ${df_gff}"
+    }
+    if ( pseudofinder_gff ) {
+        pseudofinder_flag = "--pseudofinder ${pseudofinder_gff} --pseudogene-report ${meta.prefix}_pseudogene_report.txt"
     }
     if ( ips_annotations_tsv ) {
         ips_flag = "-i ${ips_annotations_tsv}"
@@ -80,7 +89,7 @@ process ANNOTATE_GFF {
     -r ${ncrna_tsv} \
     -t ${trna_gff} \
     -o ${meta.prefix}_temp.gff \
-    ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} \
+    ${crisprcas_flag} ${sanntis_flag} ${amrfinder_flag} ${pseudofinder_flag}\
     ${antismash_flag} ${gecco_flag} ${dbcan_flag} ${df_flag} ${ips_flag}
 
     if [ "${params.fast}" == "false" ]; then
@@ -96,6 +105,10 @@ process ANNOTATE_GFF {
     --eggnog-output ${eggnog_annotations_tsv} \\
     -i ${hypothetical_tmp_gff} \\
     -o ${meta.prefix}_annotations.gff ${hypothetical_ips_flags}
+
+    prepare_gff_for_conversion.py \\
+    -i ${meta.prefix}_annotations.gff \\
+    -o ${meta.prefix}_submission.gff
 
     if [ "${params.fast}" == "false" ]; then
         add_interpro_descriptions.py \\
@@ -113,6 +126,8 @@ process ANNOTATE_GFF {
     stub:
     """
     touch ${meta.prefix}_annotations.gff
+    touch ${meta.prefix}_submission.gff
+    touch ${meta.prefix}_pseudogene_report.txt
     if [ "${params.fast}" == "false" ]; then
         touch ${meta.prefix}_annotations_with_descriptions.gff
     fi

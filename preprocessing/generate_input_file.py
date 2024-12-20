@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright 2024 EMBL - European Bioinformatics Institute
 #
@@ -26,21 +25,19 @@ logging.basicConfig(level=logging.INFO)
 def main(infile, input_dir, bat_dir, outfile, no_prefix):
     all_prefixes = list()
     if not os.path.exists(infile):
-        sys.exit("Input file {} does not exist!".format(infile))
+        sys.exit(f"Input file {infile} does not exist!")
     if not os.path.exists(bat_dir):
-        sys.exit("BAT directory {} does not exist!".format(bat_dir))
+        sys.exit(f"BAT directory {bat_dir} does not exist!")
     if not os.path.exists(input_dir):
-        sys.exit("Input directory {} does not exist!".format(input_dir))
+        sys.exit(f"Input directory {input_dir} does not exist!")
 
-    with open(infile, "r") as f_in, open(outfile, "w") as f_out:
+    with open(infile) as f_in, open(outfile, "w") as f_out:
         f_out.write("prefix,assembly,taxid\n")
         for line in f_in:
             line = line.strip()
             if line.endswith(("gz", "zip")):
                 sys.exit(
-                    "Fasta file {} is archived. Please provide only unarchived files.".format(
-                        line
-                    )
+                    f"Fasta file {line} is archived. Please provide only unarchived files."
                 )
             taxid = parse_taxid(line, bat_dir)
             if not no_prefix:
@@ -55,18 +52,18 @@ def main(infile, input_dir, bat_dir, outfile, no_prefix):
                 all_prefixes.append(prefix)
             full_path = os.path.join(input_dir, line)
             if no_prefix:
-                f_out.write(",{},{}\n".format(full_path, taxid))
+                f_out.write(f",{full_path},{taxid}\n")
             else:
-                f_out.write("{},{},{}\n".format(prefix, full_path, taxid))
-    logging.info("Saved results to {}".format(outfile))
+                f_out.write(f"{prefix},{full_path},{taxid}\n")
+    logging.info(f"Saved results to {outfile}")
 
 
 def parse_taxid(fasta_file, bat_dir):
     bat_filename = os.path.splitext(fasta_file)[0] + ".bin2classification.txt"
     bat_filepath = os.path.join(bat_dir, bat_filename)
     if not os.path.exists(bat_filepath):
-        sys.exit("Bat file {} does not exist!".format(bat_filepath))
-    with open(bat_filepath, "r") as f_in:
+        sys.exit(f"Bat file {bat_filepath} does not exist!")
+    with open(bat_filepath) as f_in:
         # skip header
         f_in.readline()
         taxid_string = f_in.readline().strip().split("\t")[3]
@@ -74,8 +71,8 @@ def parse_taxid(fasta_file, bat_dir):
         if not taxid:
             taxid = "FILL IN MANUALY"
             logging.warning(
-                "No taxid found for taxid {}. If taxid is known, fill it out manually in the generated "
-                "output file.".format(taxid)
+                f"No taxid found for taxid {taxid}. If taxid is known, fill it out manually in the generated "
+                "output file."
             )
     return taxid
 
@@ -106,7 +103,7 @@ def parse_args():
         dest="infile",
         required=True,
         help="A file containing a list of genome files to include (file name only, with file extension, unzipped, "
-             "one file per line). ",
+        "one file per line). ",
     )
     parser.add_argument(
         "-d",
