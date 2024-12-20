@@ -144,9 +144,12 @@ def load_gff(gff_file, chromosome_dictionary):
             elif line.startswith("#"):
                 continue
             else:
-                chromosome, _, feature, start, end, _, strand, _, col9 = (
-                    line.strip().split("\t")
-                )
+                try:
+                    chromosome, _, feature, start, end, _, strand, _, col9 = (
+                        line.strip().split("\t")
+                    )
+                except ValueError:
+                    continue
                 if "|" in chromosome:
                     chromosome = chromosome.split("|")[-1]
                 if chromosome in chromosome_dictionary:
