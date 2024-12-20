@@ -96,7 +96,9 @@ def move_values_to_note(attributes_dict, attributes_to_move_to_note):
     for term, reformatted_term in attributes_to_move_to_note.items():
         if term in attributes_dict:
             if "Note" in attributes_dict:
-                attributes_dict["Note"] += f",{reformatted_term}:{attributes_dict[term]}"
+                attributes_dict[
+                    "Note"
+                ] += f",{reformatted_term}:{attributes_dict[term]}"
             else:
                 attributes_dict["Note"] = f"{reformatted_term}:{attributes_dict[term]}"
             attributes_dict.pop(term)
@@ -134,8 +136,10 @@ def collect_go_terms(attributes_dict):
     from_fields = ["Dbxref", "Ontology_term", "uf_ontology_term"]
     for field in from_fields:
         if field in attributes_dict:
-            annotations = attributes_dict[field].split(',')
-            for annotation in annotations[:]:  # Using a copy of the list to avoid iteration issues
+            annotations = attributes_dict[field].split(",")
+            for annotation in annotations[
+                :
+            ]:  # Using a copy of the list to avoid iteration issues
                 if annotation.startswith("GO:"):
                     go_terms.append(annotation)
                     annotations.remove(annotation)
