@@ -723,10 +723,9 @@ def get_ncrnas(ncrnas_file):
 
 
 def prepare_rna_gff_fields(cols):
+    rna_feature_name = "ncRNA"
     if cols[1] in ["LSU_rRNA_bacteria", "SSU_rRNA_bacteria", "5S_rRNA"]:
         rna_feature_name = "rRNA"
-    else:
-        rna_feature_name = "ncRNA"
     ncrna_class = ""
     rna_types = {
         "antisense_RNA": [
