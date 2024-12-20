@@ -19,7 +19,7 @@ import re
 
 
 def main(infile, outfile):
-    with open(infile, "r") as file_in, open(outfile, "w") as file_out:
+    with open(infile) as file_in, open(outfile, "w") as file_out:
         fasta_flag = False
         for line in file_in:
             if line.startswith("##FASTA"):
@@ -152,7 +152,9 @@ def collect_go_terms(attributes_dict):
     go_terms = list(set(go_terms))
     if len(go_terms) > 0:
         if "Dbxref" in attributes_dict:
-            attributes_dict["Dbxref"] = attributes_dict["Dbxref"] + "," + ",".join(go_terms)
+            attributes_dict["Dbxref"] = (
+                attributes_dict["Dbxref"] + "," + ",".join(go_terms)
+            )
         else:
             attributes_dict["Dbxref"] = ",".join(go_terms)
         attributes_dict["Dbxref"] = attributes_dict["Dbxref"].rstrip(",")
