@@ -13,6 +13,7 @@
 - [ Usage ](#usage)
 - [ Test ](#test)
 - [ Outputs ](#out)
+- [Preparing annotations for ENA or GenBank submission](#submission)
 - [ Mobilome annotation ](#mobilome)
 - [ Credits ](#credit)
 - [ Contributions and Support ](#contribute)
@@ -461,8 +462,32 @@ The output folders of each individual tool contain select output files of the th
 
 Note: if the pipeline completed without errors but some of the tool-specific output folders are empty, those particular tools did not generate any annotations to output.
 
-<a name="mobilome"></a>
+<a name="submission"></a>
+## Preparing annotations for ENA or GenBank submission
 
+`mettannotator` produces a final annotation file in GFF3 format. To submit the annotations to data archives, it is first necessary to convert the GFF3 file into the required format, using third-party tools available for this conversion. `mettannotator` outputs a specially formatted GFF3 file, named `<prefix>_submission.gff` to be used with converters.
+
+### ENA
+ENA accepts annotations in the EMBL flat-file format.
+Please use [EMBLmyGFF3](https://github.com/NBISweden/EMBLmyGFF3) to perform the conversion; the repository includes detailed instructions. The two files required for conversion are:
+
+- the genome FASTA file
+- `<mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_submission.gff`
+
+Please note that it is necessary to register the project and locus tags in ENA prior to conversion. Follow links in the [EMBLmyGFF3](https://github.com/NBISweden/EMBLmyGFF3) repository for more details.
+
+### GenBank
+
+To convert annotations for GenBank submission, please use [table2asn](https://www.ncbi.nlm.nih.gov/genbank/table2asn/).
+Three files are required:
+
+- the genome FASTA file
+- `<mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_submission.gff`
+- Submission template file (can be generated [here](https://submit.ncbi.nlm.nih.gov/genbank/template/submission/))
+
+More instructions on running `table2asn` are available via [GenBank](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff/).
+
+<a name="mobilome"></a>
 ## Mobilome annotation
 
 The mobilome annotation workflow is not currently integrated into `mettannotator`. However, the outputs produced by `mettannotator` can be used to run [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline) and the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline) and the outputs of these tools can be integrated back into the GFF file produced by `mettannotator`.
