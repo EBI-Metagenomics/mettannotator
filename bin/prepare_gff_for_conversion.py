@@ -36,7 +36,7 @@ def main(infile, outfile):
 
 def modify_line(line):
     columns = line.strip().split("\t")
-    if columns[2] == "region":
+    if columns[2] in ["region", "tRNA"]:
         return line.strip()
 
     # Parse the 9th field into key-value pairs
