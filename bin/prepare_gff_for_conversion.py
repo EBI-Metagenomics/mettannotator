@@ -150,11 +150,12 @@ def collect_go_terms(attributes_dict):
                 del attributes_dict[field]
     # deduplicate
     go_terms = list(set(go_terms))
-    if "Dbxref" in attributes_dict:
-        attributes_dict["Dbxref"] = attributes_dict["Dbxref"] + "," + ",".join(go_terms)
-    else:
-        attributes_dict["Dbxref"] = ",".join(go_terms)
-    attributes_dict["Dbxref"] = attributes_dict["Dbxref"].rstrip(",")
+    if len(go_terms) > 0:
+        if "Dbxref" in attributes_dict:
+            attributes_dict["Dbxref"] = attributes_dict["Dbxref"] + "," + ",".join(go_terms)
+        else:
+            attributes_dict["Dbxref"] = ",".join(go_terms)
+        attributes_dict["Dbxref"] = attributes_dict["Dbxref"].rstrip(",")
     return attributes_dict
 
 
