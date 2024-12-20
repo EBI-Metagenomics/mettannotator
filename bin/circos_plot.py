@@ -114,7 +114,7 @@ def main(
                 if "defense_finder_type" in feature.qualifiers:
                     antiphage_track.genomic_features([feature], fc="orchid")
 
-            elif feature.type in ["tRNA", "ncRNA"]:
+            elif feature.type in ["tRNA", "ncRNA", "rRNA"]:
                 rna_track.genomic_features([feature], fc="darkmagenta")
             elif mobilome and feature.type in [
                 "mobility_island",

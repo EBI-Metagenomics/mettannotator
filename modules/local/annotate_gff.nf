@@ -31,6 +31,7 @@ process ANNOTATE_GFF {
     output:
     tuple val(meta), path("*_annotations.gff"),                                   emit: annotated_gff
     tuple val(meta), path("*_annotations_with_descriptions.gff"), optional: true, emit: annotated_desc_gff
+    tuple val(meta), path("*_submission.gff"),                                    emit: submission_gff
     tuple val(meta), path("*_pseudogene_report.txt"),                             emit: pseudogene_report
     path "versions.yml",                                                          emit: versions
 
@@ -105,6 +106,10 @@ process ANNOTATE_GFF {
     -i ${hypothetical_tmp_gff} \\
     -o ${meta.prefix}_annotations.gff ${hypothetical_ips_flags}
 
+    prepare_gff_for_conversion.py \\
+    -i ${meta.prefix}_annotations.gff \\
+    -o ${meta.prefix}_submission.gff
+
     if [ "${params.fast}" == "false" ]; then
         add_interpro_descriptions.py \\
         --ipr-entries ${interpro_entry_list}/entry.list \\
@@ -121,6 +126,7 @@ process ANNOTATE_GFF {
     stub:
     """
     touch ${meta.prefix}_annotations.gff
+    touch ${meta.prefix}_submission.gff
     touch ${meta.prefix}_pseudogene_report.txt
     if [ "${params.fast}" == "false" ]; then
         touch ${meta.prefix}_annotations_with_descriptions.gff

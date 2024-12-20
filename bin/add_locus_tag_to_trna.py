@@ -19,7 +19,7 @@ import re
 
 
 def main(input_file, output_file):
-    with open(input_file, "r") as file_in, open(output_file, "w") as file_out:
+    with open(input_file) as file_in, open(output_file, "w") as file_out:
         for line in file_in:
             if line.startswith("#") or not line.strip():
                 # Write header or empty lines as is
