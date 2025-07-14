@@ -2,5 +2,5 @@
 contig_1	ISEScan	insertion_sequence	950	2040	.	.	.	ID=contig_1|insertion_sequence-950:2040;mobile_element_type=IS3_with_TIR
 contig_1	ISEScan	terminal_inverted_repeat_element	950	970	.	.	.	ID=contig_1|terminal_inverted_repeat_element-950:970;flanking_site=TIR_1
 contig_1	ISEScan	terminal_inverted_repeat_element	2020	2040	.	.	.	ID=contig_1|terminal_inverted_repeat_element-2020:2040;flanking_site=TIR_2
-contig_2	ICEfinder	integron	3000	14000	.	.	.	ID=ID=contig_2|integron-3000:14000;mobile_element_type=IME
+contig_2	ICEfinder	integron	3000	14000	.	.	.	ID=contig_2|integron-3000:14000;mobile_element_type=IME
 contig_3	geNomad	plasmid	1	5000	.	.	.	ID=contig_3|plasmid-1:5000;mobile_element_type=plasmid

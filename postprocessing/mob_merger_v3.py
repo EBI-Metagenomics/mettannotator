@@ -218,6 +218,7 @@ def promge_parser(promge):
 
 
 def mapper(momofy_dict, promge_dict):
+
     momo_unique = []
     pro_unique = []
     momo_used = []
@@ -414,6 +415,7 @@ def merger(
     mgeR,
     genome_name,
 ):
+
     with open(genome_name + "_merged.gff", "w") as to_merged:
         to_merged.write("##gff-version 3\n")
         for mge in pro_unique:

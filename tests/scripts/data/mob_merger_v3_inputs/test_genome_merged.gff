@@ -1,0 +1,7 @@
+##gff-version 3
+contig_4	promge	phage	10000	20000	.	.	.	ID=test_genome|contig_4:10000-20000;merged_label=promge_unique;merged_coords=NA;merged_types=NA;subtype=NA;mge_recombinase=phage_integrase
+contig_3	MAP	plasmid	1	5000	.	.	.	ID=test_genome|contig_3:1-5000;merged_label=MAP_unique;merged_coords=NA;merged_types=NA;subtype=plasmid;mge_recombinase=NA
+contig_1	MAP	terminal_inverted_repeat_element	950	970	.	.	.	ID=TIR_1.1(IS3_with_TIR);merged_label=MAP_unique;merged_coords=NA;merged_types=NA;subtype=NA;mge_recombinase=NA
+contig_1	MAP	terminal_inverted_repeat_element	2020	2040	.	.	.	ID=TIR_2.1(IS3_with_TIR);merged_label=MAP_unique;merged_coords=NA;merged_types=NA;subtype=NA;mge_recombinase=NA
+contig_2	promge/MAP	nested	3000	14000	.	.	.	ID=test_genome|contig_2:3000-14000;merged_label=partial_overlap;merged_coords=mobility_island:3500-4500,integron:3000-14000;merged_types=mobility_island,integron;subtype=IME;mge_recombinase=int_ctndot
+contig_1	promge/MAP	nested	950	2500	.	.	.	ID=test_genome|contig_1:950-2500;merged_label=partial_overlap;merged_coords=insertion_sequence:1500-2500,insertion_sequence:950-2040;merged_types=insertion_sequence;subtype=IS3_with_TIR;mge_recombinase=dde_tnp_is66
