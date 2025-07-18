@@ -36,9 +36,7 @@ def update_gff_with_status(gff_file, coordinates_dict):
                 start, end = columns[3], columns[4]
                 essentiality = coordinates_dict.get((start, end))
                 if essentiality:
-                    columns[
-                        8
-                    ] += f";transit_combined_hmm_gumbel_essentiality={essentiality}"
+                    columns[8] += f";transit_combined_hmm_gumbel_essentiality={essentiality}"
                     matched_coordinates.add((start, end))
             updated_lines.append("\t".join(columns) + "\n")
         else:
@@ -81,8 +79,6 @@ if __name__ == "__main__":
     not_matched_file = sys.argv[4]
 
     coordinates_dict = read_coordinates_file(coordinates_file)
-    updated_lines, matched_coordinates = update_gff_with_status(
-        gff_file, coordinates_dict
-    )
+    updated_lines, matched_coordinates = update_gff_with_status(gff_file, coordinates_dict)
     write_updated_gff(output_file, updated_lines)
     write_not_matched_file(not_matched_file, coordinates_dict, matched_coordinates)

@@ -7,21 +7,13 @@ from bin.adjust_pseudofinder_output import main
 
 class TestAdjustPseudofinderOutput(unittest.TestCase):
     def setUp(self):
-        self.prokka_standard = (
-            Path(__file__).resolve().parent
-            / "data/pseudofinder_test_inputs/prokka_standard.gff"
-        )
-        self.prokka_compliant = (
-            Path(__file__).resolve().parent
-            / "data/pseudofinder_test_inputs/prokka_compliant.gff"
-        )
+        self.prokka_standard = Path(__file__).resolve().parent / "data/pseudofinder_test_inputs/prokka_standard.gff"
+        self.prokka_compliant = Path(__file__).resolve().parent / "data/pseudofinder_test_inputs/prokka_compliant.gff"
         self.pseudofinder_output = (
-            Path(__file__).resolve().parent
-            / "data/pseudofinder_test_inputs/pseudofinder_result.gff"
+            Path(__file__).resolve().parent / "data/pseudofinder_test_inputs/pseudofinder_result.gff"
         )
         self.expected_output = (
-            Path(__file__).resolve().parent
-            / "data/pseudofinder_test_inputs/expected_processed_result.gff"
+            Path(__file__).resolve().parent / "data/pseudofinder_test_inputs/expected_processed_result.gff"
         )
 
     def test_main(self):

@@ -20,9 +20,7 @@ import re
 
 def main(mobilome_file, infile, outfile):
     mobilome_dict = load_mobilome(mobilome_file)
-    printed_list = (
-        list()
-    )  # record which mobilome lines have already been printed to the output file
+    printed_list = list()  # record which mobilome lines have already been printed to the output file
     fasta_flag = False
     with open(infile) as file_in, open(outfile, "w") as file_out:
         previous_contig = ""
@@ -59,14 +57,10 @@ def main(mobilome_file, infile, outfile):
 
                 # Now process the current line, check if there is an overlap with any MGEs
                 start, end = int(start), int(end)
-                overlap, lines_to_print = check_overlap(
-                    mobilome_dict, contig, start, end
-                )
+                overlap, lines_to_print = check_overlap(mobilome_dict, contig, start, end)
                 # Before printing any results, check if there are earlier mobilome lines on this contig
                 # that haven't been printed yet
-                extra_lines_to_print = look_for_lines_to_print(
-                    mobilome_dict, contig, start, printed_list
-                )
+                extra_lines_to_print = look_for_lines_to_print(mobilome_dict, contig, start, printed_list)
                 for extra_line in extra_lines_to_print:
                     if extra_line not in lines_to_print:
                         file_out.write(extra_line)
@@ -85,8 +79,7 @@ def main(mobilome_file, infile, outfile):
                             # extract information to add to the CDS
                             mge_col9 = line_to_print.strip().split("\t")[8]
                             attributes_dict = dict(
-                                re.split(r"(?<!\\)=", item)
-                                for item in re.split(r"(?<!\\);", mge_col9)
+                                re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", mge_col9)
                             )
                             mge_ids.append(attributes_dict["ID"])
                             if "merged_types" in attributes_dict:
@@ -127,9 +120,9 @@ def sanity_check(mobilome_dict, printed_list):
     """Check that the number of records added to the GFF matches the number of records in the mobilome file"""
     printed_list_length = len(list(set(printed_list)))
     mobilome_count = sum(len(inner_dict) for inner_dict in mobilome_dict.values())
-    assert (
-        printed_list_length == mobilome_count
-    ), f"The number of mobilome entries added to the GFF does not match the expected count: added {printed_list_length}, expected{mobilome_count}"
+    assert printed_list_length == mobilome_count, (
+        f"The number of mobilome entries added to the GFF does not match the expected count: added {printed_list_length}, expected{mobilome_count}"
+    )
 
 
 def look_for_lines_to_print(mobilome_dict, contig, start, printed_list):
@@ -197,25 +190,14 @@ def load_mobilome(infile):
                 feature = "nested_mobile_element"
             else:
                 # remove merged attributes from col9 of records that are not merged
-                col9 = (
-                    col9.replace("merged_coords=NA;", "")
-                    .replace("merged_types=NA;", "")
-                    .replace("subtype=NA;", "")
-                )
+                col9 = col9.replace("merged_coords=NA;", "").replace("merged_types=NA;", "").replace("subtype=NA;", "")
                 if feature in [
                     "terminal_inverted_repeat_element",
                     "direct_repeat_element",
                 ]:
                     col9 = col9.replace(";mge_recombinase=NA", "")
-            line = (
-                "\t".join(
-                    [contig, tool, feature, start, end, blank1, blank2, blank3, col9]
-                )
-                + "\n"
-            )
-            mobilome_dict.setdefault(contig, dict()).update(
-                {tuple([int(start), int(end)]): line}
-            )
+            line = "\t".join([contig, tool, feature, start, end, blank1, blank2, blank3, col9]) + "\n"
+            mobilome_dict.setdefault(contig, dict()).update({tuple([int(start), int(end)]): line})
     return mobilome_dict
 
 

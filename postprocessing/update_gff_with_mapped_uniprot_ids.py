@@ -38,9 +38,7 @@ def load_uniprot_descriptions(uniprot_tsv):
                     sys.exit("Could not get uniprot indices to load descriptions")
             else:
                 fields = line.strip().split("\t")
-                uniprot_descriptions[fields[entry_index]] = escape_reserved_characters(
-                    fields[protein_name_index]
-                )
+                uniprot_descriptions[fields[entry_index]] = escape_reserved_characters(fields[protein_name_index])
     assert len(uniprot_descriptions) > 0, "Uniprot description dictionary is empty."
     return uniprot_descriptions
 
@@ -58,9 +56,7 @@ def escape_reserved_characters(string):
 
 def run_blast(pipeline_fasta, uniprot_fasta, blast_output):
     # Create blast database
-    subprocess.run(
-        ["makeblastdb", "-in", pipeline_fasta, "-parse_seqids", "-dbtype", "prot"]
-    )
+    subprocess.run(["makeblastdb", "-in", pipeline_fasta, "-parse_seqids", "-dbtype", "prot"])
 
     # Run blastp
     subprocess.run(
@@ -89,9 +85,7 @@ def extract_best_hits(blast_output):
             result_id = fields[1]
             percent_id = fields[2]
             overlap = fields[3]
-            if query_id not in best_hits or float(percent_id) > float(
-                best_hits[query_id][2]
-            ):
+            if query_id not in best_hits or float(percent_id) > float(best_hits[query_id][2]):
                 best_hits[query_id] = (result_id, percent_id, overlap)
     return best_hits
 
@@ -118,34 +112,19 @@ def update_gff_with_mapping(gff_file, mapping_file, output_file, uniprot_descrip
                 outfile.write(line)
             else:
                 fields = line.strip().split("\t")
-                if (
-                    len(fields) >= 9
-                    and fields[2] == "CDS"
-                    and fields[8].startswith("ID=")
-                ):
-                    attributes_dict = dict(
-                        re.split(r"(?<!\\)=", item)
-                        for item in re.split(r"(?<!\\);", fields[8])
-                    )
+                if len(fields) >= 9 and fields[2] == "CDS" and fields[8].startswith("ID="):
+                    attributes_dict = dict(re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", fields[8]))
                     identifier = attributes_dict["ID"]
                     if identifier.startswith("CDS:"):
                         identifier = identifier[len("CDS:") :]
                     if identifier in mapping_dict:
                         if "Dbxref" in attributes_dict:
-                            attributes_dict[
-                                "Dbxref"
-                            ] += f",UniProt:{mapping_dict[identifier]}"
+                            attributes_dict["Dbxref"] += f",UniProt:{mapping_dict[identifier]}"
                         else:
-                            attributes_dict[
-                                "Dbxref"
-                            ] = f"UniProt:{mapping_dict[identifier]}"
+                            attributes_dict["Dbxref"] = f"UniProt:{mapping_dict[identifier]}"
                         if mapping_dict[identifier] in uniprot_descriptions:
-                            attributes_dict["uniprot_prot_name"] = uniprot_descriptions[
-                                mapping_dict[identifier]
-                            ]
-                        fields[8] = ";".join(
-                            [f"{key}={value}" for key, value in attributes_dict.items()]
-                        )
+                            attributes_dict["uniprot_prot_name"] = uniprot_descriptions[mapping_dict[identifier]]
+                        fields[8] = ";".join([f"{key}={value}" for key, value in attributes_dict.items()])
                 outfile.write("\t".join(fields) + "\n")
 
 
@@ -233,8 +212,6 @@ if __name__ == "__main__":
 
     # Update GFF with mapping
     if args.include_description:
-        update_gff_with_mapping(
-            gff_file, mapping_file, output_gff_file, uniprot_descriptions
-        )
+        update_gff_with_mapping(gff_file, mapping_file, output_gff_file, uniprot_descriptions)
     else:
         update_gff_with_mapping(gff_file, mapping_file, output_gff_file, dict())

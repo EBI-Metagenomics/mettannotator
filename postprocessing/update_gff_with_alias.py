@@ -33,10 +33,7 @@ def main(infile, outfile, liftoff_file, field_from, field_to):
             else:
                 fields = line.strip().split("\t")
                 if fields[2] in fields_to_check:
-                    attributes_dict = dict(
-                        re.split(r"(?<!\\)=", item)
-                        for item in re.split(r"(?<!\\);", fields[8])
-                    )
+                    attributes_dict = dict(re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", fields[8]))
                     if fields[2] == "gene":
                         id = attributes_dict["ID"]
                     else:
@@ -65,17 +62,11 @@ def load_aliases(liftoff_file, field_from):
                 continue
             if not fields[2] == field_from:
                 continue
-            attributes_dict = dict(
-                re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", fields[8])
-            )
+            attributes_dict = dict(re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", fields[8]))
             if "Alias" in attributes_dict:
-                alias_dictionary[attributes_dict["ID"]] = "Alias={}".format(
-                    attributes_dict["Alias"]
-                )
+                alias_dictionary[attributes_dict["ID"]] = "Alias={}".format(attributes_dict["Alias"])
             if "extra_copy_number" in attributes_dict:
-                alias_dictionary[
-                    attributes_dict["ID"]
-                ] += ";extra_copy_number={}".format(
+                alias_dictionary[attributes_dict["ID"]] += ";extra_copy_number={}".format(
                     attributes_dict["extra_copy_number"]
                 )
     return alias_dictionary
