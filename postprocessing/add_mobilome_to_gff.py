@@ -35,9 +35,17 @@ def main(mobilome_file, infile, outfile):
                 # We are printing the FASTA sequence at the end of the file now
                 file_out.write(line)
             else:
-                contig, tool, feature, start, end, blank1, blank2, blank3, col9 = (
-                    line.strip().split("\t")
-                )
+                (
+                    contig,
+                    tool,
+                    feature,
+                    start,
+                    end,
+                    blank1,
+                    blank2,
+                    blank3,
+                    col9,
+                ) = line.strip().split("\t")
                 if previous_contig and contig != previous_contig:
                     # We switched to a new contig, check if there are any MGE lines left on the previous contig that
                     # were not printed.
@@ -173,9 +181,17 @@ def load_mobilome(infile):
                     break
                 else:
                     continue
-            contig, tool, feature, start, end, blank1, blank2, blank3, col9 = (
-                line.strip().split("\t")
-            )
+            (
+                contig,
+                tool,
+                feature,
+                start,
+                end,
+                blank1,
+                blank2,
+                blank3,
+                col9,
+            ) = line.strip().split("\t")
             if feature == "nested":
                 # replace with a more meaningful name
                 feature = "nested_mobile_element"

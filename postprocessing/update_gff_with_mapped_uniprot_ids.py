@@ -136,9 +136,9 @@ def update_gff_with_mapping(gff_file, mapping_file, output_file, uniprot_descrip
                                 "Dbxref"
                             ] += f",UniProt:{mapping_dict[identifier]}"
                         else:
-                            attributes_dict["Dbxref"] = (
-                                f"UniProt:{mapping_dict[identifier]}"
-                            )
+                            attributes_dict[
+                                "Dbxref"
+                            ] = f"UniProt:{mapping_dict[identifier]}"
                         if mapping_dict[identifier] in uniprot_descriptions:
                             attributes_dict["uniprot_prot_name"] = uniprot_descriptions[
                                 mapping_dict[identifier]

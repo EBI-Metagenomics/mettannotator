@@ -177,7 +177,7 @@ def promge_parser(promge):
             if len(line.split("\t")) == 9:
 
                 # Ignoring gene annotations
-                if line.split("\t")[1] =='proMGE':
+                if line.split("\t")[1] == "proMGE":
                     # data_list = [contig, seq_type, start, end, seq_id]
                     data_list = gff_parser(line)
                     contig = data_list.pop(0)
@@ -188,19 +188,19 @@ def promge_parser(promge):
 
                     for attribute in line.split("\t")[8].split(";"):
                         att_key, att_val = attribute.split("=")
-                        mge_values_list = att_val.split(',')
+                        mge_values_list = att_val.split(",")
 
                         if att_key == "mge":
                             description = []
                             for desc_element in mge_values_list:
-                                desc_root = desc_element.split(':')[0]
+                                desc_root = desc_element.split(":")[0]
                                 description.append(mge_type[desc_root])
                             description = "|".join(description)
 
                         if att_key == "mgeR":
                             recombinase = []
                             for recomb_element in mge_values_list:
-                                recomb_root = recomb_element.split(':')[0]
+                                recomb_root = recomb_element.split(":")[0]
                                 recombinase.append(recomb_root)
                             recombinase = ",".join(recombinase)
                             mger[new_id] = recombinase
