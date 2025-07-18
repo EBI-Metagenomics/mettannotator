@@ -5,9 +5,7 @@ Tests the mobile genetic element merger functionality
 """
 
 import os
-import sys
 import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -19,10 +17,6 @@ from postprocessing.mob_merger_v3 import (
     promge_parser,
     to_print,
 )
-
-# Add the project root to Python path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
 
 
 class TestGffParser:

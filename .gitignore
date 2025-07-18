@@ -44,3 +44,4 @@ reports/
 trace/
 .cache/
 logs/
+.pytest_cache/
