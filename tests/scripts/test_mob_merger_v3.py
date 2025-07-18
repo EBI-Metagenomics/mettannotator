@@ -9,17 +9,8 @@ import tempfile
 import os
 from unittest.mock import patch, mock_open
 import sys
-
-# Import the functions from the script
-# Instead of direct import, use relative import from the package
-import sys
 from pathlib import Path
 
-# Add the project root to Python path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
-# Now import the functions
 from postprocessing.mob_merger_v3 import (
     gff_parser,
     momo_parser,
@@ -28,6 +19,12 @@ from postprocessing.mob_merger_v3 import (
     to_print,
     merger
 )
+
+
+# Add the project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 
 class TestGffParser:
     """Test the GFF line parser function"""
