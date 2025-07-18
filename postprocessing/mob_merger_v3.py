@@ -168,7 +168,7 @@ def promge_parser(promge):
         "cellular": "cellular_recombinase",
     }
     promge_dict = {}
-    mgeR = {}
+    mger = {}
 
     with open(promge) as input_gff:
         for line in input_gff:
@@ -203,7 +203,7 @@ def promge_parser(promge):
                                 recomb_root = recomb_element.split(':')[0]
                                 recombinase.append(recomb_root)
                             recombinase = ",".join(recombinase)
-                            mgeR[new_id] = recombinase
+                            mger[new_id] = recombinase
 
                     data_list.insert(0, description)
                     data_list.insert(0, contig)
@@ -214,7 +214,7 @@ def promge_parser(promge):
                     else:
                         promge_dict[contig] = [data_list]
 
-    return (promge_dict, mgeR)
+    return (promge_dict, mger)
 
 
 def mapper(momofy_dict, promge_dict):
@@ -412,7 +412,7 @@ def merger(
     permge_metadata,
     irdr_dict,
     momo_subtypes,
-    mgeR,
+    mger,
     genome_name,
 ):
 
@@ -425,7 +425,7 @@ def merger(
                 "merged_coords=NA",
                 "merged_types=NA",
                 "subtype=NA",
-                "mge_recombinase=" + mgeR[mge],
+                "mge_recombinase=" + mger[mge],
             ]
             line = to_print(permge_metadata[mge], genome_name, source, extra_attributes)
             to_merged.write(line)
@@ -483,7 +483,7 @@ def merger(
             ends = []
             coord_list = []
             nested_types = []
-            mgeR_list = []
+            mger_list = []
             momosub_list = []
             promge_positions = []
             momofy_positions = []
@@ -503,8 +503,8 @@ def merger(
                 ends.append(mge_end)
 
                 element_range = list(range(int(mge_start), int(mge_end) + 1))
-                if element in mgeR:
-                    mgeR_list.append(mgeR[element])
+                if element in mger:
+                    mger_list.append(mger[element])
                     promge_positions = promge_positions + element_range
 
                 if element in momo_subtypes:
@@ -536,7 +536,7 @@ def merger(
 
             merge_info = ",".join(coord_list)
             nested_info = ",".join(list(set(nested_types)))
-            mgeR_info = ",".join(mgeR_list)
+            mger_info = ",".join(mger_list)
             momo_sub_info = ",".join(momosub_list)
 
             extra_attributes = [
@@ -544,7 +544,7 @@ def merger(
                 "merged_coords=" + merge_info,
                 "merged_types=" + nested_info,
                 "subtype=" + momo_sub_info,
-                "mge_recombinase=" + mgeR_info,
+                "mge_recombinase=" + mger_info,
             ]
 
             extra_attributes.insert(0, global_id)
@@ -595,7 +595,7 @@ def main():
 
     ### Calling functions
     (momofy_dict, irdr_dict, momo_subtypes) = momo_parser(args.mobannot)
-    (promge_dict, mgeR) = promge_parser(args.proMGE)
+    (promge_dict, mger) = promge_parser(args.proMGE)
 
     (momo_unique, pro_unique, final_overlapped, permge_metadata) = mapper(
         momofy_dict, promge_dict
@@ -608,7 +608,7 @@ def main():
         permge_metadata,
         irdr_dict,
         momo_subtypes,
-        mgeR,
+        mger,
         args.genome_name,
     )
 

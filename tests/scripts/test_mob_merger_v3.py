@@ -104,7 +104,7 @@ contig_4	proMGE	mobile_genetic_element	10000	20000	10000	+	.	ID=MGE_genome1_cont
             tmp_file.flush()
             
             try:
-                promge_dict, mgeR = promge_parser(tmp_file.name)
+                promge_dict, mger = promge_parser(tmp_file.name)
                 
                 # Test structure
                 assert 'contig_1' in promge_dict
@@ -119,7 +119,7 @@ contig_4	proMGE	mobile_genetic_element	10000	20000	10000	+	.	ID=MGE_genome1_cont
                 assert contig1_element[3] == '2500'
                 
                 # Test mgeR data
-                assert len(mgeR) == 3
+                assert len(mger) == 3
                 
             finally:
                 os.unlink(tmp_file.name)
@@ -199,7 +199,7 @@ class TestMerger:
         }
         irdr_dict = {}
         momo_subtypes = {'contig_3:1-5000': 'plasmid'}
-        mgeR = {'contig_4:10000-20000': 'phage_integrase'}
+        mger = {'contig_4:10000-20000': 'phage_integrase'}
         genome_name = 'test_genome'
         
         # Create temporary directory
@@ -210,7 +210,7 @@ class TestMerger:
             try:
                 merger(
                     momo_unique, pro_unique, final_overlapped, permge_metadata,
-                    irdr_dict, momo_subtypes, mgeR, genome_name
+                    irdr_dict, momo_subtypes, mger, genome_name
                 )
                 
                 # Check that output file was created
@@ -263,13 +263,13 @@ contig_4	proMGE	mobile_genetic_element	10000	20000	10000	+	.	ID=MGE_genome1_cont
             try:
                 # Run the workflow
                 momofy_dict, irdr_dict, momo_subtypes = momo_parser(map_file)
-                promge_dict, mgeR = promge_parser(promge_file)
+                promge_dict, mger = promge_parser(promge_file)
                 momo_unique, pro_unique, final_overlapped, permge_metadata = mapper(
                     momofy_dict, promge_dict
                 )
                 merger(
                     momo_unique, pro_unique, final_overlapped, permge_metadata,
-                    irdr_dict, momo_subtypes, mgeR, 'test_genome'
+                    irdr_dict, momo_subtypes, mger, 'test_genome'
                 )
                 
                 # Verify output
