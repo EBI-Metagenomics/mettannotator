@@ -82,7 +82,11 @@ def momo_parser(mobannot):
                     for attribute in line.split("\t")[8].split(";"):
                         att_key, att_val = attribute.split("=")
                         if att_key == "mobile_element_type":
-                            min_key = contig + ":" + data_list[4].split("-")[1].replace(":", "-")
+                            min_key = (
+                                contig
+                                + ":"
+                                + data_list[4].split("-")[1].replace(":", "-")
+                            )
                             momo_subtypes[min_key] = att_val
                             bm1_key = (contig, start)
                             bound_map_1[bm1_key] = att_val
@@ -112,7 +116,14 @@ def momo_parser(mobannot):
             bm1_key = (contig, start)
             bm2_key = (contig, end)
             if all([bm1_key in bound_map_1, bm1_key in irdr_map]):
-                new_id = irdr_map[bm1_key][5] + "." + str(boundaries_counter) + "(" + bound_map_1[bm1_key] + ")"
+                new_id = (
+                    irdr_map[bm1_key][5]
+                    + "."
+                    + str(boundaries_counter)
+                    + "("
+                    + bound_map_1[bm1_key]
+                    + ")"
+                )
                 min_info = [
                     irdr_map[bm1_key][0],
                     irdr_map[bm1_key][1],
@@ -121,7 +132,14 @@ def momo_parser(mobannot):
                 ]
                 irdr_dict[new_id] = min_info
             if all([bm2_key in bound_map_2, bm2_key in irdr_map]):
-                new_id = irdr_map[bm2_key][5] + "." + str(boundaries_counter) + "(" + bound_map_2[bm2_key] + ")"
+                new_id = (
+                    irdr_map[bm2_key][5]
+                    + "."
+                    + str(boundaries_counter)
+                    + "("
+                    + bound_map_2[bm2_key]
+                    + ")"
+                )
                 min_info = [
                     irdr_map[bm2_key][0],
                     irdr_map[bm2_key][1],
@@ -259,7 +277,9 @@ def mapper(momofy_dict, promge_dict):
                                 index = -1
                                 for cluster in overlapped:
                                     index += 1
-                                    if any([pro_seq_id in cluster, momo_seq_id in cluster]):
+                                    if any(
+                                        [pro_seq_id in cluster, momo_seq_id in cluster]
+                                    ):
                                         cluster_flag = 1
                                         overlapped[index].append(pro_seq_id)
                                         overlapped[index].append(momo_seq_id)
@@ -323,7 +343,9 @@ def mapper(momofy_dict, promge_dict):
                     clst_2_range = (int(clst_2_start), int(clst_2_end) + 1)
                     intersection = len(list(set(clst_1_range) & set(clst_2_range)))
                     if intersection > 0:
-                        if all([comp_key_1 not in clst_used, comp_key_2 not in clst_used]):
+                        if all(
+                            [comp_key_1 not in clst_used, comp_key_2 not in clst_used]
+                        ):
                             boundaries_list = [
                                 clst_1_start,
                                 clst_1_end,
@@ -332,7 +354,12 @@ def mapper(momofy_dict, promge_dict):
                             ]
                             new_min = sorted(boundaries_list)[0]
                             new_max = sorted(boundaries_list)[1]
-                            collapsed_cluster = list(set(clusters_labels[comp_key_1] + clusters_labels[comp_key_2]))
+                            collapsed_cluster = list(
+                                set(
+                                    clusters_labels[comp_key_1]
+                                    + clusters_labels[comp_key_2]
+                                )
+                            )
                             cluster_counter += 1
                             collapsed_key = (contig_1, cluster_counter)
                             clst_2_add[collapsed_key] = collapsed_cluster
@@ -505,7 +532,9 @@ def merger(
             else:
                 mge_type = "partial_overlap"
 
-            global_id = "ID=" + genome_name + "|" + contig + ":" + str(start) + "-" + str(end)
+            global_id = (
+                "ID=" + genome_name + "|" + contig + ":" + str(start) + "-" + str(end)
+            )
 
             merge_info = ",".join(coord_list)
             nested_info = ",".join(list(set(nested_types)))
@@ -576,7 +605,9 @@ def main():
     (momofy_dict, irdr_dict, momo_subtypes) = momo_parser(args.mobannot)
     (promge_dict, mgeR) = promge_parser(args.proMGE, args.meta)
 
-    (momo_unique, pro_unique, final_overlapped, permge_metadata) = mapper(momofy_dict, promge_dict)
+    (momo_unique, pro_unique, final_overlapped, permge_metadata) = mapper(
+        momofy_dict, promge_dict
+    )
 
     merger(
         momo_unique,

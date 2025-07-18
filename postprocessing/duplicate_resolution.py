@@ -44,7 +44,9 @@ def main(reference, target, outfile, species):
     stats_out = open(f"{species}_stats.txt", "w")
     stats_out.write("Gene\tCopy number\tReplaced\tWhy not replaced/ Comment\n")
     for base in dedupl_dict:
-        if len(dedupl_dict[base]) > 1:  # there are multiple gene copies, try to deduplicate
+        if (
+            len(dedupl_dict[base]) > 1
+        ):  # there are multiple gene copies, try to deduplicate
             printed_stat = ""
             printed_stat += f"{base}\t{str(len(dedupl_dict[base]))}\t"
             counter += 1
@@ -55,8 +57,12 @@ def main(reference, target, outfile, species):
             # if they don't, we consider them an unknown
             for gene in dedupl_dict[base]:
                 if dedupl_dict[base][gene]["alias"] in alias_genename_dict:
-                    ref_gene_name = alias_genename_dict[dedupl_dict[base][gene]["alias"]]
-                    decision_dict.setdefault(ref_gene_name, list()).append(dedupl_dict[base][gene]["alias"])
+                    ref_gene_name = alias_genename_dict[
+                        dedupl_dict[base][gene]["alias"]
+                    ]
+                    decision_dict.setdefault(ref_gene_name, list()).append(
+                        dedupl_dict[base][gene]["alias"]
+                    )
                 else:
                     unknown_counter += 1
             # Go through decision dictionary and see what we can resolve.
@@ -70,25 +76,33 @@ def main(reference, target, outfile, species):
                 printed_stat += "No\tNo known genes in reference\n"
             elif any(len(alias_list) > 1 for alias_list in decision_dict.values()):
                 # unable to decide because a gene name is repeated in reference as well
-                stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
+                stats_dict["unable_to_decide"] = (
+                    stats_dict.get("unable_to_decide", 0) + 1
+                )
                 printed_stat += "No\tGene name occurs in reference multiple times or alias repeated in target\n"
             elif base in decision_dict and len(decision_dict) == 1:
                 # there is one clear "real" gene
                 alias = decision_dict[base][0]
                 if alias_repeats[alias] > 1:
                     # The same alias is assigned to multiple genes, we cannot resolve this
-                    stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
+                    stats_dict["unable_to_decide"] = (
+                        stats_dict.get("unable_to_decide", 0) + 1
+                    )
                     printed_stat += "No\tThe same alias is assigned to multiple genes\n"
                 else:
                     if alias in replacements:
-                        sys.exit(f"Error: something went wrong, alias {alias} is already in replacements")
+                        sys.exit(
+                            f"Error: something went wrong, alias {alias} is already in replacements"
+                        )
                     replacements[alias] = base
                     stats_dict["replaced"] = stats_dict.get("replaced", 0) + 1
                     replace = True
                     printed_stat += "Yes\t\n"
             else:
                 logging.debug(f"Case is not clear {dedupl_dict[base]} {decision_dict}")
-                unique = check_value_uniqueness(decision_dict)  # check that the alias doesn't repeat
+                unique = check_value_uniqueness(
+                    decision_dict
+                )  # check that the alias doesn't repeat
                 occurrence_flag = False  # check if a gene we are replacing with is already in the genome
                 for gene in decision_dict:
                     if not gene == base:
@@ -96,25 +110,39 @@ def main(reference, target, outfile, species):
                             occurrence_flag = True
                 if not unique:
                     # aliases repeat and we can't resolve duplicates
-                    stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
+                    stats_dict["unable_to_decide"] = (
+                        stats_dict.get("unable_to_decide", 0) + 1
+                    )
                     printed_stat += "No\tAt least one alias is repeated\n"
                 elif occurrence_flag:
                     # the gene is already in the genome and we will create a new duplicate if we use it
-                    stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
-                    printed_stat += "No\tReplacement already occurs elsewhere in the genome\n"
-                    logging.debug("Replacement gene already occurs in the genome, can't replace")
+                    stats_dict["unable_to_decide"] = (
+                        stats_dict.get("unable_to_decide", 0) + 1
+                    )
+                    printed_stat += (
+                        "No\tReplacement already occurs elsewhere in the genome\n"
+                    )
+                    logging.debug(
+                        "Replacement gene already occurs in the genome, can't replace"
+                    )
                 else:
-                    already_present_in_replacements, reverse = check_gene_presence(decision_dict, replacements, reverse)
+                    already_present_in_replacements, reverse = check_gene_presence(
+                        decision_dict, replacements, reverse
+                    )
 
                     if already_present_in_replacements:
-                        stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
+                        stats_dict["unable_to_decide"] = (
+                            stats_dict.get("unable_to_decide", 0) + 1
+                        )
                         printed_stat += "No\tWe already used the replacement gene in a previous duplicate group\n"
-                        logging.debug("Replacement gene already occurs in the replacement list, can't replace")
+                        logging.debug(
+                            "Replacement gene already occurs in the replacement list, can't replace"
+                        )
                         continue
 
-                    if len(dedupl_dict[base]) == (len(decision_dict) + unknown_counter) and all(
-                        len(value) == 1 for value in decision_dict.values()
-                    ):
+                    if len(dedupl_dict[base]) == (
+                        len(decision_dict) + unknown_counter
+                    ) and all(len(value) == 1 for value in decision_dict.values()):
                         # two dictionaries are the same length and new gene names don't occur in the genome
                         # we can replace every gene
                         for gene_name, alias_list in decision_dict.items():
@@ -132,7 +160,9 @@ def main(reference, target, outfile, species):
                     else:
                         logging.debug("length is different")
                         if len(dedupl_dict[base]) - len(decision_dict) > 1:
-                            stats_dict["unable_to_decide"] = stats_dict.get("unable_to_decide", 0) + 1
+                            stats_dict["unable_to_decide"] = (
+                                stats_dict.get("unable_to_decide", 0) + 1
+                            )
                             printed_stat += "No\tSource and replacement dicts have different lengths\n"
                         else:
                             (
@@ -166,12 +196,19 @@ def main(reference, target, outfile, species):
             )
         stats_out.write(printed_stat)
     print("replacement ids", replacements_ids)
-    if len(set(replacements.values())) != len(replacements.values()) or len(reverse) > 0:
+    if (
+        len(set(replacements.values())) != len(replacements.values())
+        or len(reverse) > 0
+    ):
         sys.exit("Non-unique values in replacements")
     else:
-        made_replacements = make_replacement_file(target, outfile, replacements, replacements_ids, species)
+        made_replacements = make_replacement_file(
+            target, outfile, replacements, replacements_ids, species
+        )
     if made_replacements != (len(replacements) + len(replacements_ids)):
-        sys.exit(f"Made {str(made_replacements)} replacements but expected {str(len(replacements))}")
+        sys.exit(
+            f"Made {str(made_replacements)} replacements but expected {str(len(replacements))}"
+        )
     logging.info(f"Total number of groups: {counter}")
     logging.info(f"Replacements: {replacements}")
     logging.info(f"Made replacements: {made_replacements}")
@@ -195,11 +232,15 @@ def try_to_remove_more_underscores(
     if base not in decision_dict:
         if len(deduplication_section.keys()) - len(decision_dict.keys()) == 1:
             # one name remains not replaced and it's not already being used in deduplication
-            bacunis_already_replaced = [item for sublist in decision_dict.values() for item in sublist]
+            bacunis_already_replaced = [
+                item for sublist in decision_dict.values() for item in sublist
+            ]
             for key in deduplication_section.keys():
                 if deduplication_section[key]["alias"] is None:
                     print("Alias is none", deduplication_section[key])
-                    replacements_ids[deduplication_section[key]["locus"]] = key.split("_")[0]
+                    replacements_ids[deduplication_section[key]["locus"]] = key.split(
+                        "_"
+                    )[0]
                     printed_stat = printed_stat.replace(
                         "\n",
                         "Removed underscore from {} because it was the only duplicate "
@@ -207,7 +248,9 @@ def try_to_remove_more_underscores(
                     ).format(key)
                     return replacements, printed_stat, replacements_ids
                 if deduplication_section[key]["alias"] not in bacunis_already_replaced:
-                    replacements[deduplication_section[key]["alias"]] = key.split("_")[0]
+                    replacements[deduplication_section[key]["alias"]] = key.split("_")[
+                        0
+                    ]
                     printed_stat = printed_stat.replace(
                         "\n",
                         "Removed underscore from {} because it was the only duplicate "
@@ -259,7 +302,9 @@ def make_replacement_file(target, outfile, replacements, replacements_ids, speci
                         print("ID IS IN IDS")
                         if fields[2] == "gene":
                             rep_out.write(f"{gene_name}\t{replacements_ids[id]}\n")
-                            print("made replacement of", gene_name, replacements_ids[id])
+                            print(
+                                "made replacement of", gene_name, replacements_ids[id]
+                            )
                         line = line.replace(gene_name, replacements_ids[id])
                         count_replacements.append(id)
                     file_out.write(line)
@@ -308,7 +353,9 @@ def resolve_duplicate(
 
 def check_gene_presence(decision_dict, replacements, reverse):
     result = False
-    check_values = [value for values_list in decision_dict.values() for value in values_list]
+    check_values = [
+        value for values_list in decision_dict.values() for value in values_list
+    ]
     for val in check_values:
         if val in replacements.values():
             result = True
@@ -356,10 +403,14 @@ def load_duplicates(infile):
                         alias_repeats[alias_name] = alias_repeats.get(alias_name, 0) + 1
                     if "_" in gene_name:
                         base, copy_num = gene_name.split("_")
-                        gene_occurrence_counter[base] = gene_occurrence_counter.get(base, 0) + 1
+                        gene_occurrence_counter[base] = (
+                            gene_occurrence_counter.get(base, 0) + 1
+                        )
                         try:
                             int(copy_num)
-                            dedupl_dict.setdefault(base, dict()).setdefault(gene_name, dict())
+                            dedupl_dict.setdefault(base, dict()).setdefault(
+                                gene_name, dict()
+                            )
                             dedupl_dict[base][gene_name] = {
                                 "locus": locus_name,
                                 "alias": alias_name,
@@ -367,7 +418,9 @@ def load_duplicates(infile):
                         except ValueError:
                             pass
                     else:
-                        gene_occurrence_counter[gene_name] = gene_occurrence_counter.get(gene_name, 0) + 1
+                        gene_occurrence_counter[gene_name] = (
+                            gene_occurrence_counter.get(gene_name, 0) + 1
+                        )
     return dedupl_dict, gene_occurrence_counter, alias_repeats
 
 

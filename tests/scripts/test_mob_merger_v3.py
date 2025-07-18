@@ -4,22 +4,21 @@ Unit tests for mob_merger_v3.py
 Tests the mobile genetic element merger functionality
 """
 
-import pytest
-import tempfile
 import os
-from unittest.mock import patch, mock_open
 import sys
+import tempfile
 from pathlib import Path
+
+import pytest
 
 from postprocessing.mob_merger_v3 import (
     gff_parser,
+    mapper,
+    merger,
     momo_parser,
     promge_parser,
-    mapper,
     to_print,
-    merger,
 )
-
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent
@@ -69,7 +68,9 @@ contig_2	ICEfinder	integron	3000	14000	.	.	.	ID=contig_2|integron-3000:14000;mob
 contig_3	geNomad	plasmid	1	5000	.	.	.	ID=contig_3|plasmid-1:5000;mobile_element_type=plasmid
 """
 
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".gff") as tmp_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".gff"
+        ) as tmp_file:
             tmp_file.write(sample_gff)
             tmp_file.flush()
 
@@ -108,7 +109,9 @@ contig_2	proMGE	mobile_genetic_element	2000	6500	4500	+	.	ID=MGE_genome1_contig_
 contig_4	proMGE	mobile_genetic_element	10000	20000	10000	+	.	ID=MGE_genome1_contig_4:10000-20000;mge=phage_like:1;genome_type=ACC;mge_type=non-nested;size=10000;n_genes=8;mgeR=phage_integrase:1;name=ISLAND
 """
 
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".gff") as tmp_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".gff"
+        ) as tmp_file:
             tmp_file.write(sample_gff)
             tmp_file.flush()
 
@@ -123,7 +126,9 @@ contig_4	proMGE	mobile_genetic_element	10000	20000	10000	+	.	ID=MGE_genome1_cont
                 # Test element data
                 contig1_element = promge_dict["contig_1"][0]
                 assert contig1_element[0] == "contig_1"
-                assert "insertion_sequence" in contig1_element[1]  # Should contain converted type
+                assert (
+                    "insertion_sequence" in contig1_element[1]
+                )  # Should contain converted type
                 assert contig1_element[2] == "1500"
                 assert contig1_element[3] == "2500"
 
@@ -139,10 +144,20 @@ class TestMapper:
 
     def test_mapper_no_overlap(self):
         """Test mapper with non-overlapping elements"""
-        momofy_dict = {"contig_3": [("contig_3", "plasmid", "1", "5000", "contig_3|plasmid-1:5000")]}
-        promge_dict = {"contig_4": [("contig_4", "phage", "10000", "20000", "contig_4:10000-20000")]}
+        momofy_dict = {
+            "contig_3": [
+                ("contig_3", "plasmid", "1", "5000", "contig_3|plasmid-1:5000")
+            ]
+        }
+        promge_dict = {
+            "contig_4": [
+                ("contig_4", "phage", "10000", "20000", "contig_4:10000-20000")
+            ]
+        }
 
-        momo_unique, pro_unique, final_overlapped, permge_metadata = mapper(momofy_dict, promge_dict)
+        momo_unique, pro_unique, final_overlapped, permge_metadata = mapper(
+            momofy_dict, promge_dict
+        )
 
         # Should have unique elements, no overlaps
         assert len(momo_unique) == 1
@@ -165,9 +180,15 @@ class TestMapper:
                 )
             ]
         }
-        promge_dict = {"contig_1": [("contig_1", "insertion_sequence", "1500", "2500", "contig_1:1500-2500")]}
+        promge_dict = {
+            "contig_1": [
+                ("contig_1", "insertion_sequence", "1500", "2500", "contig_1:1500-2500")
+            ]
+        }
 
-        momo_unique, pro_unique, final_overlapped, permge_metadata = mapper(momofy_dict, promge_dict)
+        momo_unique, pro_unique, final_overlapped, permge_metadata = mapper(
+            momofy_dict, promge_dict
+        )
 
         # Should have overlapping elements
         assert len(momo_unique) == 0
@@ -253,7 +274,7 @@ class TestMerger:
                 assert os.path.exists(output_file)
 
                 # Check file content
-                with open(output_file, "r") as f:
+                with open(output_file) as f:
                     content = f.read()
                     assert content.startswith("##gff-version 3\n")
                     assert "MAP_unique" in content
@@ -299,7 +320,9 @@ contig_4	proMGE	mobile_genetic_element	10000	20000	10000	+	.	ID=MGE_genome1_cont
                 # Run the workflow
                 momofy_dict, irdr_dict, momo_subtypes = momo_parser(map_file)
                 promge_dict, mger = promge_parser(promge_file)
-                momo_unique, pro_unique, final_overlapped, permge_metadata = mapper(momofy_dict, promge_dict)
+                momo_unique, pro_unique, final_overlapped, permge_metadata = mapper(
+                    momofy_dict, promge_dict
+                )
                 merger(
                     momo_unique,
                     pro_unique,
@@ -314,7 +337,7 @@ contig_4	proMGE	mobile_genetic_element	10000	20000	10000	+	.	ID=MGE_genome1_cont
                 # Verify output
                 assert os.path.exists("test_genome_merged.gff")
 
-                with open("test_genome_merged.gff", "r") as f:
+                with open("test_genome_merged.gff") as f:
                     content = f.read()
                     lines = content.strip().split("\n")
 
@@ -350,7 +373,9 @@ def sample_momofy_dict():
                 "contig_1|insertion_sequence-950:2040",
             )
         ],
-        "contig_2": [("contig_2", "integron", "3000", "14000", "contig_2|integron-3000:14000")],
+        "contig_2": [
+            ("contig_2", "integron", "3000", "14000", "contig_2|integron-3000:14000")
+        ],
     }
 
 
@@ -358,7 +383,9 @@ def sample_momofy_dict():
 def sample_promge_dict():
     """Sample promge dictionary for testing"""
     return {
-        "contig_1": [("contig_1", "insertion_sequence", "1500", "2500", "contig_1:1500-2500")],
+        "contig_1": [
+            ("contig_1", "insertion_sequence", "1500", "2500", "contig_1:1500-2500")
+        ],
         "contig_4": [("contig_4", "phage", "10000", "20000", "contig_4:10000-20000")],
     }
 

@@ -114,7 +114,9 @@ def test_get_function_level_priority(setup_data):
 
 def test_get_function_level_eggnog(setup_data):
     eggnog_annot, attributes_dict, _, _ = setup_data
-    result = get_function("my_id", attributes_dict, eggnog_annot, {}, {}, GeneCaller.PROKKA)
+    result = get_function(
+        "my_id", attributes_dict, eggnog_annot, {}, {}, GeneCaller.PROKKA
+    )
     assert result == ("eggnog function", "eggNOG")
 
 
@@ -189,7 +191,9 @@ def test_clean_up_function_add_protein():
 
 def test_keep_or_move_to_note_sentence():
     func = "This is a protein"
-    result = keep_or_move_to_note(func, "eggNOG", {"ID": "123", "locus_tag": "locus_tag"}, GeneCaller.PROKKA)
+    result = keep_or_move_to_note(
+        func, "eggNOG", {"ID": "123", "locus_tag": "locus_tag"}, GeneCaller.PROKKA
+    )
     assert result == (
         "hypothetical protein",
         "Prokka",
@@ -199,7 +203,9 @@ def test_keep_or_move_to_note_sentence():
 
 def test_keep_or_move_to_note_correct():
     func = "ABC-hydrolase interfering protein with extra large domain"
-    result = keep_or_move_to_note(func, "eggNOG", {"ID": "123", "locus_tag": "locus_tag"}, GeneCaller.PROKKA)
+    result = keep_or_move_to_note(
+        func, "eggNOG", {"ID": "123", "locus_tag": "locus_tag"}, GeneCaller.PROKKA
+    )
     assert result == (
         func,
         "eggNOG",
@@ -219,7 +225,9 @@ def test_move_function_to_note_with_existing_note():
         ]
     )
 
-    col9_dict = dict(re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9_with_note))
+    col9_dict = dict(
+        re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9_with_note)
+    )
 
     expected_result = {
         "ID": "BU_ATCC8492_03165",
@@ -245,7 +253,9 @@ def test_move_function_to_note_with_no_note():
             "eggNOG=411479.BACUNI_03969",
         ]
     )
-    col9_dict = dict(re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9_no_note))
+    col9_dict = dict(
+        re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", col9_no_note)
+    )
     expected_result = {
         "ID": "BU_ATCC8492_00043",
         "inference": "ab initio prediction:Prodigal:002006",
