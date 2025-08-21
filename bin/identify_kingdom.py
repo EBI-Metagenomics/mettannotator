@@ -35,8 +35,8 @@ def main(taxid, include_kingdom, outfile):
         res = r.json()
         lineage = res.get("lineage", "")
         rank = res.get("rank", "")
-        if rank == "superkingdom":
-            lineage = res.get("scientificName", "")
+        if rank == "domain":
+            lineage = res.get("scientificName", "")  # there is no lineage at the domain level, only taxon name
         if lineage.startswith("Archaea"):
             kingdom = "Archaea"
         elif lineage.startswith("Vir"):
