@@ -26,7 +26,7 @@ def main(amr_file, outfile, version):
         writer = csv.writer(file_out, delimiter="\t")
         writer.writerow(["##gff-version 3"])
         for line in file_in:
-            if line.startswith("Protein identifier"):
+            if line.startswith("Protein id"):
                 continue
             (
                 protein_id,
@@ -34,8 +34,8 @@ def main(amr_file, outfile, version):
                 start,
                 end,
                 strand,
-                gene_name,
-                seq_name,
+                element_symbol,
+                element_name,
                 scope,
                 element_type,
                 element_subtype,
@@ -53,10 +53,10 @@ def main(amr_file, outfile, version):
                     ".",
                     strand,
                     ".",
-                    f"ID={protein_id};gene_name={gene_name};sequence_name={seq_name};"
+                    f"ID={protein_id};element_symbol={element_symbol};element_name={element_name};"
                     f"scope={scope};element_type={element_type};"
-                    f"element_subtype={element_subtype};drug_class={drug_class};"
-                    f"drug_subclass={drug_subclass}",
+                    f"element_subtype={element_subtype};element_class={drug_class};"
+                    f"element_subclass={drug_subclass}",
                 ]
             )
 

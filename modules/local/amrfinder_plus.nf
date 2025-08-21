@@ -2,7 +2,7 @@ process AMRFINDER_PLUS {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/biocontainers/ncbi-amrfinderplus:3.12.8--h283d18e_0'
+    container 'quay.io/biocontainers/ncbi-amrfinderplus:4.0.23--hf69ffd2_0'
 
     input:
     tuple val(meta), path(fna), path(faa), path(gff)
