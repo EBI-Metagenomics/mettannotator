@@ -55,8 +55,8 @@ def main(amr_file, outfile, version):
                     ".",
                     f"ID={protein_id};element_symbol={element_symbol};element_name={element_name};"
                     f"scope={scope};element_type={element_type};"
-                    f"element_subtype={element_subtype};element_class={drug_class};"
-                    f"element_subclass={drug_subclass}",
+                    f"element_subtype={element_subtype};drug_class={drug_class};"
+                    f"drug_subclass={drug_subclass}",
                 ]
             )
 
