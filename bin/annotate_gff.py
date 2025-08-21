@@ -342,7 +342,7 @@ def get_amr(amr_file):
         return amr_annotations
     with open(amr_file) as f:
         for line in f:
-            if line.startswith("Protein identifier"):
+            if line.startswith("Protein id"):
                 continue
             (
                 protein_id,
@@ -370,8 +370,8 @@ def get_amr(amr_file):
                 seq_name = seq_name.replace("=", " ")
             amr_annotations[protein_id] = ";".join(
                 [
-                    f"amrfinderplus_gene_symbol={gene_name}",
-                    f"amrfinderplus_sequence_name={seq_name}",
+                    f"amrfinderplus_element_symbol={gene_name}",
+                    f"amrfinderplus_element_name={seq_name}",
                     f"amrfinderplus_scope={scope}",
                     f"element_type={element_type}",
                     f"element_subtype={element_subtype}",
