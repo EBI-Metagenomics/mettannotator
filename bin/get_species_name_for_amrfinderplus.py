@@ -49,26 +49,29 @@ def fetch_taxonomy(taxid: str) -> Taxonomy:
     rank = res.get("rank", "")
     scientific_name = res.get("scientificName", "")
     lineage = res.get("lineage", "")
-
+    if rank == "strain":
+        # Check if leaving the first 2 words of the scientific name result in the species name
+        name_to_check = " ".join(scientific_name.split(" ")[:2])
+        try:
+            new_taxonomy = query_scientific_name(name_to_check)
+            if new_taxonomy.rank == "species":
+                return new_taxonomy
+        except Exception:
+            # If this didn't work, we will roll up the strain below
+            pass
     if rank in {"no rank", "strain"} and lineage:
         # take the next lowest taxon in lineage to see if we can get to a species or a genus
         return roll_up_lineage(lineage)
     return Taxonomy(rank=rank, scientific_name=scientific_name, lineage=lineage)
 
 
-def roll_up_lineage(lineage: str) -> Taxonomy:
-    """Go one level up in the lineage and fetch taxonomy info."""
-    parts = [p.strip() for p in lineage.split(";") if p.strip()]
-    if not parts:
-        raise ValueError(f"Cannot roll up lineage: {lineage}")
-
-    next_lowest_taxon = parts[-1]
-    name_url = f"https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/{next_lowest_taxon}"
+def query_scientific_name(taxon_name: str) -> Taxonomy:
+    name_url = f"https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/{taxon_name}"
     r = run_request(name_url)
     res_list = r.json()
+    if not res_list:
+        raise ValueError(f"No taxonomy results for {taxon_name}")
     if isinstance(res_list, list):
-        if not res_list:
-            raise ValueError(f"No taxonomy results for {next_lowest_taxon}")
         res = res_list[0]
     elif isinstance(res_list, dict):
         res = res_list
@@ -79,6 +82,16 @@ def roll_up_lineage(lineage: str) -> Taxonomy:
         scientific_name=res.get("scientificName", ""),
         lineage=res.get("lineage", ""),
     )
+
+
+def roll_up_lineage(lineage: str) -> Taxonomy:
+    """Go one level up in the lineage and fetch taxonomy info."""
+    parts = [p.strip() for p in lineage.split(";") if p.strip()]
+    if not parts:
+        raise ValueError(f"Cannot roll up lineage: {lineage}")
+
+    next_lowest_taxon = parts[-1]
+    return query_scientific_name(next_lowest_taxon)
 
 
 def deduce_organism(taxonomy: Taxonomy, species_list: list, genus_list: list):
@@ -146,7 +159,7 @@ def parse_args():
     parser.add_argument(
         "-d",
         dest="database_folder",
-        required=False,
+        required=True,
         help=(
             "Path to the AMRFinderPlus database folder."
         ),
