@@ -52,14 +52,33 @@ def fetch_taxonomy(taxid: str) -> Taxonomy:
 
     if rank in {"no rank", "strain"} and lineage:
         # take the next lowest taxon in lineage to see if we can get to a species or a genus
-        next_lowest_taxon = [p.strip() for p in lineage.split(";") if p.strip()][-1]
-        name_url = f"https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/{next_lowest_taxon}"
-        r2 = run_request(name_url)
-        res2 = r2.json()[0]
-        rank = res2.get("rank", "")
-        scientific_name = res2.get("scientificName", "")
-        lineage = res2.get("lineage", "")
+        return roll_up_lineage(lineage)
     return Taxonomy(rank=rank, scientific_name=scientific_name, lineage=lineage)
+
+
+def roll_up_lineage(lineage: str) -> Taxonomy:
+    """Go one level up in the lineage and fetch taxonomy info."""
+    parts = [p.strip() for p in lineage.split(";") if p.strip()]
+    if not parts:
+        raise ValueError(f"Cannot roll up lineage: {lineage}")
+
+    next_lowest_taxon = parts[-1]
+    name_url = f"https://www.ebi.ac.uk/ena/taxonomy/rest/scientific-name/{next_lowest_taxon}"
+    r = run_request(name_url)
+    res_list = r.json()
+    if isinstance(res_list, list):
+        if not res_list:
+            raise ValueError(f"No taxonomy results for {next_lowest_taxon}")
+        res = res_list[0]
+    elif isinstance(res_list, dict):
+        res = res_list
+    else:
+        raise TypeError(f"Unexpected API response type: {type(res_list)}")
+    return Taxonomy(
+        rank=res.get("rank", ""),
+        scientific_name=res.get("scientificName", ""),
+        lineage=res.get("lineage", ""),
+    )
 
 
 def deduce_organism(taxonomy: Taxonomy, species_list: list, genus_list: list):
@@ -85,12 +104,12 @@ def deduce_organism(taxonomy: Taxonomy, species_list: list, genus_list: list):
 
 @retry(tries=5, delay=10, backoff=1.5)
 def run_request(full_url: str) -> Response:
-    r = requests.get(url=full_url)
+    r = requests.get(full_url)
     r.raise_for_status()
     return r
 
 
-def load_organisms(database_folder) -> [list, list]:
+def load_organisms(database_folder):
     """Deduce AMRFinderPlus-compatible organism name from taxonomy."""
     amrfinderplus_species_list = list()
     amrfinderplus_genus_list = list()
