@@ -67,8 +67,7 @@ process AMRFINDER_PLUS {
     -d ${amrfinder_plus_db} \
     -a prokka \
     --output ${meta.prefix}_amrfinderplus.tsv \
-    --threads ${task.cpus} \
-    ${organism_flag}
+    --threads ${task.cpus} ${organism_flag}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
