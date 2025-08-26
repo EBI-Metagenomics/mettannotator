@@ -1,3 +1,28 @@
+process AMRFINDER_PLUS_GET_SPECIES_NAME {
+    container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
+
+    input:
+    path val(meta), path(fasta)
+    path(amrfinder_plus_db)
+
+    output:
+    tuple val(meta), env(detected_organism), emit: detected_organism
+
+    script:
+    // Script checks available organisms in AMRFinderPlus and uses user-provided taxid to determine the organism
+    // name to use with the -O option in AMRFinderPlus. If there is no matching organism (taxonomy is not species-level
+    // or species is not in the AMRFinderPlus list, script returns and empty string)
+    """
+    detected_organism=\$(get_species_name_for_amrfinderplus.py -t ${meta.taxid} -d ${amrfinder_plus_db})
+    """
+
+    stub:
+    """
+    detected_organism=""
+    """
+
+}
+
 process AMRFINDER_PLUS {
 
     tag "${meta.prefix}"
@@ -6,6 +31,7 @@ process AMRFINDER_PLUS {
 
     input:
     tuple val(meta), path(fna), path(faa), path(gff)
+    tuple val(meta), val(detected_organism)
     tuple path(amrfinder_plus_db), val(db_version)
 
     output:
@@ -17,7 +43,18 @@ process AMRFINDER_PLUS {
     # this is needed as some environments are very picky with the TMP dir
     export TMPDIR="\$PWD/tmp"
     mkdir -p "\$PWD/tmp"
+    """
 
+    if ( detected_organism == "" )
+        """
+        echo "--organism option not used - taxon is not present in the AMRFinderPlus list" > organism.txt
+        """
+    else
+        organism_flag = "-O ${detected_organism}"
+        """
+        echo \$detected_organism > organism.txt
+        """
+    """
     amrfinder --plus \
     -n ${fna} \
     -p ${faa} \
@@ -25,7 +62,8 @@ process AMRFINDER_PLUS {
     -d ${amrfinder_plus_db} \
     -a prokka \
     --output ${meta.prefix}_amrfinderplus.tsv \
-    --threads ${task.cpus}
+    --threads ${task.cpus} \
+    ${organism_flag}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

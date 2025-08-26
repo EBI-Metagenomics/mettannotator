@@ -32,6 +32,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 include { LOOKUP_KINGDOM                             } from '../modules/local/lookup_kingdom'
 include { PROKKA as PROKKA_STANDARD                  } from '../modules/local/prokka'
 include { PROKKA as PROKKA_COMPLIANT                 } from '../modules/local/prokka'
+include {AMRFINDER_PLUS_GET_SPECIES_NAME             } from '../modules/local/amrfinder_plus'
 include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
 include { DEFENSE_FINDER                             } from '../modules/local/defense_finder'
 include { CRISPRCAS_FINDER                           } from '../modules/local/crisprcasfinder'
@@ -308,8 +309,14 @@ workflow METTANNOTATOR {
         annotations_gff
     )
 
+    AMRFINDER_PLUS_GET_SPECIES_NAME(
+        assemblies,
+        amrfinder_plus_db
+    )
+
     AMRFINDER_PLUS(
         assemblies_plus_faa_and_gff,
+        AMRFINDER_PLUS_GET_SPECIES_NAME.out.detected_organism,
         amrfinder_plus_db
     )
 
