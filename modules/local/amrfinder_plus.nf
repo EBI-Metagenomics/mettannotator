@@ -45,7 +45,7 @@ process AMRFINDER_PLUS {
     // If detected_organism is not empty, add it to the -O flag
     def organism_flag = detected_organism ? "-O ${detected_organism}" : ""
     def organism_cmd  = detected_organism ? "echo ${detected_organism} > organism.txt"
-                                          : "echo \"--organism option not used - taxon is not present in the AMRFinderPlus list\" > organism.txt"
+                                          : "echo \"--organism option was not used - taxon is not present in the possible list of values for this option. For more information one this option, see the README: https://github.com/EBI-Metagenomics/mettannotator/blob/main/README.md\" > organism.txt"
 
     """
     # this is needed as some environments are very picky with the TMP dir
