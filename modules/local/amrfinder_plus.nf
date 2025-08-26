@@ -36,6 +36,7 @@ process AMRFINDER_PLUS {
 
     output:
     tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv"), emit: amrfinder_tsv
+    tuple val(meta), path("organism.txt")                    , emit: amrfinderplus_organism_file
     path "versions.yml"                                      , emit: versions
 
     script:
