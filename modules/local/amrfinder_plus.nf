@@ -33,8 +33,7 @@ process AMRFINDER_PLUS {
     container 'quay.io/biocontainers/ncbi-amrfinderplus:4.0.23--hf69ffd2_0'
 
     input:
-    tuple val(meta), path(fna), path(faa), path(gff)
-    tuple val(meta), val(detected_organism)
+    tuple val(meta), path(fna), path(faa), path(gff), val(detected_organism)
     tuple path(amrfinder_plus_db), val(db_version)
 
     output:
