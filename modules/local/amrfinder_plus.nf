@@ -3,7 +3,7 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
 
     input:
     tuple val(meta), path(fasta)
-    path(amrfinder_plus_db)
+    tuple path(amrfinder_plus_db), val(db_version)
 
     output:
     tuple val(meta), env(detected_organism), emit: detected_organism
