@@ -1,4 +1,7 @@
 process AMRFINDER_PLUS_GET_SPECIES_NAME {
+
+    tag "${meta.prefix}"
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
