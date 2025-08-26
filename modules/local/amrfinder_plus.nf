@@ -42,23 +42,18 @@ process AMRFINDER_PLUS {
     path "versions.yml"                                      , emit: versions
 
     script:
+    // If detected_organism is not empty, add it to the -O flag
+    def organism_flag = detected_organism ? "-O ${detected_organism}" : ""
+    def organism_cmd  = detected_organism ? "echo ${detected_organism} > organism.txt"
+                                          : "echo \"--organism option not used - taxon is not present in the AMRFinderPlus list\" > organism.txt"
+
     """
     # this is needed as some environments are very picky with the TMP dir
     export TMPDIR="\$PWD/tmp"
     mkdir -p "\$PWD/tmp"
-    """
 
-    if ( detected_organism == "" )
-        organism_flag = ""
-        """
-        echo "--organism option not used - taxon is not present in the AMRFinderPlus list" > organism.txt
-        """
-    else
-        organism_flag = "-O ${detected_organism}"
-        """
-        echo \$detected_organism > organism.txt
-        """
-    """
+    ${organism_cmd}
+
     amrfinder --plus \
     -n ${fna} \
     -p ${faa} \
