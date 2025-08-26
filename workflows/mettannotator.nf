@@ -315,8 +315,7 @@ workflow METTANNOTATOR {
     )
 
     AMRFINDER_PLUS(
-        assemblies_plus_faa_and_gff,
-        AMRFINDER_PLUS_GET_SPECIES_NAME.out.detected_organism,
+        assemblies_plus_faa_and_gff.join(AMRFINDER_PLUS_GET_SPECIES_NAME.out.detected_organism),
         amrfinder_plus_db
     )
 
