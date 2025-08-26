@@ -14,7 +14,7 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
     script:
     // Script checks available organisms in AMRFinderPlus and uses user-provided taxid to determine the organism
     // name to use with the -O option in AMRFinderPlus. If there is no matching organism (taxonomy is not species-level
-    // or species is not in the AMRFinderPlus list, script returns and empty string)
+    // or species is not in the AMRFinderPlus list, script returns an empty string)
     """
     detected_organism=\$(get_species_name_for_amrfinderplus.py -t ${meta.taxid} -d ${amrfinder_plus_db})
     """
@@ -50,6 +50,7 @@ process AMRFINDER_PLUS {
     """
 
     if ( detected_organism == "" )
+        organism_flag = ""
         """
         echo "--organism option not used - taxon is not present in the AMRFinderPlus list" > organism.txt
         """
