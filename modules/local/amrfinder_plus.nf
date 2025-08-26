@@ -2,7 +2,7 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
-    path val(meta), path(fasta)
+    tuple val(meta), path(fasta)
     path(amrfinder_plus_db)
 
     output:
