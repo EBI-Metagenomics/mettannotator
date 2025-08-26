@@ -110,8 +110,11 @@ def deduce_organism(taxonomy: Taxonomy, species_list: list, genus_list: list):
 
     if taxonomy.rank == "species":
         merged_name = name.replace(" ", "_")
-        return merged_name if merged_name in species_list else None
-
+        if merged_name in species_list:
+            return merged_name
+        else:
+            genus_level_taxonomy = roll_up_lineage(taxonomy.lineage)
+            return genus_level_taxonomy.scientific_name if genus_level_taxonomy.scientific_name in genus_list else None
     return None
 
 
