@@ -4,7 +4,7 @@ process UNIFIRE {
 
     label 'error_retry'
 
-    container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2023.4"
+    container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2025.3"
 
     containerOptions {
         if (workflow.containerEngine in ['singularity', 'apptainer']) {
