@@ -36,4 +36,4 @@ process ADD_TAXID_TO_PROTEIN_FASTA {
         python: \$(python --version 2>&1 | sed 's/Python //g')
     END_VERSIONS
     """
-
+}
