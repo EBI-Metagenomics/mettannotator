@@ -13,6 +13,7 @@ process ADD_TAXID_TO_PROTEIN_FASTA {
 
     output:
     tuple val(meta), path("*_with_taxid.faa"), emit: annotations_faa_with_taxid
+    path "versions.yml"                      , emit: versions
 
     script:
     """
