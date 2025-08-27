@@ -15,7 +15,7 @@ process UNIFIRE {
     }
 
     input:
-    tuple val(meta), path(faa, stageAs: "unifire/*")
+    tuple val(meta), path(ips_xml, stageAs: "unifire/proteins.xml")
 
     output:
     tuple val(meta), path("unifire/predictions_arba.out")                   , emit: arba
@@ -29,8 +29,6 @@ process UNIFIRE {
     // it needs a specific folder to be mounted in order to work
     // we are mounting unifire in this case
     """
-    echo "Pre-processed UniFIRE input file"
-    prepare_unifire_input.py -i ${faa} -t ${meta.taxid} -o unifire
 
     # This is the provided docker running script
     /opt/scripts/bin/unifire-workflow.sh
@@ -39,7 +37,7 @@ process UNIFIRE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        UniFIRE: 2023.4
+        UniFIRE: 2025.3
     END_VERSIONS
     """
 }

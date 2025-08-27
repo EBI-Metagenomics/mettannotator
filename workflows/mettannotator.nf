@@ -32,12 +32,13 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 include { LOOKUP_KINGDOM                             } from '../modules/local/lookup_kingdom'
 include { PROKKA as PROKKA_STANDARD                  } from '../modules/local/prokka'
 include { PROKKA as PROKKA_COMPLIANT                 } from '../modules/local/prokka'
-include {AMRFINDER_PLUS_GET_SPECIES_NAME             } from '../modules/local/amrfinder_plus'
+include { AMRFINDER_PLUS_GET_SPECIES_NAME            } from '../modules/local/amrfinder_plus'
 include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
 include { DEFENSE_FINDER                             } from '../modules/local/defense_finder'
 include { CRISPRCAS_FINDER                           } from '../modules/local/crisprcasfinder'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
+include { ADD_TAXID_TO_PROTEIN_FASTA                 } from '../modules/local/add_taxid'
 include { INTERPROSCAN                               } from '../modules/local/interproscan'
 include { DETECT_TRNA                                } from '../modules/local/detect_trna'
 include { DETECT_NCRNA                               } from '../modules/local/detect_ncrna'
@@ -296,11 +297,21 @@ workflow METTANNOTATOR {
     ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
     if ( !params.fast ) {
+        ADD_TAXID_TO_PROTEIN_FASTA(
+            annotations_faa
+        )
+        ch_versions = ch_versions.mix(ADD_TAXID_TO_PROTEIN_FASTA.out.versions.first())
+
         INTERPROSCAN(
-            annotations_faa,
+            ADD_TAXID_TO_PROTEIN_FASTA.out.annotations_faa_with_taxid,
             interproscan_db
         )
         ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
+
+        UNIFIRE (
+            INTERPROSCAN.out.ips_xml
+        )
+        ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
     }
 
     assemblies_plus_faa_and_gff = assemblies.join(
@@ -331,11 +342,6 @@ workflow METTANNOTATOR {
     )
 
     ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
-
-    if ( !params.fast ) {
-        UNIFIRE ( annotations_faa )
-        ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
-    }
 
     DETECT_TRNA(
         annotations_fna.join( LOOKUP_KINGDOM.out.detected_kingdom )
