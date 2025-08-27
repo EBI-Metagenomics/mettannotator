@@ -15,7 +15,7 @@ process UNIFIRE {
     }
 
     input:
-    tuple val(meta), path(ips_xml, stageAs: "unifire/proteins.xml")
+    tuple val(meta), path(ips_xml, stageAs: "unifire/proteins-ipr.xml")
 
     output:
     tuple val(meta), path("unifire/predictions_arba.out")                   , emit: arba
