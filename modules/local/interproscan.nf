@@ -6,12 +6,12 @@ process INTERPROSCAN {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/microbiome-informatics/genomes-pipeline.ips:5.62-94.0'
+    container 'quay.io/microbiome-informatics/genomes-pipeline.ips:5.74-105.0'
     containerOptions {
         if (workflow.containerEngine in ['singularity', 'apptainer']) {
-            return "--bind ${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"
+            return "--bind ${interproscan_db}/data:/opt/interproscan-5.74-105.0/data"
         } else {
-            return "-v ./${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"
+            return "-v ./${interproscan_db}/data:/opt/interproscan-5.74-105.0/data"
         }
     }
 
