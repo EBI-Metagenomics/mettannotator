@@ -572,7 +572,7 @@ If you would like to contribute to this pipeline, please see the [contributing g
 
 If you use the software, please cite:
 
-Gurbich TA, Beracochea M, De Silva NH, Finn RD. mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies. bioRxiv 2024.07.11.603040; doi: https://doi.org/10.1101/2024.07.11.603040
+Gurbich TA, Beracochea M, De Silva NH, Finn RD. mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies. Bioinformatics. 2025;41(2):btaf037. doi: https://doi.org/10.1093/bioinformatics/btaf037
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
