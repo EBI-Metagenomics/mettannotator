@@ -695,7 +695,7 @@ def get_ncrnas(ncrnas_file):
                 rna_feature_name, ncrna_class = prepare_rna_gff_fields(cols)
                 annot = [
                     "ID=" + locus,
-                    "inference=Rfam:14.9",
+                    "inference=Rfam:15.0",
                     "locus_tag=" + locus,
                     "product=" + product,
                     "rfam=" + model,
@@ -706,7 +706,7 @@ def get_ncrnas(ncrnas_file):
                 newline = "\t".join(
                     [
                         contig,
-                        "INFERNAL:1.1.4",
+                        "INFERNAL:1.1.5",
                         rna_feature_name,
                         str(start),
                         str(end),
