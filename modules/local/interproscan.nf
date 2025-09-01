@@ -9,9 +9,9 @@ process INTERPROSCAN {
     container 'quay.io/microbiome-informatics/interproscan:5.74-105.0'
     containerOptions {
         if (workflow.containerEngine in ['singularity', 'apptainer']) {
-            return "--bind ${interproscan_db}/data:/opt/interproscan-5.74-105.0/data"
+            return "--bind ${interproscan_db}/data:/opt/interproscan/data"
         } else {
-            return "-v ./${interproscan_db}/data:/opt/interproscan-5.74-105.0/data"
+            return "-v ./${interproscan_db}/data:/opt/interproscan/data"
         }
     }
 
