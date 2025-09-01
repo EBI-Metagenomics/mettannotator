@@ -6,7 +6,7 @@ process INTERPROSCAN {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/microbiome-informatics/interproscan:5.73-104.0'
+    container 'quay.io/microbiome-informatics/interproscan:5.74-105.0'
     containerOptions {
         if (workflow.containerEngine in ['singularity', 'apptainer']) {
             return "--bind ${interproscan_db}/data:/opt/interproscan/data"
