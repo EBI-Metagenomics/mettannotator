@@ -2,9 +2,7 @@ process DEFENSE_FINDER {
 
     tag "${meta.prefix}"
 
-    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'https://depot.galaxyproject.org/singularity/defense-finder:2.0.0--pyhdfd78af_0' :
-        'biocontainers/defense-finder:2.0.0--pyhdfd78af_0' }"
+    container 'biocontainers/defense-finder:2.0.0--pyhdfd78af_0'
 
     input:
     tuple val(meta), path(faa), path(prokka_gff)
