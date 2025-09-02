@@ -2,7 +2,7 @@ process DEFENSE_FINDER {
 
     tag "${meta.prefix}"
 
-    // using quay.io for both singularity and docker due to and issue with the galaxy versions of the container 
+    // using quay.io for both singularity and docker due to and issue with the galaxy versions of the container
     container 'biocontainers/defense-finder:2.0.0--pyhdfd78af_0'
 
     input:
