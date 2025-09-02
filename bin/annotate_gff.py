@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023-2024 EMBL - European Bioinformatics Institute
+# Copyright 2023-2025 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -432,8 +432,9 @@ def get_defense_finder(df_file):
         return defense_finder_annotations
     with open(df_file) as f:
         for line in f:
-            if "Anti-phage system" in line:
+            if "system" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
+                df_activity = line.strip().split("\t")[2].split(" ")[0].lower()
                 for a in annot_fields:
                     if a.startswith("ID="):
                         id = a.split("=")[1]
@@ -451,8 +452,8 @@ def get_defense_finder(df_file):
                     elif a.startswith("Parent="):
                         parent = a.split("=")[1]
                 defense_finder_annotations[id] = (
-                    "defense_finder_type={};defense_finder_subtype={}".format(
-                        type_info[parent]["df_type"], type_info[parent]["df_subtype"]
+                    "defense_finder_activity={};defense_finder_type={};defense_finder_subtype={}".format(
+                        type_info[parent]["df_activity"], type_info[parent]["df_type"], type_info[parent]["df_subtype"]
                     )
                 )
     return defense_finder_annotations
@@ -726,6 +727,7 @@ def prepare_rna_gff_fields(cols):
     rna_feature_name = "ncRNA"
     if cols[1] in ["LSU_rRNA_bacteria", "SSU_rRNA_bacteria", "5S_rRNA"]:
         rna_feature_name = "rRNA"
+    # ncRNA classes are described here: https://www.insdc.org/submitting-standards/ncrna-vocabulary/
     ncrna_class = ""
     rna_types = {
         "antisense_RNA": [
@@ -866,10 +868,7 @@ def prepare_rna_gff_fields(cols):
     }
 
     if rna_feature_name == "ncRNA":
-        for rna_type, rfams in rna_types.items():
-            if cols[2] in rfams:
-                ncrna_class = rna_type
-                break
+        ncrna_class = next((rna_type for rna_type, rfams in rna_types.items() if cols[2] in rfams), None)
         if not ncrna_class:
             if "microRNA" in cols[-1]:
                 ncrna_class = "pre_miRNA"
