@@ -5,9 +5,10 @@ from pathlib import Path
 
 from Bio import SeqIO
 
-SUPPORTED_FASTA_EXTS = {".fasta", ".fa", ".fna"}
-SUPPORTED_GBK_EXTS = {".gbk", ".gb", ".genbank"}
-SUPPORTED_GFF_EXTS = {".gff", ".gff3", ".gff.gz"}
+SUPPORTED_FASTA_EXTS = (".fasta", ".fa", ".fna")
+SUPPORTED_GBK_EXTS = (".gbk", ".gb", ".genbank")
+SUPPORTED_GFF_EXTS = (".gff", ".gff3", ".gff.gz")
+
 
 def read_map(map_file):
     mapping = {}
@@ -16,11 +17,15 @@ def read_map(map_file):
             if not line.strip():
                 continue
             old, new = line.strip().split("\t")
+            if new in mapping.values():
+                raise ValueError(f"Duplicate contig ID '{new}' in mapping file.")
             mapping[old] = new
     return mapping
 
+
 def rename_fasta(infile, outfile, mapping=None):
     records = []
+    new_to_old = {}
     for i, rec in enumerate(SeqIO.parse(infile, "fasta"), 1):
         if mapping:
             try:
@@ -29,14 +34,21 @@ def rename_fasta(infile, outfile, mapping=None):
                 raise KeyError(f"Contig ID '{rec.id}' not found in mapping file.")
         else:
             new_id = f"contig_{i}"
+        if new_id in new_to_old:
+            raise ValueError(f"Duplicate contig ID '{new_id}' detected in the file {infile}.")
+        new_to_old[new_id] = rec.id
+
         rec.id = new_id
         rec.name = new_id
         rec.description = ""
         records.append(rec)
     SeqIO.write(records, outfile, "fasta")
+    return new_to_old
+
 
 def rename_gbk(infile, outfile, mapping=None):
     records = []
+    new_to_old = {}
     for i, rec in enumerate(SeqIO.parse(infile, "genbank"), 1):
         if mapping:
             try:
@@ -45,6 +57,9 @@ def rename_gbk(infile, outfile, mapping=None):
                 raise KeyError(f"Contig ID '{rec.id}' not found in mapping file.")
         else:
             new_id = f"contig_{i}"
+        if new_id in new_to_old:
+            raise ValueError(f"Duplicate contig ID '{new_id}' detected in the file {infile}.")
+        new_to_old[new_id] = rec.id
         rec.id = new_id
         rec.name = new_id
         rec.description = ""
@@ -58,11 +73,14 @@ def rename_gbk(infile, outfile, mapping=None):
                 ]
         records.append(rec)
     SeqIO.write(records, outfile, "genbank")
+    return new_to_old
+
 
 def rename_gff(infile, outfile, mapping=None):
     opener = gzip.open if infile.endswith(".gz") else open
     cache = {}
     counter = 1
+    new_to_old = {}
     with opener(infile, "rt") as f_in, open(outfile, "w") as f_out:
         for line in f_in:
             if line.startswith("#"):
@@ -83,15 +101,19 @@ def rename_gff(infile, outfile, mapping=None):
                     cache[seqid] = f"contig_{counter}"
                     counter += 1
                 new_id = cache[seqid]
+            if new_id in new_to_old:
+                raise ValueError(f"Duplicate contig ID '{new_id}' detected in the file {infile}.")
+            new_to_old[new_id] = seqid
             columns[0] = new_id
             f_out.write("\t".join(columns) + "\n")
+    return new_to_old
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Rename contigs in FASTA, GenBank, or GFF files"
     )
-    parser.add_argument("infiles", nargs="+", help="Input files (.fasta/.fa/.fna, .gbk, .gff[.gz])")
+    parser.add_argument("-i", "--infile", required=True, help="Input file (.fasta/.fa/.fna, .gbk, .gff[.gz])")
     parser.add_argument("-o", "--outdir", required=True, help="Output directory")
     parser.add_argument("--map", help="Mapping TSV file (2 columns: old_name new_name)")
     args = parser.parse_args()
@@ -110,22 +132,31 @@ def main():
     else:
         mapping = None
 
-    # Rename contigs in each input file depending on its type
-    for infile in args.infiles:
-        ext = "".join(Path(infile).suffixes).lower()
-        outpath = Path(args.outdir) / Path(infile).name
-        if ext.endswith(SUPPORTED_FASTA_EXTS):
-            rename_fasta(infile, outpath, mapping)
-        elif ext.endswith(SUPPORTED_GBK_EXTS):
-            rename_gbk(infile, outpath, mapping)
-        elif ext.endswith(SUPPORTED_GFF_EXTS):
-            rename_gff(infile, outpath, mapping)
-        else:
-            raise ValueError(
-                            f"Unrecognized file type for: {infile}. "
-                            f"Supported extensions: {SUPPORTED_FASTA_EXTS | SUPPORTED_GBK_EXTS | SUPPORTED_GFF_EXTS}"
-                            )
-        print(f"✔ Renamed {infile} → {outpath}")
+    # Rename contigs in input file depending on its type
+    infile = args.infile
+    used_ids_mapping = None
+    ext = "".join(Path(infile).suffixes).lower()
+    outpath = Path(args.outdir) / Path(infile).name
+    if ext.endswith(SUPPORTED_FASTA_EXTS):
+        used_ids_mapping = rename_fasta(infile, outpath, mapping)
+    elif ext.endswith(SUPPORTED_GBK_EXTS):
+        rename_gbk(infile, outpath, mapping)
+    elif ext.endswith(SUPPORTED_GFF_EXTS):
+        rename_gff(infile, outpath, mapping)
+    else:
+        raise ValueError(
+            f"Unrecognized file type for: {infile}. "
+            f"Supported extensions: {SUPPORTED_FASTA_EXTS | SUPPORTED_GBK_EXTS | SUPPORTED_GFF_EXTS}"
+        )
+    print(f"✔ Renamed {infile} → {outpath}")
+
+    # Write mapping table used to rename fasta file
+    if used_ids_mapping:
+        map_out = outpath.with_suffix(outpath.suffix + ".map.tsv")
+        with open(map_out, "w") as f:
+            for new_id, old_id in used_ids_mapping.items():
+                f.write(f"{old_id}\t{new_id}\n")
+
 
 if __name__ == "__main__":
     main()
