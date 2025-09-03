@@ -1,0 +1,59 @@
+process RENAME_CONTIGS {
+    tag "$meta.id"
+    label 'process_low'
+
+    conda "bioconda::biopython=1.81"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/biopython:1.81--py39hf95cd2a_0' :
+        'biocontainers/biopython:1.81--py39hf95cd2a_0' }"
+
+    input:
+    tuple val(meta), path(input_files)
+    path mapping_file, stageAs: "mapping.tsv"
+
+    output:
+    tuple val(meta), path("renamed/*")               , emit: modified_files
+    tuple val(meta), path("renamed/used_mapping.tsv"), emit: ids_mapping
+    path "versions.yml"                              , emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    def args = task.ext.args ?: ''
+    def mapping_arg = mapping_file.name != 'NO_FILE' ? "--map ${mapping_file}" : ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
+
+    """
+    mkdir -p renamed
+
+    rename_contigs.py \\
+        ${input_files} \\
+        --outdir renamed \\
+        ${mapping_arg} \\
+        ${args}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+        biopython: \$(python -c "import Bio; print(Bio.__version__)")
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    mkdir -p renamed
+
+    # Create stub output files based on input file extensions
+    for file in ${input_files}; do
+        touch "renamed/\${file}"
+    done
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+        biopython: \$(python -c "import Bio; print(Bio.__version__)")
+    END_VERSIONS
+    """
+}
