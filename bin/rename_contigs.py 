@@ -113,7 +113,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Rename contigs in FASTA, GenBank, or GFF files"
     )
-    parser.add_argument("-i", "--infile", required=True, help="Input file (.fasta/.fa/.fna, .gbk, .gff[.gz])")
+    parser.add_argument("infiles", nargs="+", help="Input files (.fasta/.fa/.fna, .gbk, .gff[.gz])")
     parser.add_argument("-o", "--outdir", required=True, help="Output directory")
     parser.add_argument("--map", help="Mapping TSV file (2 columns: old_name new_name)")
     args = parser.parse_args()
@@ -132,30 +132,30 @@ def main():
     else:
         mapping = None
 
-    # Rename contigs in input file depending on its type
-    infile = args.infile
-    used_ids_mapping = None
-    ext = "".join(Path(infile).suffixes).lower()
-    outpath = Path(args.outdir) / Path(infile).name
-    if ext.endswith(SUPPORTED_FASTA_EXTS):
-        used_ids_mapping = rename_fasta(infile, outpath, mapping)
-    elif ext.endswith(SUPPORTED_GBK_EXTS):
-        rename_gbk(infile, outpath, mapping)
-    elif ext.endswith(SUPPORTED_GFF_EXTS):
-        rename_gff(infile, outpath, mapping)
-    else:
-        raise ValueError(
-            f"Unrecognized file type for: {infile}. "
-            f"Supported extensions: {SUPPORTED_FASTA_EXTS | SUPPORTED_GBK_EXTS | SUPPORTED_GFF_EXTS}"
-        )
-    print(f"✔ Renamed {infile} → {outpath}")
+    # Rename contigs in each input file depending on its type
+    for infile in args.infiles:
+        used_ids_mapping = None
+        ext = "".join(Path(infile).suffixes).lower()
+        outpath = Path(args.outdir) / Path(infile).name
+        if ext.endswith(SUPPORTED_FASTA_EXTS):
+            used_ids_mapping = rename_fasta(infile, outpath, mapping)
+        elif ext.endswith(SUPPORTED_GBK_EXTS):
+            rename_gbk(infile, outpath, mapping)
+        elif ext.endswith(SUPPORTED_GFF_EXTS):
+            rename_gff(infile, outpath, mapping)
+        else:
+            raise ValueError(
+                f"Unrecognized file type for: {infile}. "
+                f"Supported extensions: {SUPPORTED_FASTA_EXTS | SUPPORTED_GBK_EXTS | SUPPORTED_GFF_EXTS}"
+            )
+        print(f"✔ Renamed {infile} → {outpath}")
 
-    # Write mapping table used to rename fasta file
-    if used_ids_mapping:
-        map_out = outpath.with_suffix(outpath.suffix + ".map.tsv")
-        with open(map_out, "w") as f:
-            for new_id, old_id in used_ids_mapping.items():
-                f.write(f"{old_id}\t{new_id}\n")
+        # Write mapping table used to rename fasta file
+        if used_ids_mapping:
+            map_out = outpath.with_suffix(outpath.suffix + ".map.tsv")
+            with open(map_out, "w") as f:
+                for new_id, old_id in used_ids_mapping.items():
+                    f.write(f"{old_id}\t{new_id}\n")
 
 
 if __name__ == "__main__":

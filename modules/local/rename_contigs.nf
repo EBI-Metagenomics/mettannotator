@@ -12,9 +12,11 @@ process RENAME_CONTIGS {
     path mapping_file, stageAs: "mapping.tsv"
 
     output:
-    tuple val(meta), path("renamed/*"), emit: modified_files
-    tuple val(meta), path("*.map.tsv"), emit: ids_mapping, optional: true
-    path "versions.yml"               , emit: versions
+    tuple val(meta), path("renamed/*.{fa,fasta,fna}"), emit: modified_fasta, optional: true
+    tuple val(meta), path("renamed/*.{gbk}")         , emit: modified_gbk, optional: true
+    tuple val(meta), path("renamed/*.{gff}")         , emit: modified_gff, optional: true
+    tuple val(meta), path("*.map.tsv")               , emit: fasta_ids_mapping, optional: true
+    path "versions.yml"                              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
