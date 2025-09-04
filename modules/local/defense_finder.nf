@@ -19,6 +19,7 @@ process DEFENSE_FINDER {
     """
     defense-finder run \\
         -o defense_finder_output \\
+        --antidefensefinder \\
         --models-dir ${defense_finder_db} \\
         ${faa}
 
