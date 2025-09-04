@@ -444,6 +444,7 @@ def get_defense_finder(df_file):
                         df_subtype = a.split("=")[1]
                 type_info.setdefault(id, {})["df_type"] = df_type
                 type_info.setdefault(id, {})["df_subtype"] = df_subtype
+                type_info.setdefault(id, {})["df_activity"] = df_activity
             elif "DefenseFinder" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
                 for a in annot_fields:
