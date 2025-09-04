@@ -1,11 +1,11 @@
 process RENAME_CONTIGS {
-    tag "$meta.id"
+    tag "$meta.prefix"
     label 'process_low'
 
     conda "bioconda::biopython=1.81"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/biopython:1.81--py39hf95cd2a_0' :
-        'biocontainers/biopython:1.81--py39hf95cd2a_0' }"
+        'https://depot.galaxyproject.org/singularity/biopython:1.81' :
+        'biocontainers/biopython:1.81' }"
 
     input:
     tuple val(meta), path(input_files)
@@ -23,7 +23,7 @@ process RENAME_CONTIGS {
 
     script:
     def args = task.ext.args ?: ''
-    def mapping_arg = mapping_file.name != 'NO_FILE' ? "--map ${mapping_file}" : ''
+    def mapping_arg = mapping_file ? "--map ${mapping_file}" : ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
