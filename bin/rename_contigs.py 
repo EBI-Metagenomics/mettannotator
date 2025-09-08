@@ -11,6 +11,10 @@ SUPPORTED_GFF_EXTS = (".gff", ".gff3", ".gff.gz")
 
 
 def read_map(map_file):
+    """
+    Read a mapping file with two columns: old_name and new_name (no header).
+    Return a dictionary mapping old_name to new_name.
+    """
     mapping = {}
     with open(map_file) as f:
         for line in f:
@@ -24,6 +28,11 @@ def read_map(map_file):
 
 
 def rename_fasta(infile, outfile, mapping=None):
+    """
+    Rename contig IDs in a FASTA file.
+    If a mapping dictionary is provided, use it to rename contigs.
+    Otherwise, rename contigs to contig_1, contig_2, etc.
+    """
     records = []
     new_to_old = {}
     for i, rec in enumerate(SeqIO.parse(infile, "fasta"), 1):
@@ -47,26 +56,66 @@ def rename_fasta(infile, outfile, mapping=None):
 
 
 def rename_gbk(infile, outfile, mapping=None):
-    records = []
+    """
+    Rename contig IDs in a GenBank file.
+    If a mapping dictionary is provided, use it to rename contigs.
+    Otherwise, rename contigs to contig_1, contig_2, etc.
+    It's assumed that contig IDs are only in the LOCUS lines.
+    Example of GenBank file:
+    LOCUS       ctg123              1497228 bp    DNA     linear   01-JAN-1980
+    (... other lines ...)
+    """
+    counter = 1
     new_to_old = {}
-    for i, rec in enumerate(SeqIO.parse(infile, "genbank"), 1):
-        if mapping:
-            try:
-                new_id = mapping[rec.id]
-            except KeyError:
-                raise KeyError(f"Contig ID '{rec.id}' not found in mapping file.")
-        else:
-            new_id = f"contig_{i}"
-        if new_id in new_to_old:
-            raise ValueError(f"Duplicate contig ID '{new_id}' detected in the file {infile}.")
-        new_to_old[new_id] = rec.id
-        rec.id = new_id
-        records.append(rec)
-    SeqIO.write(records, outfile, "genbank")
+    with open(infile) as f_in, open(outfile, "w") as f_out:
+        for line in f_in:
+            if line.startswith("LOCUS"):
+                parts = line.split()
+                old_id = parts[1]
+                if mapping:
+                    try:
+                        new_id = mapping[old_id]
+                    except KeyError:
+                        raise KeyError(f"Contig ID '{old_id}' not found in mapping file.")
+                else:
+                    new_id = f"contig_{counter}"
+                    counter += 1
+                if new_id in new_to_old:
+                    raise ValueError(f"Duplicate contig ID '{new_id}' detected in the file {infile}.")
+                new_to_old[new_id] = old_id
+                parts[1] = new_id
+
+                # rebuild LOCUS line with fixed column widths
+                # the word "LOCUS", left-aligned in 12-character field
+                loc_field = f"{parts[0]:<12}"
+                # the contig ID (newly renamed), left-aligned in 16-character field
+                id_field = f"{parts[1]:<16}"
+                # everything else after the ID, joined back with spaces
+                rest = " ".join(parts[2:])
+                # combine all parts and add a newline
+                new_line = loc_field + id_field + rest + "\n"
+                f_out.write(new_line)
+            else:
+                f_out.write(line)
     return new_to_old
 
 
 def rename_gff(infile, outfile, mapping=None):
+    """
+    Rename contig IDs in a GFF file.
+    If a mapping dictionary is provided, use it to rename contigs.
+    Otherwise, rename contigs to contig_1, contig_2, etc.
+
+    Example of GFF file:
+    ##gff-version 3
+    ##sequence-region ctg123 1 1497228
+    ctg123	.	gene	1300	9000	.	+	.	ID=gene00001;Name=EDEN
+    ctg123	.	CDS	1300	9000	.	+	0	ID=cds00001;Parent=gene00001;Name=EDEN
+    ##FASTA
+    >ctg123
+    ATGCGTACGTAGCTAGCTAGCTAGCTAGCTACGATCG
+    ATCGATCGATCGATCGATCGATCGATCGATCGATCGA
+    """
     opener = gzip.open if infile.endswith(".gz") else open
     cache = {}
     counter = 1
