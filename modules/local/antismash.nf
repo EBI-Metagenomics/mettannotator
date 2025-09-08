@@ -2,7 +2,9 @@ process ANTISMASH {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/microbiome-informatics/antismash:7.1.0.1_2'
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/antismash:8.0.2--pyhdfd78af_0' :
+        'biocontainers/antismash:8.0.2--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(gbk)
@@ -22,6 +24,7 @@ process ANTISMASH {
     --databases ${antismash_db} \\
     --output-basename ${meta.prefix} \\
     --genefinding-tool none \\
+    --allow-long-headers \\
     --output-dir ${meta.prefix}_results \\
     ${gbk}
 
