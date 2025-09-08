@@ -227,6 +227,7 @@ workflow METTANNOTATOR {
         ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
         ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
 
+        // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
         PROKKA_STANDARD.out.gbk
             .mix(PROKKA_STANDARD.out.gff)
             .groupTuple()
@@ -234,15 +235,14 @@ workflow METTANNOTATOR {
             .multiMap { meta, files_list, names_mapping ->
                 files: [ meta, files_list ]
                 mapping: names_mapping
-            }.set { REVERT_CONTIG_RENAMING_input }
-             
+            }.set { revert_contig_renaming_input }
         REVERT_CONTIG_RENAMING(
-            REVERT_CONTIG_RENAMING_input.files,
-            REVERT_CONTIG_RENAMING_input.mapping
+            revert_contig_renaming_input.files,
+            revert_contig_renaming_input.mapping
         )
+
         annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( REVERT_CONTIG_RENAMING.out.modified_gbk )
         annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( REVERT_CONTIG_RENAMING.out.modified_gff )
-
         annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( PROKKA_STANDARD.out.fna )
         annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
 
@@ -266,7 +266,8 @@ workflow METTANNOTATOR {
         PROKKA_COMPLIANT( prokka_input, Channel.value("compliant") )
 
         ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
-        
+
+        // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
         PROKKA_STANDARD.out.gbk
             .mix(PROKKA_STANDARD.out.gff)
             .groupTuple()
@@ -274,18 +275,17 @@ workflow METTANNOTATOR {
             .multiMap { meta, files_list, names_mapping ->
                 files: [ meta, files_list ]
                 mapping: names_mapping
-        }.set { REVERT_CONTIG_RENAMING_input }
-        
+        }.set { revert_contig_renaming_input }
         REVERT_CONTIG_RENAMING(
-            REVERT_CONTIG_RENAMING_input.files,
-            REVERT_CONTIG_RENAMING_input.mapping
+            revert_contig_renaming_input.files,
+            revert_contig_renaming_input.mapping
         )
+
         annotations_gbk = REVERT_CONTIG_RENAMING.out.modified_gbk
         annotations_gff = REVERT_CONTIG_RENAMING.out.modified_gff
-
         annotations_fna = PROKKA_STANDARD.out.fna
         annotations_faa = PROKKA_STANDARD.out.faa
-        
+
         compliant_gbk = PROKKA_COMPLIANT.out.gbk
         compliant_gff = PROKKA_COMPLIANT.out.gff
     }

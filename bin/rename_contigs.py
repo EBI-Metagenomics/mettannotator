@@ -88,8 +88,8 @@ def rename_gbk(infile, outfile, mapping=None):
                 # rebuild LOCUS line with fixed column widths
                 # the word "LOCUS", left-aligned in 12-character field
                 loc_field = f"{parts[0]:<12}"
-                # the contig ID (newly renamed), left-aligned in 16-character field
-                id_field = f"{parts[1]:<16}"
+                # the contig ID (newly renamed), left-aligned in 16-character field + space after
+                id_field = f"{parts[1]:<16} "
                 # everything else after the ID, joined back with spaces
                 rest = " ".join(parts[2:])
                 # combine all parts and add a newline
