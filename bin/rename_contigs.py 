@@ -71,27 +71,57 @@ def rename_gff(infile, outfile, mapping=None):
     cache = {}
     counter = 1
     new_to_old = {}
+
+    def get_new_id(old_id):
+        nonlocal counter
+        if mapping:
+            try:
+                return mapping[old_id]
+            except KeyError:
+                raise KeyError(f"Contig ID '{old_id}' not found in mapping file.")
+        if old_id not in cache:
+            cache[old_id] = f"contig_{counter}"
+            counter += 1
+        return cache[old_id]
+
     with opener(infile, "rt") as f_in, open(outfile, "w") as f_out:
+        in_fasta = False
         for line in f_in:
+            if line.startswith("##FASTA"):
+                in_fasta = True
+                f_out.write(line)
+                continue
+
+            if in_fasta:
+                if line.startswith(">"):
+                    seqid = line[1:].strip()
+                    new_id = get_new_id(seqid)
+                    new_to_old.setdefault(new_id, seqid)
+                    f_out.write(">" + new_id + "\n")
+                else:
+                    f_out.write(line)
+                continue
+
+            if line.startswith("##sequence-region"):
+                parts = line.strip().split()
+                seqid = parts[1]
+                new_id = get_new_id(seqid)
+                new_to_old.setdefault(new_id, seqid)
+                parts[1] = new_id
+                f_out.write(" ".join(parts) + "\n")
+                continue
+
             if line.startswith("#"):
                 f_out.write(line)
                 continue
-            columns = line.strip().split("\t")
+            columns = line.strip("\n").split("\t")
             if len(columns) < 9:
                 f_out.write(line)
                 continue
+
             seqid = columns[0]
-            if mapping:
-                try:
-                    new_id = mapping[seqid]
-                except KeyError:
-                    raise KeyError(f"Contig ID '{seqid}' not found in mapping file.")
-            else:
-                if seqid not in cache:
-                    cache[seqid] = f"contig_{counter}"
-                    counter += 1
-                new_id = cache[seqid]
-            new_to_old[new_id] = seqid
+            new_id = get_new_id(seqid)
+            new_to_old.setdefault(new_id, seqid)
             columns[0] = new_id
             f_out.write("\t".join(columns) + "\n")
     return new_to_old
