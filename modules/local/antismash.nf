@@ -2,9 +2,7 @@ process ANTISMASH {
 
     tag "${meta.prefix}"
 
-    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'https://depot.galaxyproject.org/singularity/antismash:8.0.2--pyhdfd78af_0' :
-        'biocontainers/antismash:8.0.2--pyhdfd78af_0' }"
+    container "nf-core/antismash:8.0.1--pyhdfd78af_0"
 
     input:
     tuple val(meta), path(gbk)
