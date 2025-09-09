@@ -92,7 +92,7 @@ process AMRFINDER_PLUS_TO_GFF {
     process_amrfinderplus_results.py \\
     -i ${amrfinder_tsv} \\
     -o ${meta.prefix}_amrfinderplus.gff \\
-    -v \$(amrfinder --version)
+    -v 4.0.23
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
