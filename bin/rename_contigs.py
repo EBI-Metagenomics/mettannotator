@@ -86,18 +86,22 @@ def rename_gbk(infile, outfile, mapping=None):
                 parts[1] = new_id
 
                 # rebuild LOCUS line, preserving format that prokka uses
+                if len(parts) != 6:
+                    raise ValueError(f"Unexpected LOCUS line format: {line.strip()}")
                 # the word "LOCUS", left-aligned in 12-character field
                 loc_field = f"{parts[0]}" + " " * 7
                 # the contig ID (newly renamed), left-aligned in 20-character field + 1 space after
                 id_field = f"{parts[1]:<20}" + " "
                 # the length + "bp" + 4 spaces after
-                length_field = f"{parts[2]} {parts[4]}" + " " * 4
+                length_field = f"{parts[2]} {parts[3]}" + " " * 4
                 # "DNA" + 5 spaces after
-                type_field = f"{parts[5]}" + " " * 5
+                type_field = f"{parts[4]}" + " " * 5
                 # "linear" + 7 spaces after
-                topology_field = f"{parts[6]}" + " " * 7
+                topology_field = f"{parts[5]}" + " " * 7
+                # date (rest of the line)
+                date_field = parts[6]
                 # concatenate all parts and add a newline
-                new_line = "".join([loc_field, id_field, length_field, type_field, topology_field, "\n"])
+                new_line = "".join([loc_field, id_field, length_field, type_field, topology_field, date_field, "\n"])
                 f_out.write(new_line)
             else:
                 f_out.write(line)
