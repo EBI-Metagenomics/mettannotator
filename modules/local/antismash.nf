@@ -28,15 +28,8 @@ process ANTISMASH {
 
     tar -czf ${meta.prefix}_antismash.tar.gz ${meta.prefix}_results
 
-    # To build the GFF3 file the scripts needs the regions.js file to be converted to json
-    # In order to do that this process uses nodejs (using a patched version of the antismash container)
-
-    echo ";var fs = require('fs'); fs.writeFileSync('./regions.json', JSON.stringify(recordData));" >> ${meta.prefix}_results/regions.js
-
-    node ${meta.prefix}_results/regions.js
-
     antismash_to_gff.py \\
-        -r regions.json -a \$(echo \$(antismash --version | sed 's/^antiSMASH //' )) \\
+        -r ${meta.prefix}_results/${meta.prefix}.json -a \$(echo \$(antismash --version | sed 's/^antiSMASH //' )) \\
         -o ${meta.prefix}_antismash.gff
 
     cat <<-END_VERSIONS > versions.yml
