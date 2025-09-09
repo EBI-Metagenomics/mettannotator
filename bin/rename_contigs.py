@@ -57,7 +57,7 @@ def rename_fasta(infile, outfile, mapping=None):
 
 def rename_gbk(infile, outfile, mapping=None):
     """
-    Rename contig IDs in a GenBank file.
+    Rename contig IDs in a GenBank file (produced by Prokka).
     If a mapping dictionary is provided, use it to rename contigs.
     Otherwise, rename contigs to contig_1, contig_2, etc.
     It's assumed that contig IDs are only in the LOCUS lines.
@@ -85,15 +85,19 @@ def rename_gbk(infile, outfile, mapping=None):
                 new_to_old[new_id] = old_id
                 parts[1] = new_id
 
-                # rebuild LOCUS line with fixed column widths
+                # rebuild LOCUS line, preserving format that prokka uses
                 # the word "LOCUS", left-aligned in 12-character field
-                loc_field = f"{parts[0]:<12}"
-                # the contig ID (newly renamed), left-aligned in 16-character field + space after
-                id_field = f"{parts[1]:<16} "
-                # everything else after the ID, joined back with spaces
-                rest = " ".join(parts[2:])
-                # combine all parts and add a newline
-                new_line = loc_field + id_field + rest + "\n"
+                loc_field = f"{parts[0]}" + " " * 7
+                # the contig ID (newly renamed), left-aligned in 20-character field + 1 space after
+                id_field = f"{parts[1]:<20}" + " "
+                # the length + "bp" + 4 spaces after
+                length_field = f"{parts[2]} {parts[4]}" + " " * 4
+                # "DNA" + 5 spaces after
+                type_field = f"{parts[5]}" + " " * 5
+                # "linear" + 7 spaces after
+                topology_field = f"{parts[6]}" + " " * 7
+                # concatenate all parts and add a newline
+                new_line = "".join([loc_field, id_field, length_field, type_field, topology_field, "\n"])
                 f_out.write(new_line)
             else:
                 f_out.write(line)
@@ -102,7 +106,7 @@ def rename_gbk(infile, outfile, mapping=None):
 
 def rename_gff(infile, outfile, mapping=None):
     """
-    Rename contig IDs in a GFF file.
+    Rename contig IDs in a GFF file (produced by Prokka).
     If a mapping dictionary is provided, use it to rename contigs.
     Otherwise, rename contigs to contig_1, contig_2, etc.
 
