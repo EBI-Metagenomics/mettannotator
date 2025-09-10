@@ -46,6 +46,7 @@ include { SANNTIS                                    } from '../modules/local/sa
 include { UNIFIRE                                    } from '../modules/local/unifire'
 include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
 include { ANTISMASH                                  } from '../modules/local/antismash'
+include { ANTISMASH_TO_GFF                           } from '../modules/local/antismash'
 include { DBCAN                                      } from '../modules/local/dbcan'
 include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
 include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
@@ -377,6 +378,12 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
 
+    ANTISMASH_TO_GFF(
+        ANTISMASH.out.json
+    )
+
+    ch_versions = ch_versions.mix(ANTISMASH_TO_GFF.out.versions.first())
+
     DBCAN(
         annotations_faa.join( annotations_gff ),
         dbcan_db
@@ -398,7 +405,7 @@ workflow METTANNOTATOR {
     ).join(
         AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
     ).join(
-        ANTISMASH.out.gff, remainder: true
+        ANTISMASH_TO_GFF.out.gff, remainder: true
     ).join(
         GECCO_RUN.out.gff, remainder: true
     ).join(

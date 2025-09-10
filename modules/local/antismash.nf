@@ -9,10 +9,10 @@ process ANTISMASH {
     tuple path(antismash_db), val(db_version)
 
     output:
-    tuple val(meta), path("${meta.prefix}_results/${meta.prefix}.gbk"), emit: gbk
-    tuple val(meta), path("${meta.prefix}_antismash.tar.gz")          , emit: results_tarball
-    tuple val(meta), path("${meta.prefix}_antismash.gff")             , emit: gff
-    path "versions.yml"                                               , emit: versions
+    tuple val(meta), path("${meta.prefix}_results/${meta.prefix}.gbk") , emit: gbk
+    tuple val(meta), path("${meta.prefix}_antismash.tar.gz")           , emit: results_tarball
+    tuple val(meta), path("${meta.prefix}_results/${meta.prefix}.json"), emit: json
+    path "versions.yml"                                                , emit: versions
 
     script:
     """
@@ -36,6 +36,33 @@ process ANTISMASH {
     "${task.process}":
         antiSMASH: \$(echo \$(antismash --version | sed 's/^antiSMASH //' ))
         antiSMASH database: $db_version
+    END_VERSIONS
+    """
+}
+
+process ANTISMASH_TO_GFF {
+
+    tag "${meta.prefix}"
+
+    container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
+
+    input:
+    tuple val(meta), path(antismash_json)
+
+    output:
+    tuple val(meta), path("${meta.prefix}_antismash.gff"), emit: gff
+    path "versions.yml", emit: versions
+
+    script:
+    """
+    antismash_gff_builder.py \\
+    -i ${antismash_json} \\
+    -o ${meta.prefix}_antismash.gff \\
+    --cds_tag locus_tag
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version 2>&1 | sed 's/Python //g')
     END_VERSIONS
     """
 }
