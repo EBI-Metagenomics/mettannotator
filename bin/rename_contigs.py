@@ -86,7 +86,7 @@ def rename_gbk(infile, outfile, mapping=None):
                 parts[1] = new_id
 
                 # rebuild LOCUS line, preserving format that prokka uses
-                if len(parts) != 6:
+                if len(parts) != 7:
                     raise ValueError(f"Unexpected LOCUS line format: {line.strip()}")
                 # the word "LOCUS", left-aligned in 12-character field
                 loc_field = f"{parts[0]}" + " " * 7
