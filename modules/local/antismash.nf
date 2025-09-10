@@ -28,10 +28,6 @@ process ANTISMASH {
 
     tar -czf ${meta.prefix}_antismash.tar.gz ${meta.prefix}_results
 
-    antismash_to_gff.py \\
-        -r ${meta.prefix}_results/${meta.prefix}.json -a \$(echo \$(antismash --version | sed 's/^antiSMASH //' )) \\
-        -o ${meta.prefix}_antismash.gff
-
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         antiSMASH: \$(echo \$(antismash --version | sed 's/^antiSMASH //' ))
