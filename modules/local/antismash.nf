@@ -65,7 +65,7 @@ process ANTISMASH_TO_GFF {
 
 process ANTISMASH_SUMMARY {
 
-    tag "${meta.id}"
+    tag "${meta.prefix}"
 
     container "microbiome-informatics/mgnify-pipelines-toolkit:1.2.0--htslib"
 
