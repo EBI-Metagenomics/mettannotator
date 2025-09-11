@@ -47,6 +47,7 @@ include { UNIFIRE                                    } from '../modules/local/un
 include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
 include { ANTISMASH                                  } from '../modules/local/antismash'
 include { ANTISMASH_TO_GFF                           } from '../modules/local/antismash'
+include { ANTISMASH_SUMMARY                          } from '../modules/local/antismash'
 include { DBCAN                                      } from '../modules/local/dbcan'
 include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
 include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
@@ -383,6 +384,12 @@ workflow METTANNOTATOR {
     )
 
     ch_versions = ch_versions.mix(ANTISMASH_TO_GFF.out.versions.first())
+
+    ANTISMASH_SUMMARY(
+        ANTISMASH_TO_GFF.out.gff
+    )
+
+    ch_versions = ch_versions.mix(ANTISMASH_SUMMARY.out.versions.first())
 
     DBCAN(
         annotations_faa.join( annotations_gff ),
