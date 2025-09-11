@@ -246,8 +246,8 @@ workflow METTANNOTATOR {
         annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( PROKKA_STANDARD.out.fna )
         annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
 
-        compliant_gbk = PROKKA_COMPLIANT.out.gbk
-        compliant_gff = PROKKA_COMPLIANT.out.gff
+        compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
+        compliant_gff = compliant_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
 
     } else {
 
