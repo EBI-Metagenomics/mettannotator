@@ -91,7 +91,7 @@ def rename_gbk(infile, outfile, mapping=None):
                 # the word "LOCUS", left-aligned in 12-character field
                 loc_field = f"{parts[0]}" + " " * 7
                 # the contig ID (newly renamed), left-aligned in 20-character field + 1 space after
-                id_field = f"{parts[1]:<20}" + " "
+                id_field = f"{parts[1]:<21}" + " "
                 # the length + "bp" + 4 spaces after
                 length_field = f"{parts[2]} {parts[3]}" + " " * 4
                 # "DNA" + 5 spaces after
