@@ -44,7 +44,9 @@ def rename_fasta(infile, outfile, mapping=None):
         else:
             new_id = f"contig_{i}"
         if new_id in new_to_old:
-            raise ValueError(f"Duplicate contig ID '{new_id}' detected in the file {infile}.")
+            raise ValueError(
+                f"Duplicate contig ID '{new_id}' detected in the file {infile}."
+            )
         new_to_old[new_id] = rec.id
 
         rec.id = new_id
@@ -76,12 +78,16 @@ def rename_gbk(infile, outfile, mapping=None):
                     try:
                         new_id = mapping[old_id]
                     except KeyError:
-                        raise KeyError(f"Contig ID '{old_id}' not found in mapping file.")
+                        raise KeyError(
+                            f"Contig ID '{old_id}' not found in mapping file."
+                        )
                 else:
                     new_id = f"contig_{counter}"
                     counter += 1
                 if new_id in new_to_old:
-                    raise ValueError(f"Duplicate contig ID '{new_id}' detected in the file {infile}.")
+                    raise ValueError(
+                        f"Duplicate contig ID '{new_id}' detected in the file {infile}."
+                    )
                 new_to_old[new_id] = old_id
                 parts[1] = new_id
 
@@ -101,7 +107,17 @@ def rename_gbk(infile, outfile, mapping=None):
                 # date (rest of the line)
                 date_field = parts[6]
                 # concatenate all parts and add a newline
-                new_line = "".join([loc_field, id_field, length_field, type_field, topology_field, date_field, "\n"])
+                new_line = "".join(
+                    [
+                        loc_field,
+                        id_field,
+                        length_field,
+                        type_field,
+                        topology_field,
+                        date_field,
+                        "\n",
+                    ]
+                )
                 f_out.write(new_line)
             else:
                 f_out.write(line)
@@ -188,7 +204,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Rename contigs in FASTA, GenBank, or GFF files"
     )
-    parser.add_argument("infiles", nargs="+", help="Input files (.fasta/.fa/.fna, .gbk, .gff[.gz])")
+    parser.add_argument(
+        "infiles", nargs="+", help="Input files (.fasta/.fa/.fna, .gbk, .gff[.gz])"
+    )
     parser.add_argument("-o", "--outdir", required=True, help="Output directory")
     parser.add_argument("--map", help="Mapping TSV file (2 columns: old_name new_name)")
     args = parser.parse_args()
