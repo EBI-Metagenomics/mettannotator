@@ -3,7 +3,7 @@ process RENAME_CONTIGS {
     label 'process_low'
 
     conda "bioconda::biopython=1.81"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/biopython:1.81' :
         'biocontainers/biopython:1.81' }"
 
@@ -25,7 +25,7 @@ process RENAME_CONTIGS {
     script:
     def args = task.ext.args ?: ''
     def mapping_arg = mapping_file ? "--map ${mapping_file}" : ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = task.ext.prefix ?: "${meta.prefix}"
 
     """
     mkdir -p renamed

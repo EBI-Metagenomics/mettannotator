@@ -216,6 +216,8 @@ workflow METTANNOTATOR {
             assemblies_to_annotate.archaea.map { meta, fasta, _kingdom -> [ meta, fasta ] },
             []
         )
+        ch_versions = ch_versions.mix(SHORTEN_CONTIG_NAMES.out.versions.first())
+
         prokka_input = SHORTEN_CONTIG_NAMES.out.modified_fasta
             .join( assemblies_to_annotate.archaea )
             .map { meta, renamed_fasta, _original_fasta, kingdom ->
@@ -257,6 +259,8 @@ workflow METTANNOTATOR {
             assemblies_with_kingdom.map { meta, fasta, _kingdom -> [ meta, fasta ] },
             []
         )
+        ch_versions = ch_versions.mix(SHORTEN_CONTIG_NAMES.out.versions.first())
+
         prokka_input = SHORTEN_CONTIG_NAMES.out.modified_fasta
             .join( assemblies_with_kingdom )
             .map { meta, renamed_fasta, _original_fasta, kingdom ->
