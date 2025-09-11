@@ -230,6 +230,7 @@ workflow METTANNOTATOR {
         // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
         PROKKA_STANDARD.out.gbk
             .mix(PROKKA_STANDARD.out.gff)
+            .mix(PROKKA_STANDARD.out.fna)
             .groupTuple()
             .join(SHORTEN_CONTIG_NAMES.out.fasta_ids_mapping)
             .multiMap { meta, files_list, names_mapping ->
@@ -243,7 +244,7 @@ workflow METTANNOTATOR {
 
         annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( REVERT_CONTIG_RENAMING.out.modified_gbk )
         annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( REVERT_CONTIG_RENAMING.out.modified_gff )
-        annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( PROKKA_STANDARD.out.fna )
+        annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( REVERT_CONTIG_RENAMING.out.modified_fna )
         annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
 
         compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
@@ -270,6 +271,7 @@ workflow METTANNOTATOR {
         // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
         PROKKA_STANDARD.out.gbk
             .mix(PROKKA_STANDARD.out.gff)
+            .mix(PROKKA_STANDARD.out.fna)
             .groupTuple()
             .join(SHORTEN_CONTIG_NAMES.out.fasta_ids_mapping)
             .multiMap { meta, files_list, names_mapping ->
@@ -283,7 +285,7 @@ workflow METTANNOTATOR {
 
         annotations_gbk = REVERT_CONTIG_RENAMING.out.modified_gbk
         annotations_gff = REVERT_CONTIG_RENAMING.out.modified_gff
-        annotations_fna = PROKKA_STANDARD.out.fna
+        annotations_fna = REVERT_CONTIG_RENAMING.out.modified_fna
         annotations_faa = PROKKA_STANDARD.out.faa
 
         compliant_gbk = PROKKA_COMPLIANT.out.gbk
