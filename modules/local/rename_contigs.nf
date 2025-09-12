@@ -44,7 +44,7 @@ process RENAME_CONTIGS {
     """
 
     stub:
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = task.ext.prefix ?: "${meta.prefix}"
     """
     mkdir -p renamed
 
