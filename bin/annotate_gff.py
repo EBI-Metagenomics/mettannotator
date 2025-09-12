@@ -885,7 +885,7 @@ def get_trnas(trnas_file):
             if not line.startswith("#"):
                 cols = line.split("\t")
                 contig, feature, start = cols[0], cols[2], cols[3]
-                if feature == "tRNA":
+                if feature in ["tRNA", "pseudogene"]:
                     line = line.replace("tRNAscan-SE", "tRNAscan-SE:2.0.9")
                     trnas.setdefault(contig, dict()).setdefault(
                         int(start), list()
