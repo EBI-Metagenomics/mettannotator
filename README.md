@@ -120,7 +120,7 @@ EC_ASM584v2,/path/to/GCF_000005845.2.fna,562
 
 Here,
 `prefix` is the prefix and the locus tag that will be assigned to output files and proteins during the annotation process;
-maximum length is 24 characters;
+maximum length is 24 characters; the prefix may contain letters, digits, dashes, underscores, periods.
 
 `assembly` is the path to where the assembly file in FASTA format is located;
 
