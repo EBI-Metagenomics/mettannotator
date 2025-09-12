@@ -284,13 +284,14 @@ $ nextflow run path-to-source-code/main.nf --help
 
 #### Local execution
 
-The pipeline can be run on a desktop or laptop, with the caveat that it will take a few hours to complete depending on the resources. There is a local profile in the Nextflow config that limits the total resources the pipeline can use to 8 cores and 12 GB of RAM. In order to run it (Docker or Singularity are still required):
+The pipeline can be run on a desktop or laptop, with the caveat that it will take a few hours to complete depending on the resources and it should be run in the `--fast` mode, skipping UniFIRE, InterProScan and SanntiS. There is a local profile in the Nextflow config that limits the total resources the pipeline can use to 8 cores and 12 GB of RAM. In order to run it (Docker or Singularity are still required):
 
 ```bash
 nextflow run -latest ebi-metagenomics/mettannotator \
    -profile local,<docker or singulairty> \
    --input assemblies_sheet.csv \
    --outdir <OUTDIR> \
+   --fast \
    --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
 ```
 
