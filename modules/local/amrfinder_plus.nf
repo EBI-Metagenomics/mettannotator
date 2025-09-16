@@ -2,6 +2,8 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
 
     tag "${meta.prefix}"
 
+    label 'process_nano'
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
@@ -29,6 +31,8 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
 process AMRFINDER_PLUS {
 
     tag "${meta.prefix}"
+
+    label 'process_low'
 
     container 'quay.io/biocontainers/ncbi-amrfinderplus:4.0.23--hf69ffd2_0'
 
@@ -74,6 +78,8 @@ process AMRFINDER_PLUS {
 process AMRFINDER_PLUS_TO_GFF {
 
     tag "${meta.prefix}"
+
+    label 'process_nano'
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
