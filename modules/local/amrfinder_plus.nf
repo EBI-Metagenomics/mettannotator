@@ -41,7 +41,7 @@ process AMRFINDER_PLUS {
     tuple path(amrfinder_plus_db), val(db_version)
 
     output:
-    tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv"), emit: amrfinder_tsv
+    tuple val(meta), path("${meta.prefix}_amrfinderplus_raw.tsv"), emit: amrfinder_tsv
     tuple val(meta), path("organism.txt")                    , emit: amrfinderplus_organism_file
     path "versions.yml"                                      , emit: versions
 
@@ -64,7 +64,7 @@ process AMRFINDER_PLUS {
     -g ${gff} \
     -d ${amrfinder_plus_db} \
     -a prokka \
-    --output ${meta.prefix}_amrfinderplus.tsv \
+    --output ${meta.prefix}_amrfinderplus_raw.tsv \
     --threads ${task.cpus} ${organism_flag}
 
     cat <<-END_VERSIONS > versions.yml
@@ -73,6 +73,31 @@ process AMRFINDER_PLUS {
         amdfinderplus database: $db_version
     END_VERSIONS
     """
+}
+
+process AMRFINDER_PLUS_TSV_POSTPROCESSING {
+
+    tag "${meta.prefix}"
+
+    label 'process_nano'
+
+    container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
+
+    input:
+    tuple val(meta), path(amrfinder_tsv)
+
+    output:
+    tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv")
+
+    script:
+    """
+    modify_amrfinderplus_headers.py -i ${amrfinder_tsv} -o ${meta.prefix}_amrfinderplus.tsv
+    """
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version 2>&1 | sed 's/Python //g')
+    END_VERSIONS
 }
 
 process AMRFINDER_PLUS_TO_GFF {
@@ -84,7 +109,7 @@ process AMRFINDER_PLUS_TO_GFF {
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
-    tuple val(meta),path(amrfinder_tsv)
+    tuple val(meta), path(amrfinder_tsv)
 
     output:
     tuple val(meta), path("${meta.prefix}_amrfinderplus.gff"), emit: amrfinder_gff
