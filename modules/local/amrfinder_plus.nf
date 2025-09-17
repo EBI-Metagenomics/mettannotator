@@ -87,7 +87,8 @@ process AMRFINDER_PLUS_TSV_POSTPROCESSING {
     tuple val(meta), path(amrfinder_tsv)
 
     output:
-    tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv")
+    tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv")   , emit: amrfinder_tsv
+    path "versions.yml"                                         , emit: versions
 
     script:
     """
