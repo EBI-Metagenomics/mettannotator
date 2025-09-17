@@ -92,12 +92,12 @@ process AMRFINDER_PLUS_TSV_POSTPROCESSING {
     script:
     """
     modify_amrfinderplus_headers.py -i ${amrfinder_tsv} -o ${meta.prefix}_amrfinderplus.tsv
-    """
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version 2>&1 | sed 's/Python //g')
     END_VERSIONS
+    """
 }
 
 process AMRFINDER_PLUS_TO_GFF {
