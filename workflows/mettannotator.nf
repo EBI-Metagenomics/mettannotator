@@ -210,82 +210,58 @@ workflow METTANNOTATOR {
         }.set { assemblies_to_annotate }
 
         BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
-
-        // Prokka crashes with long contig names, so we rename before and after
-        SHORTEN_CONTIG_NAMES(
-            assemblies_to_annotate.archaea.map { meta, fasta, _kingdom -> [ meta, fasta ] },
-            []
-        )
-        ch_versions = ch_versions.mix(SHORTEN_CONTIG_NAMES.out.versions.first())
-
-        prokka_input = SHORTEN_CONTIG_NAMES.out.modified_fasta
-            .join( assemblies_to_annotate.archaea )
-            .map { meta, renamed_fasta, _original_fasta, kingdom ->
-                [ meta, renamed_fasta, kingdom ]
-            }
-        PROKKA_STANDARD( prokka_input, Channel.value("standard") )
-        PROKKA_COMPLIANT( prokka_input, Channel.value("compliant") )
-
         ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
-        ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
 
-        // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
-        PROKKA_STANDARD.out.gbk
-            .mix(PROKKA_STANDARD.out.gff)
-            .mix(PROKKA_STANDARD.out.fna)
-            .groupTuple()
-            .join(SHORTEN_CONTIG_NAMES.out.fasta_ids_mapping)
-            .multiMap { meta, files_list, names_mapping ->
-                files: [ meta, files_list ]
-                mapping: names_mapping
-            }.set { revert_contig_renaming_input }
-        REVERT_CONTIG_RENAMING(
-            revert_contig_renaming_input.files,
-            revert_contig_renaming_input.mapping
-        )
+        prokka_input = assemblies_to_annotate.archaea
+
+    } else {
+
+        prokka_input = assemblies_with_kingdom
+
+    }
+
+    // Prokka crashes with long contig names, so we temporary rename contigs before running it
+    SHORTEN_CONTIG_NAMES(
+        prokka_input.map { meta, fasta, _kingdom -> [ meta, fasta ] },
+        []
+    )
+    ch_versions = ch_versions.mix(SHORTEN_CONTIG_NAMES.out.versions.first())
+
+    renamed_prokka_input = SHORTEN_CONTIG_NAMES.out.modified_fasta
+        .join( prokka_input )
+        .map { meta, renamed_fasta, _original_fasta, kingdom ->
+            [ meta, renamed_fasta, kingdom ]
+        }
+    PROKKA_STANDARD( renamed_prokka_input, Channel.value("standard") )
+    PROKKA_COMPLIANT( renamed_prokka_input, Channel.value("compliant") )
+
+    ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
+
+    // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
+    PROKKA_STANDARD.out.gbk
+        .mix(PROKKA_STANDARD.out.gff)
+        .mix(PROKKA_STANDARD.out.fna)
+        .groupTuple()
+        .join(SHORTEN_CONTIG_NAMES.out.fasta_ids_mapping)
+        .multiMap { meta, files_list, names_mapping ->
+            files: [ meta, files_list ]
+            mapping: names_mapping
+    }.set { revert_contig_renaming_input }
+    REVERT_CONTIG_RENAMING(
+        revert_contig_renaming_input.files,
+        revert_contig_renaming_input.mapping
+    )
+
+    if ( params.bakta ) {
 
         annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( REVERT_CONTIG_RENAMING.out.modified_gbk )
         annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( REVERT_CONTIG_RENAMING.out.modified_gff )
         annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( REVERT_CONTIG_RENAMING.out.modified_fna )
         annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
-
         compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
         compliant_gff = compliant_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
 
     } else {
-
-        // Prokka crashes with long contig names, so we rename before and after
-        SHORTEN_CONTIG_NAMES(
-            assemblies_with_kingdom.map { meta, fasta, _kingdom -> [ meta, fasta ] },
-            []
-        )
-        ch_versions = ch_versions.mix(SHORTEN_CONTIG_NAMES.out.versions.first())
-
-        prokka_input = SHORTEN_CONTIG_NAMES.out.modified_fasta
-            .join( assemblies_with_kingdom )
-            .map { meta, renamed_fasta, _original_fasta, kingdom ->
-                [ meta, renamed_fasta, kingdom ]
-            }
-
-        PROKKA_STANDARD( prokka_input, Channel.value("standard") )
-        PROKKA_COMPLIANT( prokka_input, Channel.value("compliant") )
-
-        ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
-
-        // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
-        PROKKA_STANDARD.out.gbk
-            .mix(PROKKA_STANDARD.out.gff)
-            .mix(PROKKA_STANDARD.out.fna)
-            .groupTuple()
-            .join(SHORTEN_CONTIG_NAMES.out.fasta_ids_mapping)
-            .multiMap { meta, files_list, names_mapping ->
-                files: [ meta, files_list ]
-                mapping: names_mapping
-        }.set { revert_contig_renaming_input }
-        REVERT_CONTIG_RENAMING(
-            revert_contig_renaming_input.files,
-            revert_contig_renaming_input.mapping
-        )
 
         annotations_gbk = REVERT_CONTIG_RENAMING.out.modified_gbk
         annotations_gff = REVERT_CONTIG_RENAMING.out.modified_gff
