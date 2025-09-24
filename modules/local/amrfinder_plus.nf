@@ -58,6 +58,8 @@ process AMRFINDER_PLUS {
 
     ${organism_cmd}
 
+    # bakta and prokka can both use the -a prokka flag in the command below - ID field is the same in both tools
+
     amrfinder --plus \
     -n ${fna} \
     -p ${faa} \
