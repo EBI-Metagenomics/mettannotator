@@ -1,0 +1,61 @@
+{
+    "Should rename fasta file without mapping - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "prefix": "sample1"
+                        },
+                        "test.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    
+                ],
+                "5": [
+                    "versions.yml:md5,562931e58a4c12e5dcedfd303e725577"
+                ],
+                "fasta_ids_mapping": [
+                    
+                ],
+                "modified_fasta": [
+                    [
+                        {
+                            "id": "test",
+                            "prefix": "sample1"
+                        },
+                        "test.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "modified_fna": [
+                    
+                ],
+                "modified_gbk": [
+                    
+                ],
+                "modified_gff": [
+                    
+                ],
+                "versions": [
+                    "versions.yml:md5,562931e58a4c12e5dcedfd303e725577"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.0",
+            "nextflow": "25.04.1"
+        },
+        "timestamp": "2025-09-24T10:53:53.131147"
+    }
+}

@@ -1,0 +1,139 @@
+nextflow_process {
+
+    name "Test Process RENAME_CONTIGS"
+    script "../main.nf"
+    process "RENAME_CONTIGS"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "rename_contigs"
+
+    test("Should rename fasta file without mapping") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test', prefix:'sample1' ],
+                    file('${moduleDir}/tests/data/test.fasta', checkIfExists: true)
+                ]
+                input[1] = []
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.versions.size() == 1 },
+                { assert process.out.modified_fasta.size() == 1 },
+                {
+                    // Get the output fasta file content
+                    def fasta_file = process.out.modified_fasta.get(0).get(1)
+                    def fasta_content = path(fasta_file).text
+
+                    // Assert it does NOT contain the original headers
+                    assert !fasta_content.contains(">MGYG000516509_1")
+                    assert !fasta_content.contains(">AP010953.1")
+                    assert !fasta_content.contains(">ENA|JACYPY010000001|JACYPY010000001.1 Salmonella enterica subsp. enterica serovar Typhi strain CFSAN059649 contig00001, whole genome shotgun sequence.")
+                    assert !fasta_content.contains(">ERZ25356447.1 SAMEA6656724.contig00001")
+                    assert !fasta_content.contains(">NODE_1_length_500_cov_10.5")
+
+                    // Assert it DOES contain the renamed header
+                    assert fasta_content.contains(">contig_1")
+                }
+            )
+        }
+
+    }
+
+    test("Should rename fna, gbk and gff files with mapping") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test', prefix:'sample2' ],
+                    [
+                        file('${moduleDir}/tests/data/test.fna', checkIfExists: true),
+                        file('${moduleDir}/tests/data/test.gbk', checkIfExists: true),
+                        file('${moduleDir}/tests/data/test.gff', checkIfExists: true)
+                    ]
+                ]
+                input[1] = file('${moduleDir}/tests/data/mapping.tsv', checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.versions.size() == 1 },
+                { assert process.out.modified_gbk.size() == 1 },
+                { assert process.out.modified_fna.size() == 1 },
+                { assert process.out.modified_gff.size() == 1 },
+                {
+                    // Validate GBK file content
+                    def gbk_file = process.out.modified_gbk.get(0).get(1)
+                    def gbk_content = path(gbk_file).text
+
+                    // Should NOT contain the original name
+                    assert !gbk_content.contains("LOCUS       contig_1       158623 bp    DNA     linear       05-SEP-2025")
+                    // Should contain the mapped name
+                    assert gbk_content.contains("LOCUS       ERZ000001.1           158623 bp    DNA     linear       05-SEP-2025")
+                },
+                {
+                    // Validate FNA file content
+                    def fna_file = process.out.modified_fna.get(0).get(1)
+                    def fna_content = path(fna_file).text
+
+                    // Should NOT contain the original name
+                    assert !fna_content.contains(">contig_1")
+                    // Should contain the mapped name
+                    assert fna_content.contains(">ERZ000001.1")
+                },
+                {
+                    // Validate GFF file content
+                    def gff_file = process.out.modified_gff.get(0).get(1)
+                    def gff_content = path(gff_file).text
+
+                    // Should NOT contain original contig references
+                    assert !gff_content.contains("##sequence-region contig_1 1 158623")
+                    assert !gff_content.contains("contig_1\tProdigal:002006\tCDS\t400\t744\t.\t+\t0\tID=MGYG000516370_00001")
+                    assert !gff_content.contains(">contig_1")
+
+                    // Should contain mapped contig references
+                    assert gff_content.contains("##sequence-region ERZ000001.1 1 158623")
+                    assert gff_content.contains("ERZ000001.1\tProdigal:002006\tCDS\t400\t744\t.\t+\t0\tID=MGYG000516370_00001")
+                    assert gff_content.contains(">ERZ000001.1")
+                }
+            )
+        }
+
+    }
+
+    test("Should rename fasta file without mapping - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test', prefix:'sample1' ],
+                    file('${moduleDir}/tests/data/test.fasta', checkIfExists: true)
+                ]
+                input[1] = []
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                { assert process.out.versions.size() == 1 }
+            )
+        }
+    }
+}
