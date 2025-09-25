@@ -2,7 +2,6 @@ process RENAME_CONTIGS {
     tag "$meta.prefix"
     label 'process_low'
 
-    conda "bioconda::biopython=1.81"
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/biopython:1.81' :
         'biocontainers/biopython:1.81' }"
