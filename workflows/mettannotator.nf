@@ -256,7 +256,7 @@ workflow METTANNOTATOR {
 
         annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( REVERT_CONTIG_RENAMING.out.modified_gbk )
         annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( REVERT_CONTIG_RENAMING.out.modified_gff )
-        annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( REVERT_CONTIG_RENAMING.out.modified_fna )
+        annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( REVERT_CONTIG_RENAMING.out.modified_fasta )
         annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
         compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
         compliant_gff = compliant_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
@@ -265,7 +265,7 @@ workflow METTANNOTATOR {
 
         annotations_gbk = REVERT_CONTIG_RENAMING.out.modified_gbk
         annotations_gff = REVERT_CONTIG_RENAMING.out.modified_gff
-        annotations_fna = REVERT_CONTIG_RENAMING.out.modified_fna
+        annotations_fna = REVERT_CONTIG_RENAMING.out.modified_fasta
         annotations_faa = PROKKA_STANDARD.out.faa
 
         compliant_gbk = PROKKA_COMPLIANT.out.gbk

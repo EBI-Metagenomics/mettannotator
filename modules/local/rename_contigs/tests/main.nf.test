@@ -70,7 +70,7 @@ nextflow_process {
                 { assert process.success },
                 { assert process.out.versions.size() == 1 },
                 { assert process.out.modified_gbk.size() == 1 },
-                { assert process.out.modified_fna.size() == 1 },
+                { assert process.out.modified_fasta.size() == 1 },
                 { assert process.out.modified_gff.size() == 1 },
                 {
                     // Validate GBK file content
@@ -84,7 +84,7 @@ nextflow_process {
                 },
                 {
                     // Validate FNA file content
-                    def fna_file = process.out.modified_fna.get(0).get(1)
+                    def fna_file = process.out.modified_fasta.get(0).get(1)
                     def fna_content = path(fna_file).text
 
                     // Should NOT contain the original name

@@ -21,9 +21,6 @@
                     
                 ],
                 "4": [
-                    
-                ],
-                "5": [
                     "versions.yml:md5,562931e58a4c12e5dcedfd303e725577"
                 ],
                 "fasta_ids_mapping": [
@@ -37,9 +34,6 @@
                         },
                         "test.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
-                ],
-                "modified_fna": [
-                    
                 ],
                 "modified_gbk": [
                     
@@ -56,6 +50,6 @@
             "nf-test": "0.9.0",
             "nextflow": "25.04.1"
         },
-        "timestamp": "2025-09-24T10:53:53.131147"
+        "timestamp": "2025-09-25T14:02:59.986468"
     }
 }
