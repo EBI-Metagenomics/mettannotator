@@ -368,7 +368,8 @@ def get_amr(amr_file):
                 drug_class,
                 drug_subclass,
                 method,
-            ) = line.strip().split("\t", 12)
+                _
+            ) = line.strip().split("\t", 13)
             # don't add annotations for which we don't have a protein ID (these will only be
             # available in the AMRFinderPlus TSV file); exception is operon annotations
             if protein_id == "NA":
