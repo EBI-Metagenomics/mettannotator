@@ -99,15 +99,14 @@ def remove_parent(line):
 def fix_crispr_id(line):
     fields = line.strip().split("\t")
     annot = fields[8]
-    annot_elements = annot.split(";")
-    for a in annot_elements:
-        if a.startswith("Name="):
-            name = a.split("=")[1]
-        elif a.startswith("ID="):
-            id = a.split("=")[1]
-    # swap the values of "name" and "id"
-    fixed_annot = re.sub(f"ID={id}", f"ID={name}", annot)
-    fixed_annot = re.sub(f"Name={name}", f"Name={id}", fixed_annot)
+    pairs = [kv.split("=", 1) for kv in annot.split(";") if kv]  # split into key/value
+    annot_dict = dict(pairs)
+    # swap values in the ID and Name fields
+    annot_dict["Name"], annot_dict["ID"] = annot_dict["ID"], annot_dict["Name"]
+
+    # reconstruct string
+    fixed_annot = ";".join(f"{k}={annot_dict[k]}" for k, _ in pairs) + ";"
+
     fields[8] = fixed_annot
     return "\t".join(fields) + "\n"
 
@@ -221,7 +220,7 @@ def process_tsv(tsv_report, tsv_output):
                 parts = line.strip().split("\t")
                 # add sequence basename to hits
                 hits.append(parts[2])
-                # make crispr_id that the GFFs use
+                # make crispr_id that the GFFs use (sequenceid_crisprstart_crisprend)
                 crispr_id = f"{parts[1]}_{parts[5]}_{parts[6]}"
                 # check if evidence level is high (2, 3 or 4)
                 if parts[-1] in ["2", "3", "4"]:
