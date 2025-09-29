@@ -40,7 +40,9 @@ process ANTISMASH_TO_GFF {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/mgnify-pipelines-toolkit:1.2.9--pyhdfd78af_0' :
+        'biocontainers/mgnify-pipelines-toolkit:1.2.9--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(antismash_json)
@@ -51,14 +53,14 @@ process ANTISMASH_TO_GFF {
 
     script:
     """
-    antismash_gff_builder.py \\
+    antismash_gff_builder \\
     -i ${antismash_json} \\
     -o ${meta.prefix}_antismash.gff \\
     --cds_tag locus_tag
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        python: \$(python --version 2>&1 | sed 's/Python //g')
+        mgnify-pipelines-toolkit: \$(get_mpt_version)
     END_VERSIONS
     """
 }
@@ -67,7 +69,9 @@ process ANTISMASH_SUMMARY {
 
     tag "${meta.prefix}"
 
-    container "microbiome-informatics/mgnify-pipelines-toolkit:1.2.0--htslib"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/mgnify-pipelines-toolkit:1.2.9--pyhdfd78af_0' :
+        'biocontainers/mgnify-pipelines-toolkit:1.2.9--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(antismash_gff)
@@ -88,13 +92,4 @@ process ANTISMASH_SUMMARY {
     END_VERSIONS
     """
 
-    stub:
-    """
-    touch ${antismash_gff.simpleName}_summary.tsv
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        mgnify-pipelines-toolkit: \$(get_mpt_version)
-    END_VERSIONS
-    """
 }
