@@ -13,7 +13,7 @@ process DBCAN {
     output:
     tuple val(meta), path("dbcan/substrate_prediction.tsv")  , emit: substrates
     tuple val(meta), path("dbcan/cgc_standard_out.tsv")      , emit: cgc
-    tuple val(meta), path("dbcan/overview.txt")              , emit: overview
+    tuple val(meta), path("dbcan/overview.tsv")              , emit: overview
     tuple val(meta), path("dbcan/${meta.prefix}_dbcan.gff")  , emit: dbcan_gff
     path "versions.yml"                                      , emit: versions
 
