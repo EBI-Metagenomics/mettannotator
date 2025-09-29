@@ -105,7 +105,7 @@ def fix_crispr_id(line):
     annot_dict["Name"], annot_dict["ID"] = annot_dict["ID"], annot_dict["Name"]
 
     # reconstruct string
-    fixed_annot = ";".join(f"{k}={annot_dict[k]}" for k, _ in pairs) + ";"
+    fixed_annot = ";".join(f"{k}={annot_dict[k]}" for k, _ in pairs)
 
     fields[8] = fixed_annot
     return "\t".join(fields) + "\n"
