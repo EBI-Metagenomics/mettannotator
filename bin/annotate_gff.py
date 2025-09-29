@@ -338,6 +338,16 @@ def get_bgcs(bgc_file, prokka_gff, tool):
 
 def get_amr(amr_file):
     amr_annotations = {}
+    amr_operons = {}
+    amr_locations = {}
+
+    def ranges_overlap(prot_start, prot_end, op_start, op_end):
+        """
+        Return True if protein is fully contained within the operon.
+        Boundaries can match exactly.
+        """
+        return op_start <= prot_start and op_end >= prot_end
+
     if not amr_file:
         return amr_annotations
     with open(amr_file) as f:
@@ -346,10 +356,10 @@ def get_amr(amr_file):
                 continue
             (
                 protein_id,
-                _,
-                _,
-                _,
-                _,
+                contig_id,
+                start,
+                stop,
+                strand,
                 gene_name,
                 seq_name,
                 scope,
@@ -357,17 +367,24 @@ def get_amr(amr_file):
                 element_subtype,
                 drug_class,
                 drug_subclass,
-                _,
+                method,
             ) = line.strip().split("\t", 12)
             # don't add annotations for which we don't have a protein ID (these will only be
-            # available in the AMRFinderPlus TSV file)
+            # available in the AMRFinderPlus TSV file); exception is operon annotations
             if protein_id == "NA":
-                continue
-            # check for characters that could break GFF
-            if ";" in seq_name:
-                seq_name = seq_name.replace(";", ",")
-            if "=" in seq_name:
-                seq_name = seq_name.replace("=", " ")
+                if "operon" not in gene_name:
+                    continue
+                # if this is an operon, the method field will have its completeness status
+                # save it as, for example, amr_operons[contig_id][start_stop] = "STX1A_COMPLETE"
+                amr_operons.setdefault(contig_id, {})["_".join([start, stop])] = "_".join([drug_subclass, method])
+
+            # Clean up seq_name for GFF compatibility
+            seq_name = seq_name.replace(";", ",").replace("=", " ")
+
+            # Save protein location
+            amr_locations.setdefault(contig_id, {})["_".join([start, stop])] = protein_id
+
+            # Save annotation
             amr_annotations[protein_id] = ";".join(
                 [
                     f"amrfinderplus_element_symbol={gene_name}",
@@ -379,6 +396,24 @@ def get_amr(amr_file):
                     f"drug_subclass={drug_subclass}",
                 ]
             )
+
+        # If there are any operons, find which proteins are contained and add the status to the annotation
+        if amr_operons:
+            for contig, proteins in amr_locations.items():
+                if contig not in amr_operons:
+                    continue
+
+                for prot_range, protein_id in proteins.items():
+                    prot_start, prot_end = map(int, prot_range.split("_"))
+                    statuses = set()
+
+                    for op_range, operon_status in amr_operons[contig].items():
+                        op_start, op_end = map(int, op_range.split("_"))
+                        if ranges_overlap(prot_start, prot_end, op_start, op_end):
+                            statuses.add(operon_status)
+
+                    if statuses:
+                        amr_annotations[protein_id] += ";amr_operon_status=" + ",".join(sorted(statuses))
     return amr_annotations
 
 
