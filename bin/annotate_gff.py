@@ -397,8 +397,8 @@ def get_dbcan(dbcan_file):
                     elif a.startswith("substrate_dbcan-pul"):
                         substrate_pul = a.split("=")[1]
                     elif a.startswith("substrate_dbcan-sub"):
-                        substrate_ecami = a.split("=")[1]
-                substrates.setdefault(cgc, {})["substrate_ecami"] = substrate_ecami
+                        substrate_sub = a.split("=")[1]
+                substrates.setdefault(cgc, {})["substrate_sub"] = substrate_sub
                 substrates.setdefault(cgc, {})["substrate_pul"] = substrate_pul
             elif line.startswith("#"):
                 continue
@@ -410,16 +410,16 @@ def get_dbcan(dbcan_file):
                     for a in annot_fields:
                         if a.startswith("ID"):
                             acc = a.split("=")[1]
-                        elif a.startswith("protein_family"):
+                        elif a.startswith("annotation"):
                             prot_fam = a.split("=")[1]
                         elif a.startswith("Parent"):
                             parent = a.split("=")[1]
                     dbcan_annotations[acc] = (
-                        "dbcan_prot_type={};dbcan_prot_family={};substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
+                        "dbcan_prot_type={};dbcan_annotation={};substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
                             prot_type,
                             prot_fam,
                             substrates[parent]["substrate_pul"],
-                            substrates[parent]["substrate_ecami"],
+                            substrates[parent]["substrate_sub"],
                         )
                     )
     return dbcan_annotations

@@ -53,8 +53,8 @@ The workflow uses the following tools and databases:
 | [GECCO](https://github.com/zellerlab/GECCO)                                                      | 0.9.8            | Biosynthetic gene cluster annotation                                                                                   |
 | [antiSMASH](https://antismash.secondarymetabolites.org/#!/download)                              | 8.0.1            | Biosynthetic gene cluster annotation                                                                                   |
 | [SanntiS](https://github.com/Finn-Lab/SanntiS)                                                   | 0.9.3.4          | Biosynthetic gene cluster annotation                                                                                   |
-| [run_dbCAN](https://github.com/linnabrown/run_dbcan)                                             | 4.1.2            | PUL prediction                                                                                                         |
-| [dbCAN DB](https://bcb.unl.edu/dbCAN2/download/Databases/)                                       | V12              | Database for run_dbCAN                                                                                                 |
+| [run_dbCAN](https://github.com/linnabrown/run_dbcan)                                             | 5.1.2            | PUL prediction                                                                                                         |
+| [dbCAN DB](https://bcb.unl.edu/dbCAN2/download/Databases/)                                       | v5-2_9-13-2025   | Database for run_dbCAN                                                                                                 |
 | [CRISPRCasFinder](https://github.com/dcouvin/CRISPRCasFinder)                                    | 4.3.2            | Annotation of CRISPR arrays                                                                                            |
 | [cmscan](http://eddylab.org/infernal/)                                                           | 1.1.5            | ncRNA predictions                                                                                                      |
 | [Rfam](https://rfam.org/)                                                                        | 15.0             | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
@@ -82,18 +82,18 @@ Although it's possible to run the pipeline on a personal computer, due to the co
 The pipeline needs reference databases in order to work, they take roughly 180G.
 
 | Path                | Size |
-| ------------------- | ---- |
+| ------------------- |------|
 | amrfinder           | 217M |
 | antismash           | 9.4G |
 | bakta               | 71G  |
-| dbcan               | 7.5G |
+| dbcan               | 8.9G |
 | defense_finder      | 242M |
 | eggnog              | 48G  |
 | interproscan        | 45G  |
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
 | pseudofinder        | 273M |
-| total               | 182G |
+| total               | 184G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
