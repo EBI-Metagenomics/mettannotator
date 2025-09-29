@@ -30,15 +30,15 @@ process DBCAN {
     done < ${gff} > ${meta.prefix}_noseq.gff
 
     run_dbcan \\
-        --dia_cpu ${task.cpus} \\
-        --hmm_cpu ${task.cpus} \\
-        --tf_cpu ${task.cpus} \\
+        easy_substrate
+        --threads ${task.cpus} \\
         --db_dir dbcan_db \\
-        --out_dir dbcan \\
-        --cgc_substrate \\
-        --cluster ${meta.prefix}_noseq.gff \\
-        ${faa} \\
-        protein
+        --output_dir dbcan \\
+        --input_gff ${meta.prefix}_noseq.gff \\
+        --input_raw_data ${faa} \\
+        --gff_type prodigal \\
+        --mode protein
+
 
     process_dbcan_result.py -i dbcan -o dbcan/${meta.prefix}_dbcan.gff -v 5.1.2
 
