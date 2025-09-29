@@ -30,7 +30,7 @@ process DBCAN {
     done < ${gff} > ${meta.prefix}_noseq.gff
 
     run_dbcan \\
-        easy_substrate
+        easy_substrate \\
         --threads ${task.cpus} \\
         --db_dir dbcan_db \\
         --output_dir dbcan \\
