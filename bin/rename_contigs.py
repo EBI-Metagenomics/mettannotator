@@ -1,0 +1,255 @@
+#!/usr/bin/env python3
+import argparse
+import gzip
+from pathlib import Path
+
+from Bio import SeqIO
+
+SUPPORTED_FASTA_EXTS = (".fasta", ".fa", ".fna")
+SUPPORTED_GBK_EXTS = (".gbk", ".gb", ".genbank")
+SUPPORTED_GFF_EXTS = (".gff", ".gff3", ".gff.gz")
+
+
+def read_map(map_file):
+    """
+    Read a mapping file with two columns: old_name and new_name (no header).
+    Return a dictionary mapping old_name to new_name.
+    """
+    mapping = {}
+    with open(map_file) as f:
+        for line in f:
+            if not line.strip():
+                continue
+            old, new = line.strip().split("\t")
+            if new in mapping.values():
+                raise ValueError(f"Duplicate contig ID '{new}' in mapping file.")
+            mapping[old] = new
+    return mapping
+
+
+def rename_fasta(infile, outfile, mapping=None):
+    """
+    Rename contig IDs in a FASTA file.
+    If a mapping dictionary is provided, use it to rename contigs.
+    Otherwise, rename contigs to contig_1, contig_2, etc.
+    """
+    records = []
+    new_to_old = {}
+    for i, rec in enumerate(SeqIO.parse(infile, "fasta"), 1):
+        if mapping:
+            try:
+                new_id = mapping[rec.id]
+            except KeyError:
+                raise KeyError(f"Contig ID '{rec.id}' not found in mapping file.")
+        else:
+            new_id = f"contig_{i}"
+        if new_id in new_to_old:
+            raise ValueError(
+                f"Duplicate contig ID '{new_id}' detected in the file {infile}."
+            )
+        new_to_old[new_id] = rec.id
+
+        rec.id = new_id
+        rec.name = new_id
+        rec.description = ""
+        records.append(rec)
+    SeqIO.write(records, outfile, "fasta")
+    return new_to_old
+
+
+def rename_gbk(infile, outfile, mapping=None):
+    """
+    Rename contig IDs in a GenBank file (produced by Prokka).
+    If a mapping dictionary is provided, use it to rename contigs.
+    Otherwise, rename contigs to contig_1, contig_2, etc.
+    It's assumed that contig IDs are only in the LOCUS lines.
+    Example of GenBank file:
+    LOCUS       ctg123              1497228 bp    DNA     linear   01-JAN-1980
+    (... other lines ...)
+    """
+    counter = 1
+    new_to_old = {}
+    with open(infile) as f_in, open(outfile, "w") as f_out:
+        for line in f_in:
+            if line.startswith("LOCUS"):
+                parts = line.split()
+                old_id = parts[1]
+                if mapping:
+                    try:
+                        new_id = mapping[old_id]
+                    except KeyError:
+                        raise KeyError(
+                            f"Contig ID '{old_id}' not found in mapping file."
+                        )
+                else:
+                    new_id = f"contig_{counter}"
+                    counter += 1
+                if new_id in new_to_old:
+                    raise ValueError(
+                        f"Duplicate contig ID '{new_id}' detected in the file {infile}."
+                    )
+                new_to_old[new_id] = old_id
+                parts[1] = new_id
+
+                # rebuild LOCUS line, preserving format that prokka uses
+                if len(parts) != 7:
+                    raise ValueError(f"Unexpected LOCUS line format: {line.strip()}")
+                # the word "LOCUS", left-aligned in 12-character field
+                loc_field = f"{parts[0]}" + " " * 7
+                # the contig ID (newly renamed), left-aligned in 20-character field + 1 space after
+                id_field = f"{parts[1]:<21}" + " "
+                # the length + "bp" + 4 spaces after
+                length_field = f"{parts[2]} {parts[3]}" + " " * 4
+                # "DNA" + 5 spaces after
+                type_field = f"{parts[4]}" + " " * 5
+                # "linear" + 7 spaces after
+                topology_field = f"{parts[5]}" + " " * 7
+                # date (rest of the line)
+                date_field = parts[6]
+                # concatenate all parts and add a newline
+                new_line = "".join(
+                    [
+                        loc_field,
+                        id_field,
+                        length_field,
+                        type_field,
+                        topology_field,
+                        date_field,
+                        "\n",
+                    ]
+                )
+                f_out.write(new_line)
+            else:
+                f_out.write(line)
+    return new_to_old
+
+
+def rename_gff(infile, outfile, mapping=None):
+    """
+    Rename contig IDs in a GFF file (produced by Prokka).
+    If a mapping dictionary is provided, use it to rename contigs.
+    Otherwise, rename contigs to contig_1, contig_2, etc.
+
+    Example of GFF file:
+    ##gff-version 3
+    ##sequence-region ctg123 1 1497228
+    ctg123	.	gene	1300	9000	.	+	.	ID=gene00001;Name=EDEN
+    ctg123	.	CDS	1300	9000	.	+	0	ID=cds00001;Parent=gene00001;Name=EDEN
+    ##FASTA
+    >ctg123
+    ATGCGTACGTAGCTAGCTAGCTAGCTAGCTACGATCG
+    ATCGATCGATCGATCGATCGATCGATCGATCGATCGA
+    """
+    opener = gzip.open if infile.endswith(".gz") else open
+    cache = {}
+    counter = 1
+    new_to_old = {}
+
+    def get_new_id(old_id):
+        nonlocal counter
+        if mapping:
+            try:
+                return mapping[old_id]
+            except KeyError:
+                raise KeyError(f"Contig ID '{old_id}' not found in mapping file.")
+        if old_id not in cache:
+            cache[old_id] = f"contig_{counter}"
+            counter += 1
+        return cache[old_id]
+
+    with opener(infile, "rt") as f_in, open(outfile, "w") as f_out:
+        in_fasta = False
+        for line in f_in:
+            if line.startswith("##FASTA"):
+                in_fasta = True
+                f_out.write(line)
+                continue
+
+            if in_fasta:
+                if line.startswith(">"):
+                    seqid = line[1:].strip()
+                    new_id = get_new_id(seqid)
+                    new_to_old.setdefault(new_id, seqid)
+                    f_out.write(">" + new_id + "\n")
+                else:
+                    f_out.write(line)
+                continue
+
+            if line.startswith("##sequence-region"):
+                parts = line.strip().split()
+                seqid = parts[1]
+                new_id = get_new_id(seqid)
+                new_to_old.setdefault(new_id, seqid)
+                parts[1] = new_id
+                f_out.write(" ".join(parts) + "\n")
+                continue
+
+            if line.startswith("#"):
+                f_out.write(line)
+                continue
+            columns = line.strip("\n").split("\t")
+            if len(columns) < 9:
+                f_out.write(line)
+                continue
+
+            seqid = columns[0]
+            new_id = get_new_id(seqid)
+            new_to_old.setdefault(new_id, seqid)
+            columns[0] = new_id
+            f_out.write("\t".join(columns) + "\n")
+    return new_to_old
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Rename contigs in FASTA, GenBank, or GFF files"
+    )
+    parser.add_argument(
+        "infiles", nargs="+", help="Input files (.fasta/.fa/.fna, .gbk, .gff[.gz])"
+    )
+    parser.add_argument("-o", "--outdir", required=True, help="Output directory")
+    parser.add_argument("--map", help="Mapping TSV file (2 columns: old_name new_name)")
+    args = parser.parse_args()
+
+    Path(args.outdir).mkdir(parents=True, exist_ok=True)
+
+    # Read mapping if provided
+    if args.map:
+        mapping = {}
+        with open(args.map) as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                old, new = line.strip().split("\t")
+                mapping[old] = new
+    else:
+        mapping = None
+
+    # Rename contigs in each input file depending on its type
+    for infile in args.infiles:
+        used_ids_mapping = None
+        ext = "".join(Path(infile).suffixes).lower()
+        outpath = Path(args.outdir) / Path(infile).name
+        if ext.endswith(SUPPORTED_FASTA_EXTS):
+            used_ids_mapping = rename_fasta(infile, outpath, mapping)
+        elif ext.endswith(SUPPORTED_GBK_EXTS):
+            rename_gbk(infile, outpath, mapping)
+        elif ext.endswith(SUPPORTED_GFF_EXTS):
+            rename_gff(infile, outpath, mapping)
+        else:
+            raise ValueError(
+                f"Unrecognized file type for: {infile}. "
+                f"Supported extensions: {SUPPORTED_FASTA_EXTS | SUPPORTED_GBK_EXTS | SUPPORTED_GFF_EXTS}"
+            )
+        print(f"✔ Renamed {infile} → {outpath}")
+
+        # Write mapping table used to rename fasta file
+        if used_ids_mapping:
+            map_out = Path(infile).with_suffix(".map.tsv")
+            with open(map_out, "w") as f:
+                for new_id, old_id in used_ids_mapping.items():
+                    f.write(f"{new_id}\t{old_id}\n")
+
+
+if __name__ == "__main__":
+    main()

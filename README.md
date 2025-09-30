@@ -35,6 +35,7 @@
 
 The workflow uses the following tools and databases:
 
+
 | Tool/Database                                                                                    | Version          | Purpose                                                                                                                |
 | ------------------------------------------------------------------------------------------------ |------------------| ---------------------------------------------------------------------------------------------------------------------- |
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6           | CDS calling and functional annotation (default)                                                                        |

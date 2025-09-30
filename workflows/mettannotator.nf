@@ -32,6 +32,8 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 include { LOOKUP_KINGDOM                             } from '../modules/local/lookup_kingdom'
 include { PROKKA as PROKKA_STANDARD                  } from '../modules/local/prokka'
 include { PROKKA as PROKKA_COMPLIANT                 } from '../modules/local/prokka'
+include { RENAME_CONTIGS as SHORTEN_CONTIG_NAMES     } from '../modules/local/rename_contigs'
+include { RENAME_CONTIGS as REVERT_CONTIG_RENAMING   } from '../modules/local/rename_contigs'
 include { AMRFINDER_PLUS_GET_SPECIES_NAME            } from '../modules/local/amrfinder_plus'
 include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
 include { AMRFINDER_PLUS_TSV_POSTPROCESSING          } from '../modules/local/amrfinder_plus'
@@ -203,43 +205,75 @@ workflow METTANNOTATOR {
 
     assemblies_with_kingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom )
 
-   if ( params.bakta ) {
-       assemblies_with_kingdom.branch {
-           bacteria: it[2] == "Bacteria"
-           archaea: it[2] == "Archaea"
-       }.set { assemblies_to_annotate }
+    if ( params.bakta ) {
 
-       BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
+        assemblies_with_kingdom.branch {
+            bacteria: it[2] == "Bacteria"
+            archaea: it[2] == "Archaea"
+        }.set { assemblies_to_annotate }
 
-       PROKKA_STANDARD( assemblies_to_annotate.archaea, Channel.value("standard") )
-       PROKKA_COMPLIANT( assemblies_to_annotate.archaea, Channel.value("compliant") )
+        BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
+        ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
 
-       ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
-       ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
+        prokka_input = assemblies_to_annotate.archaea
 
-       annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( PROKKA_STANDARD.out.fna )
-       annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_STANDARD.out.gbk )
-       annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
-       annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_STANDARD.out.gff )
+    } else {
 
-       compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
-       compliant_gff = compliant_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
+        prokka_input = assemblies_with_kingdom
 
-   } else {
+    }
 
-       PROKKA_STANDARD( assemblies_with_kingdom, Channel.value("standard") )
-       PROKKA_COMPLIANT( assemblies_with_kingdom, Channel.value("compliant") )
+    // Prokka crashes with long contig names, so we temporary rename contigs before running it
+    SHORTEN_CONTIG_NAMES(
+        prokka_input.map { meta, fasta, _kingdom -> [ meta, fasta ] },
+        []
+    )
+    ch_versions = ch_versions.mix(SHORTEN_CONTIG_NAMES.out.versions.first())
 
-       ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
+    renamed_prokka_input = SHORTEN_CONTIG_NAMES.out.modified_fasta
+        .join( prokka_input )
+        .map { meta, renamed_fasta, _original_fasta, kingdom ->
+            [ meta, renamed_fasta, kingdom ]
+        }
+    PROKKA_STANDARD( renamed_prokka_input, Channel.value("standard") )
+    PROKKA_COMPLIANT( renamed_prokka_input, Channel.value("compliant") )
 
-       annotations_fna = PROKKA_STANDARD.out.fna
-       annotations_gbk = PROKKA_STANDARD.out.gbk
-       annotations_faa = PROKKA_STANDARD.out.faa
-       annotations_gff = PROKKA_STANDARD.out.gff
+    ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
 
-       compliant_gbk = PROKKA_COMPLIANT.out.gbk
-       compliant_gff = PROKKA_COMPLIANT.out.gff
-   }
+    // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
+    PROKKA_STANDARD.out.gbk
+        .mix(PROKKA_STANDARD.out.gff)
+        .mix(PROKKA_STANDARD.out.fna)
+        .groupTuple()
+        .join(SHORTEN_CONTIG_NAMES.out.fasta_ids_mapping)
+        .multiMap { meta, files_list, names_mapping ->
+            files: [ meta, files_list ]
+            mapping: names_mapping
+    }.set { revert_contig_renaming_input }
+    REVERT_CONTIG_RENAMING(
+        revert_contig_renaming_input.files,
+        revert_contig_renaming_input.mapping
+    )
+
+    if ( params.bakta ) {
+
+        annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( REVERT_CONTIG_RENAMING.out.modified_gbk )
+        annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( REVERT_CONTIG_RENAMING.out.modified_gff )
+        annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( REVERT_CONTIG_RENAMING.out.modified_fasta )
+        annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
+        compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
+        compliant_gff = compliant_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
+
+    } else {
+
+        annotations_gbk = REVERT_CONTIG_RENAMING.out.modified_gbk
+        annotations_gff = REVERT_CONTIG_RENAMING.out.modified_gff
+        annotations_fna = REVERT_CONTIG_RENAMING.out.modified_fasta
+        annotations_faa = PROKKA_STANDARD.out.faa
+
+        compliant_gbk = PROKKA_COMPLIANT.out.gbk
+        compliant_gff = PROKKA_COMPLIANT.out.gff
+    }
 
     assemblies_for_quast = assemblies.join(
         annotations_gff

@@ -16,21 +16,25 @@
 
 import argparse
 import os
-
-from requests import Response
-import requests
-from retry import retry
 from dataclasses import dataclass
+
+import requests
+from requests import Response
+from retry import retry
 
 
 def main(taxid: str, database_folder: str):
     # Load taxonomies that AMRFinderPlus accepts
-    amrfinderplus_species_list, amrfinderplus_genus_list = load_organisms(database_folder)
+    amrfinderplus_species_list, amrfinderplus_genus_list = load_organisms(
+        database_folder
+    )
 
     # Check the taxonomy of the provided taxid
     taxonomy = fetch_taxonomy(taxid)
 
-    organism = deduce_organism(taxonomy, amrfinderplus_species_list, amrfinderplus_genus_list)
+    organism = deduce_organism(
+        taxonomy, amrfinderplus_species_list, amrfinderplus_genus_list
+    )
     print(organism or "")  # print empty string if no match
 
 
@@ -102,7 +106,10 @@ def deduce_organism(taxonomy: Taxonomy, species_list: list, genus_list: list):
     name = taxonomy.scientific_name.strip()
 
     # Report Shigella → Escherichia per AMRFinderPlus instructions
-    if name.lower().startswith(("shigella", "escherichia")) and taxonomy.rank in ["genus", "species"]:
+    if name.lower().startswith(("shigella", "escherichia")) and taxonomy.rank in [
+        "genus",
+        "species",
+    ]:
         return "Escherichia"
 
     if taxonomy.rank == "genus":
@@ -114,7 +121,11 @@ def deduce_organism(taxonomy: Taxonomy, species_list: list, genus_list: list):
             return merged_name
         else:
             genus_level_taxonomy = roll_up_lineage(taxonomy.lineage)
-            return genus_level_taxonomy.scientific_name if genus_level_taxonomy.scientific_name in genus_list else None
+            return (
+                genus_level_taxonomy.scientific_name
+                if genus_level_taxonomy.scientific_name in genus_list
+                else None
+            )
     return None
 
 
@@ -131,8 +142,10 @@ def load_organisms(database_folder):
     amrfinderplus_genus_list = list()
     tax_file = os.path.join(database_folder, "taxgroup.tsv")
     if not os.path.isfile(tax_file):
-        raise FileNotFoundError(f"Cannot find the expected tax file in AMRFinder db: {tax_file}")
-    with open(tax_file, "r") as file_in:
+        raise FileNotFoundError(
+            f"Cannot find the expected tax file in AMRFinder db: {tax_file}"
+        )
+    with open(tax_file) as file_in:
         for line in file_in:
             if line.startswith("#"):
                 continue
@@ -163,9 +176,7 @@ def parse_args():
         "-d",
         dest="database_folder",
         required=True,
-        help=(
-            "Path to the AMRFinderPlus database folder."
-        ),
+        help=("Path to the AMRFinderPlus database folder."),
     )
     return parser.parse_args()
 
