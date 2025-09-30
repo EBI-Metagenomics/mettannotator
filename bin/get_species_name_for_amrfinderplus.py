@@ -55,6 +55,8 @@ def fetch_taxonomy(taxid: str) -> Taxonomy:
     lineage = res.get("lineage", "")
     if rank == "strain":
         # Check if leaving the first 2 words of the scientific name result in the species name
+        # The reason for doing this instead of jumping a level up right away is that sometimes
+        # the strain name is preceded by the genus in the lineage, not species (example: 573235)
         name_to_check = " ".join(scientific_name.split(" ")[:2])
         try:
             new_taxonomy = query_scientific_name(name_to_check)
