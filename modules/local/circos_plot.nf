@@ -1,8 +1,6 @@
 process CIRCOS_PLOT {
     tag "${meta.prefix}"
 
-    label 'process_nano'
-
     container 'quay.io/microbiome-informatics/pycirclize:1.4.0'
 
     input:

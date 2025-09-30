@@ -26,7 +26,7 @@ def main(amr_file, outfile, version):
         writer = csv.writer(file_out, delimiter="\t")
         writer.writerow(["##gff-version 3"])
         for line in file_in:
-            if line.startswith("Protein id"):
+            if line.startswith(("Protein id", "Protein_id")):
                 continue
             (
                 protein_id,

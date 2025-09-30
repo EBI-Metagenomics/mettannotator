@@ -36,6 +36,7 @@ include { RENAME_CONTIGS as SHORTEN_CONTIG_NAMES     } from '../modules/local/re
 include { RENAME_CONTIGS as REVERT_CONTIG_RENAMING   } from '../modules/local/rename_contigs'
 include { AMRFINDER_PLUS_GET_SPECIES_NAME            } from '../modules/local/amrfinder_plus'
 include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
+include { AMRFINDER_PLUS_TSV_POSTPROCESSING          } from '../modules/local/amrfinder_plus'
 include { DEFENSE_FINDER                             } from '../modules/local/defense_finder'
 include { CRISPRCAS_FINDER                           } from '../modules/local/crisprcasfinder'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
@@ -48,6 +49,8 @@ include { SANNTIS                                    } from '../modules/local/sa
 include { UNIFIRE                                    } from '../modules/local/unifire'
 include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
 include { ANTISMASH                                  } from '../modules/local/antismash'
+include { ANTISMASH_TO_GFF                           } from '../modules/local/antismash'
+include { ANTISMASH_SUMMARY                          } from '../modules/local/antismash'
 include { DBCAN                                      } from '../modules/local/dbcan'
 include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
 include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
@@ -366,7 +369,11 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
 
-    AMRFINDER_PLUS_TO_GFF( AMRFINDER_PLUS.out.amrfinder_tsv )
+    AMRFINDER_PLUS_TSV_POSTPROCESSING(AMRFINDER_PLUS.out.amrfinder_tsv)
+
+    ch_versions = ch_versions.mix(AMRFINDER_PLUS_TSV_POSTPROCESSING.out.versions.first())
+
+    AMRFINDER_PLUS_TO_GFF( AMRFINDER_PLUS_TSV_POSTPROCESSING.out.amrfinder_tsv )
 
     ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
 
@@ -411,6 +418,18 @@ workflow METTANNOTATOR {
 
     ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
 
+    ANTISMASH_TO_GFF(
+        ANTISMASH.out.json
+    )
+
+    ch_versions = ch_versions.mix(ANTISMASH_TO_GFF.out.versions.first())
+
+    ANTISMASH_SUMMARY(
+        ANTISMASH_TO_GFF.out.gff
+    )
+
+    ch_versions = ch_versions.mix(ANTISMASH_SUMMARY.out.versions.first())
+
     DBCAN(
         annotations_faa.join( annotations_gff ),
         dbcan_db
@@ -432,7 +451,7 @@ workflow METTANNOTATOR {
     ).join(
         AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
     ).join(
-        ANTISMASH.out.gff, remainder: true
+        ANTISMASH_TO_GFF.out.gff, remainder: true
     ).join(
         GECCO_RUN.out.gff, remainder: true
     ).join(

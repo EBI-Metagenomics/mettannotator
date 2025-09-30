@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023-2024 EMBL - European Bioinformatics Institute
+# Copyright 2023-2025 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -210,6 +210,7 @@ def get_bgcs(bgc_file, prokka_gff, tool):
     cluster_positions = dict()
     tool_result = dict()
     bgc_annotations = dict()
+    antismash_products = dict()
     if not bgc_file:
         return bgc_annotations
     # save positions of each BGC cluster to dictionary cluster_positions
@@ -243,13 +244,25 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         if a.startswith("Type="):
                             type_value = a.split("=")[1]
                 elif tool == "antismash":
-                    if feature != "CDS":
+                    if feature == "region":
+                        # col9 looks like this: ID=DAFBZU010000012.1_region1;product=terpene-precursor
+                        # save the product for the region ID into a dictionary
+                        parts = dict(item.split("=", 1) for item in annotations.split(";"))
+                        antismash_products[parts["ID"]] = parts["product"]
                         continue
+
+                    # Here we are parsing feature "gene" or "CDS" depending on version
                     for a in annotations.split(
                         ";"
                     ):  # go through all parts of the annotation field
-                        if a.startswith("function="):
+                        if a.startswith("gene_functions="):
                             type_value = a.split("=")[1]
+                        elif a.startswith("Parent"):
+                            parent_id = a.split("=")[1]
+                            try:
+                                product_value = antismash_products[parent_id]
+                            except KeyError:
+                                pass
                 # save cluster positions to a dictionary where key = contig name,
                 # value = list of position pairs (list of lists)
                 cluster_positions.setdefault(contig, list()).append(
@@ -271,10 +284,25 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         {"bgc_type": type_value},
                     )
                 elif tool == "antismash":
-                    tool_result.setdefault(contig, dict()).setdefault(
-                        "_".join([start_pos, end_pos]),
-                        {"bgc_function": type_value},
-                    )
+                    # Not all annotations may be present, only add what's there
+                    entry = {}
+
+                    try:
+                        if type_value is not None:
+                            entry["bgc_gene_function"] = type_value
+                    except NameError:
+                        pass
+                    try:
+                        if product_value is not None:
+                            entry["bgc_product"] = product_value
+                    except NameError:
+                        pass
+
+                    if entry:
+                        tool_result.setdefault(contig, dict()).setdefault(
+                            "_".join([start_pos, end_pos]),
+                            entry,
+                        )
     # identify CDSs that fall into each of the clusters annotated by the BGC tool
     with open(prokka_gff) as gff_in:
         for line in gff_in:
@@ -323,14 +351,16 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                             },
                         )
                     elif tool == "antismash":
-                        bgc_annotations.setdefault(
-                            cds_id,
-                            {
-                                "antismash_bgc_function": tool_result[contig][
-                                    matching_interval
-                                ]["bgc_function"],
-                            },
-                        )
+                        entry = {}
+                        if "bgc_gene_function" in tool_result[contig][matching_interval]:
+                            entry["antismash_gene_function"] = tool_result[contig][matching_interval][
+                                "bgc_gene_function"]
+                        if "bgc_product" in tool_result[contig][matching_interval]:
+                            entry["antismash_bgc_product"] = tool_result[contig][matching_interval]["bgc_product"]
+
+                        if entry:
+                            bgc_annotations.setdefault(cds_id, entry)
+                            
             elif line.startswith("##FASTA"):
                 break
     return bgc_annotations
@@ -338,6 +368,16 @@ def get_bgcs(bgc_file, prokka_gff, tool):
 
 def get_amr(amr_file):
     amr_annotations = {}
+    amr_operons = {}
+    amr_locations = {}
+
+    def ranges_overlap(prot_start, prot_end, op_start, op_end):
+        """
+        Return True if protein is fully contained within the operon.
+        Boundaries can match exactly.
+        """
+        return op_start <= prot_start and op_end >= prot_end
+
     if not amr_file:
         return amr_annotations
     with open(amr_file) as f:
@@ -346,10 +386,10 @@ def get_amr(amr_file):
                 continue
             (
                 protein_id,
-                _,
-                _,
-                _,
-                _,
+                contig_id,
+                start,
+                stop,
+                strand,
                 gene_name,
                 seq_name,
                 scope,
@@ -357,17 +397,25 @@ def get_amr(amr_file):
                 element_subtype,
                 drug_class,
                 drug_subclass,
-                _,
-            ) = line.strip().split("\t", 12)
+                method,
+                _
+            ) = line.strip().split("\t", 13)
             # don't add annotations for which we don't have a protein ID (these will only be
-            # available in the AMRFinderPlus TSV file)
+            # available in the AMRFinderPlus TSV file); exception is operon annotations
             if protein_id == "NA":
-                continue
-            # check for characters that could break GFF
-            if ";" in seq_name:
-                seq_name = seq_name.replace(";", ",")
-            if "=" in seq_name:
-                seq_name = seq_name.replace("=", " ")
+                if "operon" not in gene_name:
+                    continue
+                # if this is an operon, the method field will have its completeness status
+                # save it as, for example, amr_operons[contig_id][start_stop] = "STX1A_COMPLETE"
+                amr_operons.setdefault(contig_id, {})["_".join([start, stop])] = "_".join([drug_subclass, method])
+
+            # Clean up seq_name for GFF compatibility
+            seq_name = seq_name.replace(";", ",").replace("=", " ")
+
+            # Save protein location
+            amr_locations.setdefault(contig_id, {})["_".join([start, stop])] = protein_id
+
+            # Save annotation
             amr_annotations[protein_id] = ";".join(
                 [
                     f"amrfinderplus_element_symbol={gene_name}",
@@ -379,6 +427,24 @@ def get_amr(amr_file):
                     f"drug_subclass={drug_subclass}",
                 ]
             )
+
+        # If there are any operons, find which proteins are contained and add the status to the annotation
+        if amr_operons:
+            for contig, proteins in amr_locations.items():
+                if contig not in amr_operons:
+                    continue
+
+                for prot_range, protein_id in proteins.items():
+                    prot_start, prot_end = map(int, prot_range.split("_"))
+                    statuses = set()
+
+                    for op_range, operon_status in amr_operons[contig].items():
+                        op_start, op_end = map(int, op_range.split("_"))
+                        if ranges_overlap(prot_start, prot_end, op_start, op_end):
+                            statuses.add(operon_status)
+
+                    if statuses:
+                        amr_annotations[protein_id] += ";amr_operon_status=" + ",".join(sorted(statuses))
     return amr_annotations
 
 
@@ -397,8 +463,8 @@ def get_dbcan(dbcan_file):
                     elif a.startswith("substrate_dbcan-pul"):
                         substrate_pul = a.split("=")[1]
                     elif a.startswith("substrate_dbcan-sub"):
-                        substrate_ecami = a.split("=")[1]
-                substrates.setdefault(cgc, {})["substrate_ecami"] = substrate_ecami
+                        substrate_sub = a.split("=")[1]
+                substrates.setdefault(cgc, {})["substrate_sub"] = substrate_sub
                 substrates.setdefault(cgc, {})["substrate_pul"] = substrate_pul
             elif line.startswith("#"):
                 continue
@@ -410,16 +476,16 @@ def get_dbcan(dbcan_file):
                     for a in annot_fields:
                         if a.startswith("ID"):
                             acc = a.split("=")[1]
-                        elif a.startswith("protein_family"):
+                        elif a.startswith("annotation"):
                             prot_fam = a.split("=")[1]
                         elif a.startswith("Parent"):
                             parent = a.split("=")[1]
                     dbcan_annotations[acc] = (
-                        "dbcan_prot_type={};dbcan_prot_family={};substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
+                        "dbcan_prot_type={};dbcan_annotation={};substrate_dbcan-pul={};substrate_dbcan-sub={}".format(
                             prot_type,
                             prot_fam,
                             substrates[parent]["substrate_pul"],
-                            substrates[parent]["substrate_ecami"],
+                            substrates[parent]["substrate_sub"],
                         )
                     )
     return dbcan_annotations
@@ -432,8 +498,9 @@ def get_defense_finder(df_file):
         return defense_finder_annotations
     with open(df_file) as f:
         for line in f:
-            if "Anti-phage system" in line:
+            if "system" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
+                df_activity = line.strip().split("\t")[2].split(" ")[0].lower()
                 for a in annot_fields:
                     if a.startswith("ID="):
                         id = a.split("=")[1]
@@ -443,6 +510,7 @@ def get_defense_finder(df_file):
                         df_subtype = a.split("=")[1]
                 type_info.setdefault(id, {})["df_type"] = df_type
                 type_info.setdefault(id, {})["df_subtype"] = df_subtype
+                type_info.setdefault(id, {})["df_activity"] = df_activity
             elif "DefenseFinder" in line:
                 annot_fields = line.strip().split("\t")[8].split(";")
                 for a in annot_fields:
@@ -451,8 +519,8 @@ def get_defense_finder(df_file):
                     elif a.startswith("Parent="):
                         parent = a.split("=")[1]
                 defense_finder_annotations[id] = (
-                    "defense_finder_type={};defense_finder_subtype={}".format(
-                        type_info[parent]["df_type"], type_info[parent]["df_subtype"]
+                    "defense_finder_activity={};defense_finder_type={};defense_finder_subtype={}".format(
+                        type_info[parent]["df_activity"], type_info[parent]["df_type"], type_info[parent]["df_subtype"]
                     )
                 )
     return defense_finder_annotations
@@ -726,6 +794,7 @@ def prepare_rna_gff_fields(cols):
     rna_feature_name = "ncRNA"
     if cols[1] in ["LSU_rRNA_bacteria", "SSU_rRNA_bacteria", "5S_rRNA"]:
         rna_feature_name = "rRNA"
+    # ncRNA classes are described here: https://www.insdc.org/submitting-standards/ncrna-vocabulary/
     ncrna_class = ""
     rna_types = {
         "antisense_RNA": [
@@ -866,10 +935,7 @@ def prepare_rna_gff_fields(cols):
     }
 
     if rna_feature_name == "ncRNA":
-        for rna_type, rfams in rna_types.items():
-            if cols[2] in rfams:
-                ncrna_class = rna_type
-                break
+        ncrna_class = next((rna_type for rna_type, rfams in rna_types.items() if cols[2] in rfams), None)
         if not ncrna_class:
             if "microRNA" in cols[-1]:
                 ncrna_class = "pre_miRNA"
@@ -885,11 +951,11 @@ def get_trnas(trnas_file):
             if not line.startswith("#"):
                 cols = line.split("\t")
                 contig, feature, start = cols[0], cols[2], cols[3]
-                if feature == "tRNA":
+                if feature in ["tRNA", "pseudogene"]:
                     line = line.replace("tRNAscan-SE", "tRNAscan-SE:2.0.9")
                     trnas.setdefault(contig, dict()).setdefault(
                         int(start), list()
-                    ).append(line.strip())
+                    ).append(line.strip().rstrip(";"))
     return trnas
 
 

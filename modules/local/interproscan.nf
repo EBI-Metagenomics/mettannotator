@@ -21,7 +21,7 @@ process INTERPROSCAN {
 
     output:
     tuple val(meta), path('*.IPS.tsv'), emit: ips_annotations
-    tuple val(meta), path('*.IPS.xml'), emit: ips_xml
+    tuple val(meta), path('*.IPS-raw-output.xml'), emit: ips_xml
     path "versions.yml"               , emit: versions
 
     script:
@@ -35,7 +35,9 @@ process INTERPROSCAN {
     --goterms \
     -pa \
     --input ${faa_fasta} \
-    --output-file-base ${meta.prefix}.IPS
+    --output-file-base ${meta.prefix}.IPS-raw-output
+
+    reformat_ips_output.py -i ${meta.prefix}.IPS-raw-output.tsv -o ${meta.prefix}.IPS.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

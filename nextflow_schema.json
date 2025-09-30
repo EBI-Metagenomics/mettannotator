@@ -151,7 +151,7 @@
         },
         "dbcan_db_version": {
           "type": "string",
-          "default": "4.1.3_V12",
+          "default": "v5-2_9-13-2025",
           "description": "The dbCAN reference database version."
         },
         "bakta_db": {

@@ -9,7 +9,7 @@
     "properties": {
       "prefix": {
         "type": "string",
-        "pattern": "^\\S+$",
+        "pattern": "^[A-Za-z0-9._-]+$",
         "errorMessage": "Prefix, used for the gene names.",
         "meta": ["prefix"]
       },

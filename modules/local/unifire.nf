@@ -29,6 +29,7 @@ process UNIFIRE {
     // it needs a specific folder to be mounted in order to work
     // we are mounting unifire in this case
     """
+    export _JAVA_OPTIONS="-Xmx${task.memory.toMega()}m"
 
     # This is the provided docker running script
     /opt/scripts/bin/unifire-workflow.sh

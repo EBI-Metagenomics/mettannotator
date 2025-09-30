@@ -2,6 +2,8 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
 
     tag "${meta.prefix}"
 
+    label 'process_nano'
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
@@ -30,6 +32,8 @@ process AMRFINDER_PLUS {
 
     tag "${meta.prefix}"
 
+    label 'process_low'
+
     container 'quay.io/biocontainers/ncbi-amrfinderplus:4.0.23--hf69ffd2_0'
 
     input:
@@ -37,7 +41,7 @@ process AMRFINDER_PLUS {
     tuple path(amrfinder_plus_db), val(db_version)
 
     output:
-    tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv"), emit: amrfinder_tsv
+    tuple val(meta), path("${meta.prefix}_amrfinderplus_raw.tsv"), emit: amrfinder_tsv
     tuple val(meta), path("organism.txt")                    , emit: amrfinderplus_organism_file
     path "versions.yml"                                      , emit: versions
 
@@ -54,13 +58,15 @@ process AMRFINDER_PLUS {
 
     ${organism_cmd}
 
+    # bakta and prokka can both use the -a prokka flag in the command below - ID field is the same in both tools
+
     amrfinder --plus \
     -n ${fna} \
     -p ${faa} \
     -g ${gff} \
     -d ${amrfinder_plus_db} \
     -a prokka \
-    --output ${meta.prefix}_amrfinderplus.tsv \
+    --output ${meta.prefix}_amrfinderplus_raw.tsv \
     --threads ${task.cpus} ${organism_flag}
 
     cat <<-END_VERSIONS > versions.yml
@@ -71,14 +77,42 @@ process AMRFINDER_PLUS {
     """
 }
 
-process AMRFINDER_PLUS_TO_GFF {
+process AMRFINDER_PLUS_TSV_POSTPROCESSING {
 
     tag "${meta.prefix}"
+
+    label 'process_nano'
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
     input:
-    tuple val(meta),path(amrfinder_tsv)
+    tuple val(meta), path(amrfinder_tsv)
+
+    output:
+    tuple val(meta), path("${meta.prefix}_amrfinderplus.tsv")   , emit: amrfinder_tsv
+    path "versions.yml"                                         , emit: versions
+
+    script:
+    """
+    modify_amrfinderplus_headers.py -i ${amrfinder_tsv} -o ${meta.prefix}_amrfinderplus.tsv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version 2>&1 | sed 's/Python //g')
+    END_VERSIONS
+    """
+}
+
+process AMRFINDER_PLUS_TO_GFF {
+
+    tag "${meta.prefix}"
+
+    label 'process_nano'
+
+    container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
+
+    input:
+    tuple val(meta), path(amrfinder_tsv)
 
     output:
     tuple val(meta), path("${meta.prefix}_amrfinderplus.gff"), emit: amrfinder_gff
