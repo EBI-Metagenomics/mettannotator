@@ -32,7 +32,7 @@ def main(input_folder, outfile, dbcan_version):
 
 def load_cgcs(input_folder):
     cgc_locations = dict()
-    with open(os.path.join(input_folder, "cgc_standard.out")) as file_in:
+    with open(os.path.join(input_folder, "cgc_standard_out.tsv")) as file_in:
         for line in file_in:
             if not line.startswith("CGC#"):
                 cgc, _, contig, _, start, end, _, _ = line.strip().split("\t")
@@ -55,12 +55,17 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
     with open(outfile, "w") as file_out:
         file_out.write("##gff-version 3\n")
         cgcs_printed = list()
-        with open(os.path.join(input_folder, "cgc_standard.out")) as file_in:
+        with open(os.path.join(input_folder, "cgc_standard_out.tsv")) as file_in:
             for line in file_in:
                 if not line.startswith("CGC#"):
                     cgc, gene_type, contig, prot_id, start, end, strand, protein_fam = (
                         line.strip().split("\t")
                     )
+                    # Reformat gene types
+                    if gene_type == "SULFATLAS":
+                        gene_type = "sulfatase"
+                    elif gene_type == "PEPTIDASE":
+                        gene_type = gene_type.lower()
                     cgc_id = f"{contig}_{cgc}"
                     protein_fam = protein_fam.replace(" ", "")
                     if cgc_id not in cgcs_printed:
@@ -81,13 +86,13 @@ def print_gff(input_folder, outfile, dbcan_version, substrates, cgc_locations):
                         )
                         cgcs_printed.append(cgc_id)
                     file_out.write(
-                        f"{contig}\tdbCAN:{dbcan_version}\t{gene_type}\t{start}\t{end}\t.\t{strand}\t.\tID={prot_id};Parent={cgc_id};protein_family={protein_fam}\n"
+                        f"{contig}\tdbCAN:{dbcan_version}\t{gene_type}\t{start}\t{end}\t.\t{strand}\t.\tID={prot_id};Parent={cgc_id};annotation={protein_fam}\n"
                     )
 
 
 def load_substrates(input_folder):
     substrates = dict()
-    with open(os.path.join(input_folder, "substrate.out")) as file_in:
+    with open(os.path.join(input_folder, "substrate_prediction.tsv")) as file_in:
         for line in file_in:
             if not line.startswith("#"):
                 parts = line.strip().split("\t")
@@ -98,23 +103,22 @@ def load_substrates(input_folder):
                 except IndexError:
                     substrate_pul = "N/A"
                 try:
-                    substrate_ecami = parts[5]
+                    substrate_sub = parts[5]
                 except IndexError:
-                    substrate_ecami = "N/A"
+                    substrate_sub = "N/A"
                 if not substrate_pul:
                     substrate_pul = "N/A"
-                if not substrate_ecami:
-                    substrate_ecami = "N/A"
+                if not substrate_sub:
+                    substrate_sub = "N/A"
                 substrates[cgc] = (
-                    f"substrate_dbcan-pul={substrate_pul};substrate_dbcan-sub={substrate_ecami}"
+                    f"substrate_dbcan-pul={substrate_pul};substrate_dbcan-sub={substrate_sub}"
                 )
-    print(substrates)
     return substrates
 
 
 def check_folder_completeness(input_folder):
     status = True
-    for file in ["cgc_standard.out", "overview.txt", "substrate.out"]:
+    for file in ["cgc_standard_out.tsv", "substrate_prediction.tsv"]:
         if not os.path.exists(os.path.join(input_folder, file)):
             logging.error(f"File {file} does not exist.")
             status = False

@@ -1,8 +1,8 @@
 # ebi-metagenomics/mettannotator: Citations
 
-## [mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies (pre-print)](https://doi.org/10.1101/2024.07.11.603040)
+## [mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies](https://doi.org/10.1093/bioinformatics/btaf037)
 
-> Gurbich TA, Beracochea M, De Silva NH, Finn RD. mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies. doi: https://doi.org/10.1101/2024.07.11.603040
+> Gurbich TA, Beracochea M, De Silva NH, Finn RD. mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies. doi: https://doi.org/10.1093/bioinformatics/btaf037
 
 ## [MGnify Genomes](https://pubmed.ncbi.nlm.nih.gov/36806692/)
 

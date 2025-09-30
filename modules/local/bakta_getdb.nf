@@ -1,35 +1,25 @@
 
 process BAKTA_GETDB {
 
-    tag "BAKTA DB 2024-01-19"
+    tag "BAKTA DB v6.0 2025-02-24"
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'https://depot.galaxyproject.org/singularity/ncbi-amrfinderplus:3.12.8--h283d18e_0' :
-        'biocontainers/ncbi-amrfinderplus:3.12.8--h283d18e_0' }"
+        'https://depot.galaxyproject.org/singularity/gnu-wget:1.18--h36e9172_9' :
+        'biocontainers/gnu-wget:1.18--h36e9172_9' }"
 
     publishDir "$params.dbs", mode: 'copy'
 
     output:
-    tuple path("bakta", type: "dir"), val("2024-01-19"), emit: bakta_db
+    tuple path("bakta", type: "dir"), val("v6.0 2025-02-24"), emit: bakta_db
 
     script:
     """
-    wget https://zenodo.org/record/10522951/files/db.tar.gz
+    wget https://zenodo.org/record/14916843/files/db.tar.xz
 
-    tar -xzf db.tar.gz
-    rm db.tar.gz
+    tar -xf db.tar.xz
+    rm db.tar.xz
     mv db bakta
 
-    wget -r -nH --cut-dirs=5 \\
-    ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/3.12/2024-01-31.1/
-
-    rm -r bakta/amrfinderplus-db/*
-    mv 2024-01-31.1 bakta/amrfinderplus-db/
-
-    amrfinder_index bakta/amrfinderplus-db/2024-01-31.1
-
-    mv bakta/amrfinderplus-db/2024-01-31.1/ bakta/amrfinderplus-db/latest/
-
-    echo "2024-01-19" > bakta/VERSION.txt
+    echo "v6.0 2025-02-24" > bakta/VERSION.txt
     """
 }

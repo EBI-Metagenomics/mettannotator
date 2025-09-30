@@ -1,6 +1,6 @@
 process DBCAN_GETDB {
 
-    tag "DBCan 4.1.3_V12"
+    tag "DBCan v5-2_9-13-2025"
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
         'https://depot.galaxyproject.org/singularity/gnu-wget:1.18--h36e9172_9' :
@@ -9,21 +9,16 @@ process DBCAN_GETDB {
     publishDir "${params.dbs}", mode: 'copy'
 
     output:
-    tuple path("dbcan/", type: "dir"), val("4.1.3_V12"), emit: dbcan_db
+    tuple path("dbcan/", type: "dir"), val("v5-2_9-13-2025"), emit: dbcan_db
 
 
     script:
     """
-    mkdir -p dbcan_db
+    wget -r -np -nH --cut-dirs=3 --reject "index.html*" https://bcb.unl.edu/dbCAN2/download/run_dbCAN_database_total/db_v5-2_9-13-2025/
 
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/dbcan/dbcan_4.1.3_V12.tar.gz
+    mv db_v5-2_9-13-2025 dbcan/
 
-    tar -xvzf dbcan_4.1.3_V12.tar.gz
+    echo 'v5-2_9-13-2025' > dbcan/VERSION.txt
 
-    mv 4.1.3-V12 dbcan/
-
-    echo '4.1.3_V12' > dbcan/VERSION.txt
-
-    rm dbcan_4.1.3_V12.tar.gz
     """
 }
