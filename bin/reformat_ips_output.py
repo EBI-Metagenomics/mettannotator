@@ -32,8 +32,12 @@ def process_file(input_file, output_file):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Clean protein accessions in IPS output files.")
-    parser.add_argument("-i", "--input", required=True, help="Input tab-delimited IPS file")
+    parser = argparse.ArgumentParser(
+        description="Clean protein accessions in IPS output files."
+    )
+    parser.add_argument(
+        "-i", "--input", required=True, help="Input tab-delimited IPS file"
+    )
     parser.add_argument("-o", "--output", required=True, help="Output file name")
     args = parser.parse_args()
 

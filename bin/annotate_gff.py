@@ -247,7 +247,9 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                     if feature == "region":
                         # col9 looks like this: ID=DAFBZU010000012.1_region1;product=terpene-precursor
                         # save the product for the region ID into a dictionary
-                        parts = dict(item.split("=", 1) for item in annotations.split(";"))
+                        parts = dict(
+                            item.split("=", 1) for item in annotations.split(";")
+                        )
                         antismash_products[parts["ID"]] = parts["product"]
                         continue
 
@@ -352,15 +354,21 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         )
                     elif tool == "antismash":
                         entry = {}
-                        if "bgc_gene_function" in tool_result[contig][matching_interval]:
-                            entry["antismash_gene_function"] = tool_result[contig][matching_interval][
-                                "bgc_gene_function"]
+                        if (
+                            "bgc_gene_function"
+                            in tool_result[contig][matching_interval]
+                        ):
+                            entry["antismash_gene_function"] = tool_result[contig][
+                                matching_interval
+                            ]["bgc_gene_function"]
                         if "bgc_product" in tool_result[contig][matching_interval]:
-                            entry["antismash_bgc_product"] = tool_result[contig][matching_interval]["bgc_product"]
+                            entry["antismash_bgc_product"] = tool_result[contig][
+                                matching_interval
+                            ]["bgc_product"]
 
                         if entry:
                             bgc_annotations.setdefault(cds_id, entry)
-                            
+
             elif line.startswith("##FASTA"):
                 break
     return bgc_annotations
@@ -398,7 +406,7 @@ def get_amr(amr_file):
                 drug_class,
                 drug_subclass,
                 method,
-                _
+                _,
             ) = line.strip().split("\t", 13)
             # don't add annotations for which we don't have a protein ID (these will only be
             # available in the AMRFinderPlus TSV file); exception is operon annotations
@@ -407,13 +415,17 @@ def get_amr(amr_file):
                     continue
                 # if this is an operon, the method field will have its completeness status
                 # save it as, for example, amr_operons[contig_id][start_stop] = "STX1A_COMPLETE"
-                amr_operons.setdefault(contig_id, {})["_".join([start, stop])] = "_".join([drug_subclass, method])
+                amr_operons.setdefault(contig_id, {})["_".join([start, stop])] = (
+                    "_".join([drug_subclass, method])
+                )
 
             # Clean up seq_name for GFF compatibility
             seq_name = seq_name.replace(";", ",").replace("=", " ")
 
             # Save protein location
-            amr_locations.setdefault(contig_id, {})["_".join([start, stop])] = protein_id
+            amr_locations.setdefault(contig_id, {})[
+                "_".join([start, stop])
+            ] = protein_id
 
             # Save annotation
             amr_annotations[protein_id] = ";".join(
@@ -444,7 +456,9 @@ def get_amr(amr_file):
                             statuses.add(operon_status)
 
                     if statuses:
-                        amr_annotations[protein_id] += ";amr_operon_status=" + ",".join(sorted(statuses))
+                        amr_annotations[protein_id] += ";amr_operon_status=" + ",".join(
+                            sorted(statuses)
+                        )
     return amr_annotations
 
 
@@ -520,7 +534,9 @@ def get_defense_finder(df_file):
                         parent = a.split("=")[1]
                 defense_finder_annotations[id] = (
                     "defense_finder_activity={};defense_finder_type={};defense_finder_subtype={}".format(
-                        type_info[parent]["df_activity"], type_info[parent]["df_type"], type_info[parent]["df_subtype"]
+                        type_info[parent]["df_activity"],
+                        type_info[parent]["df_type"],
+                        type_info[parent]["df_subtype"],
                     )
                 )
     return defense_finder_annotations
@@ -935,7 +951,10 @@ def prepare_rna_gff_fields(cols):
     }
 
     if rna_feature_name == "ncRNA":
-        ncrna_class = next((rna_type for rna_type, rfams in rna_types.items() if cols[2] in rfams), None)
+        ncrna_class = next(
+            (rna_type for rna_type, rfams in rna_types.items() if cols[2] in rfams),
+            None,
+        )
         if not ncrna_class:
             if "microRNA" in cols[-1]:
                 ncrna_class = "pre_miRNA"
