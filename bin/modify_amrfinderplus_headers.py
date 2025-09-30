@@ -20,7 +20,8 @@ def process_file(input_file, output_file):
     with open(input_file, "r", encoding="utf-8") as infile:
         lines = infile.readlines()
 
-    # Process the header line
+    # Process the header line - fields look like "Protein id", "Contig id", etc
+    # After replacements below, they are changed to "Protein_id", "Contid_id" (requirement for import into the portal)
     header = lines[0].strip().split("\t")
     header = [field.replace(" ", "_") for field in header]
     header_line = "\t".join(header) + "\n"
