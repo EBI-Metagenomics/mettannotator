@@ -243,7 +243,7 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         if a.startswith("Type="):
                             type_value = a.split("=")[1]
                 elif tool == "antismash":
-                    if feature != "CDS":
+                    if feature not in ["CDS", "gene"]:
                         continue
                     for a in annotations.split(
                         ";"
