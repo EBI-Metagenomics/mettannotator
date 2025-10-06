@@ -18,6 +18,12 @@ process DBCAN_GETDB {
 
     mv db_v5-2_9-13-2025 dbcan/
 
+    # there is a mismatch between the expected name of the sub db and the way it is named in the database
+    # the code below is a temporary fix for this until it is properly addressed by the tool developers
+    if [ -f "dbcan/dbCAN_sub.hmm" ]; then
+        mv "dbcan/dbCAN_sub.hmm" "dbcan/dbCAN-sub.hmm"
+    fi
+
     echo 'v5-2_9-13-2025' > dbcan/VERSION.txt
 
     """
