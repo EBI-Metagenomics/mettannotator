@@ -244,32 +244,40 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         if a.startswith("Type="):
                             type_value = a.split("=")[1]
                 elif tool == "antismash":
-                    if feature == "region":
-                        # col9 looks like this: ID=DAFBZU010000012.1_region1;product=terpene-precursor
-                        # save the product for the region ID into a dictionary
-                        parts = dict(
+                    annotation_parts = dict(
                             item.split("=", 1) for item in annotations.split(";")
                         )
-                        antismash_products[parts["ID"]] = parts["product"]
+                    if feature == "region":
+                        # col9 looks like this: ID=DAFBZU010000012.1_region1;product=terpene-precursor
+                        # save the product for the region ID into a dictionary, we will add it to each
+                        # CDS contained in this region
+                        antismash_products[annotation_parts["ID"]] = annotation_parts["product"]
                         continue
 
-                    # Here we are parsing feature "gene" or "CDS" depending on version
+                    # Here we are parsing feature "gene" or "CDS" depending on version and saving results to
+                    # bgc_annotations
+                    bgc_annotations.setdefault(annotation_parts["ID"], dict())
                     for a in annotations.split(
                         ";"
-                    ):  # go through all parts of the annotation field
+                    ):
+                        # go through all parts of the annotation field
                         if a.startswith("gene_functions="):
                             type_value = a.split("=")[1]
+                            bgc_annotations[annotation_parts["ID"]]["antismash_gene_function"] = type_value
                         elif a.startswith("Parent"):
                             parent_id = a.split("=")[1]
                             try:
                                 product_value = antismash_products[parent_id]
+                                bgc_annotations[annotation_parts["ID"]]["antismash_product"] = product_value
                             except KeyError:
                                 pass
                 # save cluster positions to a dictionary where key = contig name,
                 # value = list of position pairs (list of lists)
-                cluster_positions.setdefault(contig, list()).append(
-                    [int(start_pos), int(end_pos)]
-                )
+                # We don't need to do this for antiSMASH, because we already know the annotations for each CDS
+                if not tool == "antismash":
+                    cluster_positions.setdefault(contig, list()).append(
+                        [int(start_pos), int(end_pos)]
+                    )
                 # save BGC annotations to dictionary where key = contig, value = dictionary, where
                 # key = 'start_end' of BGC, value = dictionary, where key = feature type, value = description
                 if tool == "sanntis":
@@ -285,27 +293,12 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                         "_".join([start_pos, end_pos]),
                         {"bgc_type": type_value},
                     )
-                elif tool == "antismash":
-                    # Not all annotations may be present, only add what's there
-                    entry = {}
 
-                    try:
-                        if type_value is not None:
-                            entry["bgc_gene_function"] = type_value
-                    except NameError:
-                        pass
-                    try:
-                        if product_value is not None:
-                            entry["bgc_product"] = product_value
-                    except NameError:
-                        pass
+    # For AntiSMASH we already know which CDS each annotation belongs to, can return results as is
+    if tool == "antismash":
+        return bgc_annotations
 
-                    if entry:
-                        tool_result.setdefault(contig, dict()).setdefault(
-                            "_".join([start_pos, end_pos]),
-                            entry,
-                        )
-    # identify CDSs that fall into each of the clusters annotated by the BGC tool
+    # for the other tools, identify CDSs that fall into each of the clusters annotated by the BGC tool
     with open(prokka_gff) as gff_in:
         for line in gff_in:
             if not line.startswith("#"):
@@ -352,22 +345,6 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                                 ]["bgc_type"],
                             },
                         )
-                    elif tool == "antismash":
-                        entry = {}
-                        if (
-                            "bgc_gene_function"
-                            in tool_result[contig][matching_interval]
-                        ):
-                            entry["antismash_gene_function"] = tool_result[contig][
-                                matching_interval
-                            ]["bgc_gene_function"]
-                        if "bgc_product" in tool_result[contig][matching_interval]:
-                            entry["antismash_bgc_product"] = tool_result[contig][
-                                matching_interval
-                            ]["bgc_product"]
-
-                        if entry:
-                            bgc_annotations.setdefault(cds_id, entry)
 
             elif line.startswith("##FASTA"):
                 break
