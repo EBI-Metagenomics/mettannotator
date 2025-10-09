@@ -2,7 +2,8 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
 
     tag "${meta.prefix}"
 
-    label 'process_medium error_retry'
+    label 'process_medium'
+    label 'error_retry'
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
