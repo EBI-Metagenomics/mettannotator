@@ -86,8 +86,8 @@ def main(pseudofinder_file, standard_gff, compliant_gff, outfile):
 
 
 def make_chromosome_conversion(standard_gff, compliant_gff):
-    chromosomes_standard = get_chromosomes(standard_gff)
-    chromosomes_compliant = get_chromosomes(compliant_gff)
+    chromosomes_standard = get_chromosomes(standard_gff, standard=True)
+    chromosomes_compliant = get_chromosomes(compliant_gff, standard=False)
     chromosome_dictionary = dict()
     standard_keys = list(chromosomes_standard.keys())
     compliant_keys = list(chromosomes_compliant.keys())
@@ -103,12 +103,17 @@ def make_chromosome_conversion(standard_gff, compliant_gff):
     return chromosome_dictionary
 
 
-def get_chromosomes(gff):
+def get_chromosomes(gff, standard):
     chromosomes = dict()
     with open(gff) as file_in:
         for line in file_in:
             if line.startswith("##sequence-region"):
                 _, chromosome, start, end = line.strip().split(" ")
+                # Compliant GFF excludes any contig that is less than 200 bp, so remove them from
+                # conversion in standard prokka to avoid a mismatch between standard and compliant
+                # prokka outputs
+                if int(end) - int(start) + 1 < 200 and standard:
+                    continue
                 if "|" in chromosome:
                     chromosome = chromosome.split("|")[-1]
                 chromosomes[chromosome] = f"{start}-{end}"
