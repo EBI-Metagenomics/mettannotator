@@ -36,7 +36,8 @@ process EGGNOG_MAPPER {
         --no_file_comments \
         --cpu ${task.cpus} \
         --no_annot ${db_mem_flag} \
-        -o ${meta.prefix}
+        -o ${meta.prefix} \
+        --override
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
