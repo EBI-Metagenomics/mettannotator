@@ -2,6 +2,8 @@ process EGGNOG_MAPPER {
 
     tag "${meta.prefix}"
 
+    label 'error_retry'
+
     container 'quay.io/microbiome-informatics/genomes-pipeline.eggnog-mapper:v2.1.11'
 
     input:
