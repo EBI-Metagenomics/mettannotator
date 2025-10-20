@@ -3,7 +3,6 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
     tag "${meta.prefix}"
 
     label 'process_medium'
-    label 'error_retry'
 
     container 'quay.io/microbiome-informatics/genomes-pipeline.python3base:v1.1'
 
@@ -34,6 +33,7 @@ process AMRFINDER_PLUS {
     tag "${meta.prefix}"
 
     label 'process_low'
+    label 'error_retry'
 
     container 'quay.io/biocontainers/ncbi-amrfinderplus:4.0.23--hf69ffd2_0'
 
