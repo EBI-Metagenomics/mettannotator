@@ -2,6 +2,8 @@ process ANTISMASH {
 
     tag "${meta.prefix}"
 
+    label "error_retry"
+
     container "nf-core/antismash:8.0.1--pyhdfd78af_0"
 
     input:
