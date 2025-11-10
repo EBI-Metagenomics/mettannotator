@@ -84,9 +84,15 @@ process ANTISMASH_SUMMARY {
 
     script:
     """
-    summarise_antismash_bgcs \\
-        --antismash-gff ${antismash_gff} \\
-        --output ${antismash_gff.simpleName}_summary.tsv
+    # Detect if the input GFF has any non-header, non-empty lines
+    if [[ \$(grep -v '^#' "${antismash_gff}" | grep -c . || true) -eq 0 ]]; then
+        # Create empty output with expected columns
+        echo -e "label\tdescription\tcount" > "${antismash_gff.simpleName}_summary.tsv"
+    else
+        summarise_antismash_bgcs \\
+            --antismash-gff "${antismash_gff}" \\
+            --output "${antismash_gff.simpleName}_summary.tsv"
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
