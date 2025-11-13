@@ -16,7 +16,7 @@ process AMRFINDER_PLUS_GET_SPECIES_NAME {
     script:
     // Script checks available organisms in AMRFinderPlus and uses user-provided taxid to determine the organism
     // name to use with the -O option in AMRFinderPlus. If there is no matching organism (taxonomy is not species-level
-    // or species is not in the AMRFinderPlus list, script returns an empty string)
+    // or species is not in the AMRFinderPlus list, script returns "not_found")
     """
     detected_organism=\$(get_species_name_for_amrfinderplus.py -t ${meta.taxid} -d ${amrfinder_plus_db})
     """
@@ -48,7 +48,7 @@ process AMRFINDER_PLUS {
 
     script:
     // If detected_organism is not empty, add it to the -O flag
-    def organism_flag = detected_organism ? "-O ${detected_organism}" : ""
+    def organism_flag = detected_organism != "not_found" ? "-O ${detected_organism}" : ""
     def organism_cmd  = detected_organism ? "echo ${detected_organism} > organism.txt"
                                           : "echo \"--organism option was not used - taxon is not present in the possible list of values for this option. For more information one this option, see the README: https://github.com/EBI-Metagenomics/mettannotator/blob/main/README.md\" > organism.txt"
 

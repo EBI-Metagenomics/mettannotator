@@ -35,7 +35,7 @@ def main(taxid: str, database_folder: str):
     organism = deduce_organism(
         taxonomy, amrfinderplus_species_list, amrfinderplus_genus_list
     )
-    print(organism or "")  # print empty string if no match
+    print(organism or "not_found")  # print "not_found" if no match
 
 
 @dataclass
@@ -165,7 +165,7 @@ def parse_args():
         description=(
             "The script takes taxid as input and returns the organism name that can be used for AMRFinderPlus. If "
             "no organism name is available (taxonomy is not species-level or species is not in the AMRFinderPlus "
-            "list, the script returns an empty string."
+            "list, the script returns 'not_found'."
         )
     )
     parser.add_argument(
