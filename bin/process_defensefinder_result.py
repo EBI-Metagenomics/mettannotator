@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright 2023-2025 EMBL - European Bioinformatics Institute
 #
@@ -35,7 +34,7 @@ def main(input_folder, prokka_gff, outfile, df_version):
 
 def load_prokka(prokka_gff):
     prokka_data = dict()
-    with open(prokka_gff, "r") as file_in:
+    with open(prokka_gff) as file_in:
         for line in file_in:
             if not line.startswith("#"):
                 if line.startswith(">"):
@@ -55,7 +54,7 @@ def load_prokka(prokka_gff):
 
 
 def print_systems_to_file(system_path, gene_results, outfile, df_version, prokka_data):
-    with open(system_path, "r") as file_in, open(outfile, "w") as file_out:
+    with open(system_path) as file_in, open(outfile, "w") as file_out:
         writer = csv.writer(file_out, delimiter="\t")
         writer.writerow(["##gff-version 3"])
         for line in file_in:
@@ -68,7 +67,7 @@ def print_systems_to_file(system_path, gene_results, outfile, df_version, prokka
                     sys_beg_index,
                     sys_end_index,
                     protein_in_syst_index,
-                ) = [
+                ) = list(
                     line.strip().split().index(field)
                     for field in [
                         "sys_id",
@@ -79,7 +78,7 @@ def print_systems_to_file(system_path, gene_results, outfile, df_version, prokka
                         "sys_end",
                         "protein_in_syst",
                     ]
-                ]
+                )
             else:
                 cols = line.strip().split("\t")
                 start = prokka_data[cols[sys_beg_index]]["start"]
@@ -122,14 +121,14 @@ def print_systems_to_file(system_path, gene_results, outfile, df_version, prokka
 
 def load_genes(gene_path):
     gene_results = dict()
-    with open(gene_path, "r") as file_in:
+    with open(gene_path) as file_in:
         for line in file_in:
             if line.lower().startswith("replicon"):
                 # get indices of fields
-                acc_index, gene_index, hit_status = [
+                acc_index, gene_index, hit_status = list(
                     line.strip().split().index(field)
                     for field in ["hit_id", "gene_name", "hit_status"]
-                ]
+                )
             else:
                 fields = line.strip().split()
                 gene_results.setdefault(fields[acc_index], dict())

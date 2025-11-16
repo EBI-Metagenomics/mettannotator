@@ -245,30 +245,34 @@ def get_bgcs(bgc_file, prokka_gff, tool):
                             type_value = a.split("=")[1]
                 elif tool == "antismash":
                     annotation_parts = dict(
-                            item.split("=", 1) for item in annotations.split(";")
-                        )
+                        item.split("=", 1) for item in annotations.split(";")
+                    )
                     if feature == "region":
                         # col9 looks like this: ID=DAFBZU010000012.1_region1;product=terpene-precursor
                         # save the product for the region ID into a dictionary, we will add it to each
                         # CDS contained in this region
-                        antismash_products[annotation_parts["ID"]] = annotation_parts["product"]
+                        antismash_products[annotation_parts["ID"]] = annotation_parts[
+                            "product"
+                        ]
                         continue
 
                     # Here we are parsing feature "gene" or "CDS" depending on version and saving results to
                     # bgc_annotations
                     bgc_annotations.setdefault(annotation_parts["ID"], dict())
-                    for a in annotations.split(
-                        ";"
-                    ):
+                    for a in annotations.split(";"):
                         # go through all parts of the annotation field
                         if a.startswith("gene_functions="):
                             type_value = a.split("=")[1]
-                            bgc_annotations[annotation_parts["ID"]]["antismash_gene_function"] = type_value
+                            bgc_annotations[annotation_parts["ID"]][
+                                "antismash_gene_function"
+                            ] = type_value
                         elif a.startswith("Parent"):
                             parent_id = a.split("=")[1]
                             try:
                                 product_value = antismash_products[parent_id]
-                                bgc_annotations[annotation_parts["ID"]]["antismash_product"] = product_value
+                                bgc_annotations[annotation_parts["ID"]][
+                                    "antismash_product"
+                                ] = product_value
                             except KeyError:
                                 pass
                 # save cluster positions to a dictionary where key = contig name,

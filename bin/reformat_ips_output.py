@@ -18,7 +18,7 @@ import argparse
 
 
 def process_file(input_file, output_file):
-    with open(input_file, "r") as infile, open(output_file, "w") as outfile:
+    with open(input_file) as infile, open(output_file, "w") as outfile:
         for line in infile:
             cols = line.rstrip("\n").split("\t")
             if cols:  # make sure line isn’t empty

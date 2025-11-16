@@ -17,7 +17,7 @@ import argparse
 
 
 def process_file(input_file, output_file):
-    with open(input_file, "r", encoding="utf-8") as infile:
+    with open(input_file, encoding="utf-8") as infile:
         lines = infile.readlines()
 
     # Process the header line - fields look like "Protein id", "Contig id", etc

@@ -12,19 +12,19 @@
                     ]
                 ],
                 "1": [
-                    
+
                 ],
                 "2": [
-                    
+
                 ],
                 "3": [
-                    
+
                 ],
                 "4": [
                     "versions.yml:md5,562931e58a4c12e5dcedfd303e725577"
                 ],
                 "fasta_ids_mapping": [
-                    
+
                 ],
                 "modified_fasta": [
                     [
@@ -36,10 +36,10 @@
                     ]
                 ],
                 "modified_gbk": [
-                    
+
                 ],
                 "modified_gff": [
-                    
+
                 ],
                 "versions": [
                     "versions.yml:md5,562931e58a4c12e5dcedfd303e725577"
