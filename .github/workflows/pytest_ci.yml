@@ -2,7 +2,7 @@ name: Python Tests
 
 on:
   push:
-    branches: [main, feature/updates]
+    branches: [main]
   pull_request:
     branches: [main, dev]
 
