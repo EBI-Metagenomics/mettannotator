@@ -760,6 +760,7 @@ def get_ncrnas(ncrnas_file):
                 rna_feature_name, ncrna_class = prepare_rna_gff_fields(cols)
                 annot = [
                     "ID=" + locus,
+                    # TODO: this should be a parameter.
                     "inference=Rfam:15.0",
                     "locus_tag=" + locus,
                     "product=" + product,
