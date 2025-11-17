@@ -4,7 +4,7 @@ process UNIFIRE {
 
     label 'error_retry'
 
-    container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2023.4"
+    container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2025.3"
 
     containerOptions {
         if (workflow.containerEngine in ['singularity', 'apptainer']) {
@@ -15,7 +15,7 @@ process UNIFIRE {
     }
 
     input:
-    tuple val(meta), path(faa, stageAs: "unifire/*")
+    tuple val(meta), path(ips_xml, stageAs: "unifire/proteins-ipr.xml")
 
     output:
     tuple val(meta), path("unifire/predictions_arba.out")                   , emit: arba
@@ -29,8 +29,7 @@ process UNIFIRE {
     // it needs a specific folder to be mounted in order to work
     // we are mounting unifire in this case
     """
-    echo "Pre-processed UniFIRE input file"
-    prepare_unifire_input.py -i ${faa} -t ${meta.taxid} -o unifire
+    export _JAVA_OPTIONS="-Xmx${task.memory.toMega()}m"
 
     # This is the provided docker running script
     /opt/scripts/bin/unifire-workflow.sh
@@ -39,7 +38,7 @@ process UNIFIRE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        UniFIRE: 2023.4
+        UniFIRE: 2025.3
     END_VERSIONS
     """
 }

@@ -1,0 +1,20 @@
+LOCUS       contig_1       158623 bp    DNA     linear       05-SEP-2025
+DEFINITION  Genus species strain strain.
+ACCESSION
+VERSION
+KEYWORDS    .
+SOURCE      Genus species
+  ORGANISM  Genus species
+            Unclassified.
+COMMENT     Annotated using prokka 1.14.6 from
+            https://github.com/tseemann/prokka.
+LOCUS       contig_2       158623 bp    DNA     linear       05-SEP-2025
+DEFINITION  Genus species strain strain.
+ACCESSION
+VERSION
+KEYWORDS    .
+SOURCE      Genus species
+  ORGANISM  Genus species
+            Unclassified.
+COMMENT     Annotated using prokka 1.14.6 from
+            https://github.com/tseemann/prokka.

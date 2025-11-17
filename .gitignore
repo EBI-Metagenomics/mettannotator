@@ -1,6 +1,9 @@
 # Ignore Nextflow-specific files, including logs, cache, and temporary files
 .nextflow*
 
+# Ignore .nf-test work dir
+.nf-test*
+
 # Ignore Nextflow's work directory where intermediate files are stored
 work/
 

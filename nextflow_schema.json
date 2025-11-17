@@ -73,7 +73,7 @@
         },
         "interproscan_db_version": {
           "type": "string",
-          "default": "5.62-94.0",
+          "default": "5.74-105.0",
           "description": "The InterProScan reference database version."
         },
         "interpro_entry_list": {
@@ -84,7 +84,7 @@
         },
         "interpro_entry_list_version": {
           "type": "string",
-          "default": "94",
+          "default": "105",
           "description": "InterPro entry list version"
         },
         "eggnog_db": {
@@ -106,7 +106,7 @@
         },
         "rfam_ncrna_models_rfam_version": {
           "type": "string",
-          "default": "14.9",
+          "default": "15.0",
           "description": "Rfam release version where the models come from.",
           "help_text": "Rfam release version."
         },
@@ -118,7 +118,7 @@
         },
         "amrfinder_plus_db_version": {
           "type": "string",
-          "default": "2024-01-31.1",
+          "default": "2025-07-16.1",
           "description": "The AMRFinderPlus reference database version."
         },
         "defense_finder_db": {
@@ -129,7 +129,7 @@
         },
         "defense_finder_db_version": {
           "type": "string",
-          "default": "1.2.3",
+          "default": "2.0.2",
           "description": "The Defense Finder models version."
         },
         "antismash_db": {
@@ -140,7 +140,7 @@
         },
         "antismash_db_version": {
           "type": "string",
-          "default": "7.1.0",
+          "default": "8.0.1",
           "description": "The antiSMASH reference database version."
         },
         "dbcan_db": {
@@ -151,7 +151,7 @@
         },
         "dbcan_db_version": {
           "type": "string",
-          "default": "4.1.3_V12",
+          "default": "v5-2_9-13-2025",
           "description": "The dbCAN reference database version."
         },
         "bakta_db": {
@@ -162,7 +162,7 @@
         },
         "bakta_db_version": {
           "type": "string",
-          "default": "2024-01-19",
+          "default": "v6.0",
           "description": "The Bakta reference database version."
         },
         "pseudofinder_db": {

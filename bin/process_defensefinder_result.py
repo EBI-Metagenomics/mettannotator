@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023-2024 EMBL - European Bioinformatics Institute
+# Copyright 2023-2025 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -63,15 +63,17 @@ def print_systems_to_file(system_path, gene_results, outfile, df_version, prokka
                     sys_id_index,
                     type_index,
                     subtype_index,
+                    activity_index,
                     sys_beg_index,
                     sys_end_index,
                     protein_in_syst_index,
-                ) = (
+                ) = list(
                     line.strip().split().index(field)
                     for field in [
                         "sys_id",
                         "type",
                         "subtype",
+                        "activity",
                         "sys_beg",
                         "sys_end",
                         "protein_in_syst",
@@ -86,7 +88,7 @@ def print_systems_to_file(system_path, gene_results, outfile, df_version, prokka
                     [
                         contig,
                         f"DefenseFinder:{df_version}",
-                        "Anti-phage system",
+                        f"{cols[activity_index]} system",
                         start,
                         end,
                         ".",
@@ -123,7 +125,7 @@ def load_genes(gene_path):
         for line in file_in:
             if line.lower().startswith("replicon"):
                 # get indices of fields
-                acc_index, gene_index, hit_status = (
+                acc_index, gene_index, hit_status = list(
                     line.strip().split().index(field)
                     for field in ["hit_id", "gene_name", "hit_status"]
                 )

@@ -6,12 +6,12 @@ process INTERPROSCAN {
 
     tag "${meta.prefix}"
 
-    container 'quay.io/microbiome-informatics/genomes-pipeline.ips:5.62-94.0'
+    container 'quay.io/microbiome-informatics/interproscan:5.74-105.0'
     containerOptions {
         if (workflow.containerEngine in ['singularity', 'apptainer']) {
-            return "--bind ${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"
+            return "--bind ${interproscan_db}/data:/opt/interproscan/data"
         } else {
-            return "-v ./${interproscan_db}/data:/opt/interproscan-5.62-94.0/data"
+            return "-v ./${interproscan_db}/data:/opt/interproscan/data"
         }
     }
 
@@ -21,18 +21,23 @@ process INTERPROSCAN {
 
     output:
     tuple val(meta), path('*.IPS.tsv'), emit: ips_annotations
+    tuple val(meta), path('*.IPS-raw-output.xml'), emit: ips_xml
     path "versions.yml"               , emit: versions
 
     script:
     """
+    # Enforce encoding to prevent errors from non-ASCII characters in FASTA headers
+    export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
+
     interproscan.sh \
     -cpu ${task.cpus} \
     -dp \
     --goterms \
     -pa \
-    -f TSV \
     --input ${faa_fasta} \
-    -o ${meta.prefix}.IPS.tsv
+    --output-file-base ${meta.prefix}.IPS-raw-output
+
+    reformat_ips_output.py -i ${meta.prefix}.IPS-raw-output.tsv -o ${meta.prefix}.IPS.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
