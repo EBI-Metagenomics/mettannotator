@@ -44,8 +44,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools wheel
           pip install nf-core==2.14.1
+          python -m pip install --upgrade setuptools wheel
 
       - name: Run nf-core lint
         env:
