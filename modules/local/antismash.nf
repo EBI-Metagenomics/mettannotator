@@ -42,7 +42,9 @@ process ANTISMASH_TO_GFF {
 
     tag "${meta.prefix}"
 
-    container "microbiome-informatics/mgnify-pipelines-toolkit:1.4.20"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
+        'https://depot.galaxyproject.org/singularity/mgnify-pipelines-toolkit:1.4.20--pyhdfd78af_0' :
+        'biocontainers/mgnify-pipelines-toolkit:1.4.20--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(antismash_json)
