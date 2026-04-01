@@ -39,6 +39,12 @@
           "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.",
           "fa_icon": "fas fa-wrench"
         },
+        "add_slow_tools": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "Path to output directory from previous --fast run. Enables running InterProScan, SanntiS, and UniFIRE on existing results.",
+          "help_text": "Provide the path to a previous fast-mode run's output directory. The pipeline will auto-discover sample files and run only the slow annotation tools."
+        },
         "email": {
           "type": "string",
           "description": "Email address for completion summary.",
