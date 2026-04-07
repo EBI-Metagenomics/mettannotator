@@ -1,4 +1,4 @@
-process INTEPROSCAN_GETDB {
+process INTERPROSCAN_GETDB {
 
     tag "IPRS Scan 5.76-107.0"
 
