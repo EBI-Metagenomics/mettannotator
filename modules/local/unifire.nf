@@ -4,7 +4,7 @@ process UNIFIRE {
 
     label 'error_retry'
 
-    container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2025.4"
+    container "dockerhub.ebi.ac.uk/uniprot-public/unifire:2026.1-lite"
 
     containerOptions {
         if (workflow.containerEngine in ['singularity', 'apptainer']) {
@@ -38,7 +38,7 @@ process UNIFIRE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        UniFIRE: 2025.4
+        UniFIRE: 2026.1
     END_VERSIONS
     """
 }
