@@ -196,98 +196,48 @@ workflow METTANNOTATOR {
 
         //
         // In add-slow-tools mode, we read existing results from --fast and run only slow tools
-        //
-        
+        //       
         Channel.fromSamplesheet("input")
-            .map { meta, assembly ->
-                [meta.prefix, meta.taxid]
-            }
-            .set { samplesheet }
+                     .map { meta, assembly ->
+                        [meta.prefix, meta.taxid]
+                    }
+                    .set { samplesheet }
 
         def results_dir = file(params.add_slow_tools)
         
-        // Create channels from existing files
-        channel.fromPath("${results_dir}/**/functional_annotation/prokka/*.faa")
-            .map { faa ->
-                def prefix = faa.name.replaceAll(/\.faa$/, '')  // Get filename without extension
-                tuple(prefix, faa)
-            }
-            .set { annotations_faa_files }
-        
-        channel.fromPath("${results_dir}/**/functional_annotation/prokka/*.gbk")
-            .map { gbk ->
-                def prefix = gbk.name.replaceAll(/\.gbk$/, '')
-                tuple(prefix, gbk)
-            }
-            .set { annotations_gbk_files }
+        def load_files = { pattern, strip_suffix ->
+            channel
+                .fromPath(pattern, checkIfExists: true)
+                .map { f ->
+                    def name = f.name.replaceAll(strip_suffix + '$', '')
+                    tuple(name, f)
+                }
+        }
 
-        channel.fromPath("${results_dir}/**/functional_annotation/prokka/*.gff")
-            .map { gff ->
-                def prefix = gff.name.replaceAll(/\.gff$/, '')
-                tuple(prefix, gff)
-            }
-            .set { annotations_gff_files }
-
-        channel.fromPath("${results_dir}/**/functional_annotation/eggnog_mapper/*.emapper.annotations")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.emapper$/, ''), f) }
-            .set { eggnog_files }
-            
-        channel.fromPath("${results_dir}/**/rnas/ncrna/*.ncrna.deoverlap.tbl")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.ncrna$/, ''), f) }
-            .set { ncrna_files }
-
-        channel.fromPath("${results_dir}/**/rnas/trna/*.trna.gff")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.trna$/, ''), f) }
-            .set { trna_files }
-
-        // Optional files
-        channel.fromPath("${results_dir}/**/mobilome/crisprcas_finder/*_hq.gff")
-            .map { f -> tuple(f.simpleName.replaceAll(/_hq$/, ''), f) }
-            .set { crisprcas_files }
-
-        channel.fromPath("${results_dir}/**/antimicrobial_resistance/amrfinder_plus/*.tsv")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.tsv$/, ''), f) }
-            .set { amr_files }
-
-        channel.fromPath("${results_dir}/**/biosynthetic_gene_clusters/antismash/*.gff")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.gff$/, ''), f) }
-            .set { antismash_files }
-
-        channel.fromPath("${results_dir}/**/biosynthetic_gene_clusters/gecco/.gff")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.gff$/, ''), f) }
-            .set { gecco_files }
-
-        channel.fromPath("${results_dir}/**/functional_annotation/dbcan/*.dbcan.gff")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.dbcan$/, ''), f) }
-            .set { dbcan_files }
-
-        channel.fromPath("${results_dir}/**/antiphage_defense/defense_finder/*.gff")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.gff$/, ''), f) }
-            .set { df_files }
-
-        channel.fromPath("${results_dir}/**/functional_annotation/pseudofinder/*.gff")
-            .map { f -> tuple(f.simpleName.replaceAll(/\.gff$/, ''), f) }
-            .set { pseudo_files }
+        annotations_faa  = load_files("${results_dir}/**/functional_annotation/prokka/*.faa",'\\.faa')
+        annotations_gbk  = load_files("${results_dir}/**/functional_annotation/prokka/*.gbk",'\\.gbk')
+        annotations_gff  = load_files("${results_dir}/**/functional_annotation/prokka/*.gff",'\\.gff')
+        eggnog_files     = load_files("${results_dir}/**/functional_annotation/eggnog_mapper/*.emapper.annotations",'\\.emapper\\.annotations')
+        ncrna_files      = load_files("${results_dir}/**/rnas/ncrna/*.ncrna.deoverlap.tbl",'\\.ncrna\\.deoverlap\\.tbl')
+        trna_files       = load_files("${results_dir}/**/rnas/trna/*_trna.gff",'_trna\\.gff')
+        crisprcas_files  = load_files("${results_dir}/**/mobilome/crisprcas_finder/*_crisprcasfinder_hq.gff",'_crisprcasfinder_hq\\.gff')
+        amr_files        = load_files("${results_dir}/**/antimicrobial_resistance/amrfinder_plus/*_amrfinderplus.tsv",'_amrfinderplus\\.tsv')
+        antismash_files  = load_files("${results_dir}/**/biosynthetic_gene_clusters/antismash/*_antismash.gff",'_antismash\\.gff')
+        gecco_files      = load_files("${results_dir}/**/biosynthetic_gene_clusters/gecco/*_gecco_clusters.gff",'_gecco_clusters\\.gff')
+        dbcan_files      = load_files("${results_dir}/**/functional_annotation/dbcan/*_dbcan.gff",'_dbcan\\.gff')
+        df_files         = load_files("${results_dir}/**/antiphage_defense/defense_finder/*_defense_finder.gff",'_defense_finder\\.gff')
+        pseudo_files     = load_files("${results_dir}/**/functional_annotation/pseudofinder/*_processed_pseudogenes.gff",'_processed_pseudogenes\\.gff')
 
         // Join samplesheet metadata with file paths
         samplesheet
-            .join(annotations_faa_files)
+            .join(annotations_faa)
             .map { prefix, taxid, faa ->
                 def meta = [prefix: prefix, taxid: taxid]
                 tuple(meta, faa)
             }
-            .set { annotations_faa }
-        
+            .set { annotations_faa_input }
         samplesheet
-            .join(annotations_gff_files)
-            .map { prefix, taxid, gff ->
-                def meta = [prefix: prefix, taxid: taxid]
-                tuple(meta, gff)
-            }
-            .set { annotations_gff }
-        
-        samplesheet
-            .join(annotations_gbk_files)
+            .join(annotations_gbk)
             .map { prefix, taxid, gbk ->
                 def meta = [prefix: prefix, taxid: taxid]
                 tuple(meta, gbk)
@@ -296,7 +246,7 @@ workflow METTANNOTATOR {
         
         // For InterProScan, we need to add taxid to the protein FASTA
         ADD_TAXID_TO_PROTEIN_FASTA(
-            annotations_faa
+            annotations_faa_input
         )
         ch_versions = ch_versions.mix(ADD_TAXID_TO_PROTEIN_FASTA.out.versions.first())
 
@@ -312,9 +262,58 @@ workflow METTANNOTATOR {
         ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
 
         SANNTIS(
-            INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
+           INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
         )
         ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
+
+        // Re-key slow tool outputs by prefix string for joining
+        ips_by_prefix     = INTERPROSCAN.out.ips_annotations.map { meta, f -> [meta.prefix, f] }
+        sanntis_by_prefix = SANNTIS.out.sanntis_gff.map         { meta, f -> [meta.prefix, f] }
+        arba_by_prefix    = UNIFIRE.out.arba.map                { meta, f -> [meta.prefix, f] }
+        unirule_by_prefix = UNIFIRE.out.unirule.map             { meta, f -> [meta.prefix, f] }
+        pirsr_by_prefix   = UNIFIRE.out.pirsr.map               { meta, f -> [meta.prefix, f] }
+
+        // Build fast results channel keyed by prefix
+        fast_results = samplesheet
+            .join(annotations_gff)
+            .join(eggnog_files,    remainder: true)
+            .join(ncrna_files,     remainder: true)
+            .join(trna_files,      remainder: true)
+            .join(crisprcas_files, remainder: true)
+            .join(amr_files,       remainder: true)
+            .join(antismash_files, remainder: true)
+            .join(gecco_files,     remainder: true)
+            .join(dbcan_files,     remainder: true)
+            .join(df_files,        remainder: true)
+            .join(pseudo_files,    remainder: true)
+
+        // Merge fast + slow, then build final meta tuple
+        annotate_gff_input = fast_results
+            .join(ips_by_prefix)
+            .join(sanntis_by_prefix, remainder: true)
+            .join(arba_by_prefix,    remainder: true)
+            .join(unirule_by_prefix, remainder: true)
+            .join(pirsr_by_prefix,   remainder: true)
+            .map { prefix, taxid,
+                gff, eggnog, ncrna, trna, crisprcas, amr,
+                antismash, gecco, dbcan, df, pseudo,
+                ips, sanntis, arba, unirule, pirsr ->
+                tuple(
+                    [prefix: prefix, taxid: taxid],
+                    gff, eggnog, ncrna, trna, crisprcas, amr,
+                    antismash, gecco, dbcan, df, pseudo,
+                    ips, sanntis, arba, unirule, pirsr
+                )
+            }
+                    
+        ANNOTATE_GFF(
+            annotate_gff_input,
+            interpro_entry_list
+        )
+
+        CUSTOM_DUMPSOFTWAREVERSIONS(
+            ch_versions.unique().collectFile(name: 'collated_versions.yml')
+        )
 
     } else {
 
