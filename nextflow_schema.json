@@ -79,7 +79,7 @@
         },
         "interproscan_db_version": {
           "type": "string",
-          "default": "5.74-105.0",
+          "default": "5.75-106.0",
           "description": "The InterProScan reference database version."
         },
         "interpro_entry_list": {
@@ -90,7 +90,7 @@
         },
         "interpro_entry_list_version": {
           "type": "string",
-          "default": "105",
+          "default": "106",
           "description": "InterPro entry list version"
         },
         "eggnog_db": {

@@ -42,10 +42,10 @@ The workflow uses the following tools and databases:
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | v6.0             | Bakta DB (when Bakta is used as the gene caller)                                                                       |
 | [Pseudofinder](https://github.com/filip-husnik/pseudofinder)                                     | v1.1.0           | Identification of possible pseudogenes                                                                                 |
 | [Swiss-Prot](https://www.uniprot.org/help/downloads)                                             | 2024_06          | Database for Pseudofinder                                                                                              |
-| [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.74-105.0       | Protein annotation (InterPro, Pfam)                                                                                    |
+| [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.75-106.0       | Protein annotation (InterPro, Pfam)                                                                                    |
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11           | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
-| [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2025.3           | Protein annotation                                                                                                     |
+| [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.1           | Protein annotation                                                                                                     |
 | [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.0.23           | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
 | [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.0 2025-07-16.1 | Database for AMRFinderPlus                                                                                             |
 | [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 2.0.0            | Annotation of anti-phage systems                                                                                       |
@@ -212,15 +212,15 @@ Reference databases
                                                mixing the --dbs flag with individual database paths and versions is not allowed; they are mutually
                                                exclusive.
   --interproscan_db                  [string]  The InterProScan reference database, ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/
-  --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.62-94.0]
+  --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.75-106.0]
   --interpro_entry_list              [string]  TSV file listing basic InterPro entry information - the accessions, types and names,
-                                               ftp://ftp.ebi.ac.uk/pub/databases/interpro/releases/94.0/entry.list
-  --interpro_entry_list_version      [string]  InterPro entry list version [default: 94]
+                                               ftp://ftp.ebi.ac.uk/pub/databases/interpro/releases/106.0/entry.list
+  --interpro_entry_list_version      [string]  InterPro entry list version [default: 106.0]
   --eggnog_db                        [string]  The EggNOG reference database folder,
                                                https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.12#requirements
   --eggnog_db_version                [string]  The EggNOG reference database version. [default: 5.0.2]
   --rfam_ncrna_models                [string]  Rfam ncRNA models, ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/ncrna/
-  --rfam_ncrna_models_rfam_version   [string]  Rfam release version where the models come from. [default: 14.9]
+  --rfam_ncrna_models_rfam_version   [string]  Rfam release version where the models come from. [default: 15.0]
   --amrfinder_plus_db                [string]  AMRFinderPlus reference database,
                                                https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/. Go to the following
                                                documentation for the db setup https://github.com/ncbi/amr/wiki/Upgrading#database-updates.
