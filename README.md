@@ -215,7 +215,7 @@ Reference databases
   --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.75-106.0]
   --interpro_entry_list              [string]  TSV file listing basic InterPro entry information - the accessions, types and names,
                                                ftp://ftp.ebi.ac.uk/pub/databases/interpro/releases/106.0/entry.list
-  --interpro_entry_list_version      [string]  InterPro entry list version [default: 106]
+  --interpro_entry_list_version      [string]  InterPro entry list version [default: 106.0]
   --eggnog_db                        [string]  The EggNOG reference database folder,
                                                https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.12#requirements
   --eggnog_db_version                [string]  The EggNOG reference database version. [default: 5.0.2]
