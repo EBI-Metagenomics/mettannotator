@@ -53,20 +53,8 @@ if (params.add_slow_tools && params.fast) {
     System.exit(1)
 }
 
-// Validate add_slow_tools directory exists
-if (params.add_slow_tools) {
-    def slow_tools_dir = file(params.add_slow_tools)
-    if (!slow_tools_dir.exists()) {
-        log.error "Error: Directory specified by '--add-slow-tools' does not exist: ${params.add_slow_tools}"
-        System.exit(1)
-    }
-    if (!slow_tools_dir.isDirectory()) {
-        log.error "Error: Path specified by '--add-slow-tools' is not a directory: ${params.add_slow_tools}"
-        System.exit(1)
-    }
-}
-
 WorkflowMain.initialise(workflow, params, log)
+WorkflowMettannotator.initialise(params, log)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
