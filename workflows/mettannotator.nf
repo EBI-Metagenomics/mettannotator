@@ -55,6 +55,7 @@ include { DBCAN                                      } from '../modules/local/db
 include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
 include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
 include { PSEUDOFINDER_POSTPROCESSING                } from '../modules/local/pseudofinder'
+include { STAGE_FAST_OUTPUTS                         } from '../modules/local/stage_fast_outputs'
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
 
@@ -227,6 +228,16 @@ workflow METTANNOTATOR {
         dbcan_files      = load_files("${results_dir}/**/functional_annotation/dbcan/*_dbcan.gff",'_dbcan\\.gff')
         df_files         = load_files("${results_dir}/**/antiphage_defense/defense_finder/*_defense_finder.gff",'_defense_finder\\.gff')
         pseudo_files     = load_files("${results_dir}/**/functional_annotation/pseudofinder/*_processed_pseudogenes.gff",'_processed_pseudogenes\\.gff')
+
+        // Stage fast-run outputs into --outdir so the final directory
+        // contains both fast and slow results in the expected layout.
+        stage_fast_input = samplesheet
+            .map { prefix, taxid ->
+                def sample_dir = file("${results_dir}/${prefix}", checkIfExists: true)
+                tuple([prefix: prefix, taxid: taxid], sample_dir)
+            }
+
+        STAGE_FAST_OUTPUTS(stage_fast_input)
 
         // Join samplesheet metadata with file paths
         samplesheet
