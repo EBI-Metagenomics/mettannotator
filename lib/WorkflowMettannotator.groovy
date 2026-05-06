@@ -31,13 +31,17 @@ class WorkflowMettannotator {
         "Bakta GFF (.gff3)"           : "functional_annotation/bakta/*.gff3",
     ].asImmutable()
 
+    // Annotation files expected in annotate_gff.py 
+    static final Map<String, String> REQUIRED_ANNOTATION_INPUTS = [
+        "EggNOG annotations (.emapper.annotations)" : "functional_annotation/eggnog_mapper/*.emapper.annotations",
+        "ncRNA table (.ncrna.deoverlap.tbl)"         : "rnas/ncrna/*.ncrna.deoverlap.tbl",
+        "tRNA GFF (_trna.gff)"                       : "rnas/trna/*_trna.gff",
+    ].asImmutable()
+
     //
     // Per-sample files that are expected but optional.
     //
     static final Map<String, String> EXPECTED_FAST_RUN_PATTERNS = [
-        "EggNOG annotations"           : "functional_annotation/eggnog_mapper/*.emapper.annotations",
-        "ncRNA table"                  : "rnas/ncrna/*.ncrna.deoverlap.tbl",
-        "tRNA GFF"                     : "rnas/trna/*_trna.gff",
         "CRISPRCasFinder HQ GFF"       : "mobilome/crisprcas_finder/*_crisprcasfinder_hq.gff",
         "AMRFinder+ TSV"               : "antimicrobial_resistance/amrfinder_plus/*_amrfinderplus.tsv",
         "antiSMASH GFF"                : "biosynthetic_gene_clusters/antismash/*_antismash.gff",
@@ -93,15 +97,27 @@ class WorkflowMettannotator {
             Nextflow.error("Samplesheet '${inputFile}' has no 'prefix' column.")
         }
 
-        def errors   = []
-        def warnings = []
+        def errors       = []
+        def warnings     = []
+        def seenPrefixes = [] as Set
 
         lines.drop(1).eachWithIndex { line, idx ->
             if (line.trim().isEmpty()) return
 
-            def fields = line.split(',')*.trim()
+            def fields    = line.split(',')*.trim()
             def prefix    = fields[prefixIdx]
             def sampleDir = new File(resultsDir, prefix)
+
+            // Duplicate prefix guard: channel.join() on a non-unique key pairs
+            // the wrong files across samples, causing silent data corruption.
+            if (!seenPrefixes.add(prefix)) {
+                errors << (
+                    "Duplicate prefix '${prefix}' at samplesheet line ${idx + 2}.\n" +
+                    "  Each sample must have a unique prefix. Duplicate prefixes cause\n" +
+                    "  channel joins to silently pair the wrong files across samples."
+                )
+                return
+            }
 
             if (!sampleDir.exists() || !sampleDir.isDirectory()) {
                 errors << (
@@ -139,6 +155,19 @@ class WorkflowMettannotator {
                         "  Detected annotator: ${annotatorName}\n" +
                         "  The fast run may have failed or the output directory structure\n" +
                         "  does not match what mettannotator expects."
+                    )
+                }
+            }
+     
+            // These files are required by annotate_gff.py with no None-guard.
+            REQUIRED_ANNOTATION_INPUTS.each { label, pattern ->
+                def matches = findMatches(sampleDir, pattern)
+                if (matches.isEmpty()) {
+                    errors << (
+                        "Sample '${prefix}': required annotation input missing — ${label}\n" +
+                        "  Pattern: ${sampleDir.absolutePath}/${pattern}\n" +
+                        "  Check that the fast run completed without errors for this sample\n" +
+                        "  (look for failures in the EggNOG, ncRNA or tRNA detection steps)."
                     )
                 }
             }
