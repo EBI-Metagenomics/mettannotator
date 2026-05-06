@@ -38,9 +38,14 @@ class WorkflowMettannotator {
         "tRNA GFF (_trna.gff)"                       : "rnas/trna/*_trna.gff",
     ].asImmutable()
 
-    //
-    // Per-sample files that are expected but optional.
-    //
+    // Per-tool output files from the fast run.
+    // By default these are treated as required: a missing file is a hard error.
+    // Pass '--allow-missing-files' to downgrade missing files to warnings, which
+    // allows the slow run to proceed even when a fast-run tool produced no output
+    // (e.g. a genome with no CRISPR arrays, or a tool that was intentionally
+    // skipped).  annotate_gff.py guards every one of these with a None-check so
+    // the annotation step is safely skipped when the file is absent.
+    
     static final Map<String, String> EXPECTED_FAST_RUN_PATTERNS = [
         "CRISPRCasFinder HQ GFF"       : "mobilome/crisprcas_finder/*_crisprcasfinder_hq.gff",
         "AMRFinder+ TSV"               : "antimicrobial_resistance/amrfinder_plus/*_amrfinderplus.tsv",
@@ -176,7 +181,22 @@ class WorkflowMettannotator {
                 def matches = findMatches(sampleDir, pattern)
 
                 if (matches.isEmpty()) {
-                    warnings << "Sample '${prefix}': expected file not found (will be skipped) — ${label} [${sampleDir.absolutePath}/${pattern}]"
+                    if (params.allow_missing_files) {
+                        warnings << (
+                            "Sample '${prefix}': file not found (step will be skipped) — ${label}\n" +
+                            "  Pattern: ${sampleDir.absolutePath}/${pattern}\n" +
+                            "  Missing file accepted because '--allow-missing-files' is set."
+                        )
+                    } else {
+                        errors << (
+                            "Sample '${prefix}': required file missing — ${label}\n" +
+                            "  Pattern: ${sampleDir.absolutePath}/${pattern}\n" +
+                            "  All fast-run tool outputs are required by default. If this file\n" +
+                            "  is intentionally absent (e.g. no CRISPR arrays detected, or the\n" +
+                            "  tool was deliberately skipped), re-run with '--allow-missing-files'\n" +
+                            "  to treat missing optional outputs as warnings instead of errors."
+                        )
+                    }
                 }
             }
         }

@@ -52,6 +52,13 @@
           "help_text": "By default, when --add-slow-tools is used, the fast-run outputs are staged (hard-linked or rsynced) into --outdir so the final directory contains both fast and slow results. Use this flag to disable that behaviour and write only the slow-tool outputs to --outdir.",
           "fa_icon": "fas fa-folder-minus"
         },
+        "allow_missing_files": {
+          "type": "boolean",
+          "default": false,
+          "description": "Downgrade missing fast-run tool outputs from errors to warnings when using --add-slow-tools.",
+          "help_text": "By default all per-tool outputs from the fast run (CRISPR, AMR, antiSMASH, GECCO, dbCAN, DefenseFinder, Pseudofinder) are required. Use this flag when a file is intentionally absent — for example a genome with no CRISPR arrays, or a tool that was deliberately skipped. The slow run will still proceed; annotate_gff.py will simply omit the annotation for that tool.",
+          "fa_icon": "fas fa-exclamation-triangle"
+        },
         "email": {
           "type": "string",
           "description": "Email address for completion summary.",

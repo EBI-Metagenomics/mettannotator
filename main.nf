@@ -59,6 +59,12 @@ if (params.skip_fast_staging && !params.add_slow_tools) {
     System.exit(1)
 }
 
+// --allow-missing-files only makes sense alongside --add-slow-tools
+if (params.allow_missing_files && !params.add_slow_tools) {
+    log.error "Error: '--allow-missing-files' can only be used together with '--add-slow-tools'."
+    System.exit(1)
+}
+
 WorkflowMain.initialise(workflow, params, log)
 WorkflowMettannotator.initialise(params, log)
 
