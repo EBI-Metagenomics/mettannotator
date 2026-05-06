@@ -240,13 +240,16 @@ workflow METTANNOTATOR {
 
         // Stage fast-run outputs into --outdir so the final directory
         // contains both fast and slow results in the expected layout.
-        stage_fast_input = samplesheet
-            .map { prefix, taxid ->
-                def sample_dir = file("${results_dir}/${prefix}", checkIfExists: true)
-                tuple([prefix: prefix, taxid: taxid], sample_dir)
-            }
-
-        STAGE_FAST_OUTPUTS(stage_fast_input)
+        // Skipped when --skip-fast-staging is set.
+        if ( !params.skip_fast_staging ) {
+            stage_fast_input = samplesheet
+                .map { prefix, taxid ->
+                    def sample_dir = file("${results_dir}/${prefix}", checkIfExists: true)
+                    tuple([prefix: prefix, taxid: taxid], sample_dir)
+                }
+        
+            STAGE_FAST_OUTPUTS(stage_fast_input)
+        }
 
         // Join samplesheet metadata with file paths
         samplesheet

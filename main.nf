@@ -53,6 +53,12 @@ if (params.add_slow_tools && params.fast) {
     System.exit(1)
 }
 
+// --skip-fast-staging only makes sense alongside --add-slow-tools
+if (params.skip_fast_staging && !params.add_slow_tools) {
+    log.error "Error: '--skip-fast-staging' can only be used together with '--add-slow-tools'."
+    System.exit(1)
+}
+
 WorkflowMain.initialise(workflow, params, log)
 WorkflowMettannotator.initialise(params, log)
 

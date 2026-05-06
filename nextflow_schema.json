@@ -45,6 +45,13 @@
           "description": "Path to output directory from previous --fast run. Enables running InterProScan, SanntiS, and UniFIRE on existing results.",
           "help_text": "Provide the path to a previous fast-mode run's output directory. The pipeline will auto-discover sample files and run only the slow annotation tools."
         },
+        "skip_fast_staging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip staging fast-run outputs into --outdir when using --add-slow-tools.",
+          "help_text": "By default, when --add-slow-tools is used, the fast-run outputs are staged (hard-linked or rsynced) into --outdir so the final directory contains both fast and slow results. Use this flag to disable that behaviour and write only the slow-tool outputs to --outdir.",
+          "fa_icon": "fas fa-folder-minus"
+        },
         "email": {
           "type": "string",
           "description": "Email address for completion summary.",
