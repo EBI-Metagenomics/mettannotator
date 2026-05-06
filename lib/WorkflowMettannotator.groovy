@@ -25,6 +25,12 @@ class WorkflowMettannotator {
         "Prokka GFF (.gff)"            : "functional_annotation/prokka/*.gff",
     ].asImmutable()
 
+    static final Map<String, String> REQUIRED_BAKTA_PATTERNS = [
+        "Bakta protein FASTA (.faa)"  : "functional_annotation/bakta/*.faa",
+        "Bakta GenBank (.gbff)"       : "functional_annotation/bakta/*.gbff",
+        "Bakta GFF (.gff3)"           : "functional_annotation/bakta/*.gff3",
+    ].asImmutable()
+
     //
     // Per-sample files that are expected but optional.
     //
@@ -40,6 +46,23 @@ class WorkflowMettannotator {
         "DefenseFinder GFF"            : "antiphage_defense/defense_finder/*_defense_finder.gff",
         "Pseudofinder processed GFF"   : "functional_annotation/pseudofinder/*_processed_pseudogenes.gff",
     ].asImmutable()
+
+    /**
+     * Detect which annotator was used for a given sample by checking which
+     * output subdirectory is present on disk.
+     */
+    private static Map<String, String> detectAnnotatorPatterns(File sampleDir) {
+        def baktaDir  = new File(sampleDir, "functional_annotation/bakta")
+        def prokkaDir = new File(sampleDir, "functional_annotation/prokka")
+
+        if (baktaDir.exists() && baktaDir.isDirectory()) {
+            return WorkflowMettannotator.REQUIRED_BAKTA_PATTERNS
+        }
+        if (prokkaDir.exists() && prokkaDir.isDirectory()) {
+            return WorkflowMettannotator.REQUIRED_PROKKA_PATTERNS
+        }
+        return null
+    }
 
     /**
      * Validate that all required fast-run output files are present for every
@@ -90,13 +113,30 @@ class WorkflowMettannotator {
                 return
             }
 
-            REQUIRED_FAST_RUN_PATTERNS.each { label, pattern ->
+            // Detect annotator and validate required files
+            def requiredPatterns = detectAnnotatorPatterns(sampleDir)
+ 
+            if (requiredPatterns == null) {
+                errors << (
+                    "Sample '${prefix}': no annotator output directory found.\n" +
+                    "  Looked for:\n" +
+                    "    ${sampleDir.absolutePath}/functional_annotation/prokka/\n" +
+                    "    ${sampleDir.absolutePath}/functional_annotation/bakta/\n" +
+                    "  The fast run may have failed at the annotation step."
+                )
+                return
+            }
+ 
+            def annotatorName = (requiredPatterns == WorkflowMettannotator.REQUIRED_BAKTA_PATTERNS) ? "Bakta" : "Prokka"
+            log.debug "Sample '${prefix}': detected annotator = ${annotatorName}"
+ 
+            requiredPatterns.each { label, pattern ->
                 def matches = findMatches(sampleDir, pattern)
-
                 if (matches.isEmpty()) {
                     errors << (
                         "Sample '${prefix}': required file missing — ${label}\n" +
                         "  Pattern: ${sampleDir.absolutePath}/${pattern}\n" +
+                        "  Detected annotator: ${annotatorName}\n" +
                         "  The fast run may have failed or the output directory structure\n" +
                         "  does not match what mettannotator expects."
                     )
