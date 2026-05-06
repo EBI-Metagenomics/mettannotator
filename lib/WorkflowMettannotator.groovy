@@ -19,7 +19,7 @@ class WorkflowMettannotator {
     //
     // Required files that must exist in the fast-run output for every sample.
     //
-    static final Map<String, String> REQUIRED_FAST_RUN_PATTERNS = [
+    static final Map<String, String> REQUIRED_PROKKA_PATTERNS = [
         "Prokka protein FASTA (.faa)"  : "functional_annotation/prokka/*.faa",
         "Prokka GenBank (.gbk)"        : "functional_annotation/prokka/*.gbk",
         "Prokka GFF (.gff)"            : "functional_annotation/prokka/*.gff",

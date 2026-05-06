@@ -205,19 +205,28 @@ workflow METTANNOTATOR {
                     .set { samplesheet }
 
         def results_dir = file(params.add_slow_tools)
+
         
         def load_files = { pattern, strip_suffix ->
             channel
-                .fromPath(pattern, checkIfExists: true)
+                .fromPath(pattern, checkIfExists: false)
                 .map { f ->
                     def name = f.name.replaceAll(strip_suffix + '$', '')
                     tuple(name, f)
                 }
         }
 
-        annotations_faa  = load_files("${results_dir}/**/functional_annotation/prokka/*.faa",'\\.faa')
-        annotations_gbk  = load_files("${results_dir}/**/functional_annotation/prokka/*.gbk",'\\.gbk')
-        annotations_gff  = load_files("${results_dir}/**/functional_annotation/prokka/*.gff",'\\.gff')
+        // Load annotation files from either Prokka or Bakta output directories.
+        // Prokka:  functional_annotation/prokka/  extensions .faa / .gbk / .gff
+        // Bakta:   functional_annotation/bakta/   extensions .faa / .gbff / .gff3
+        // Both channels are mixed so that a run using --bakta (or a mixed Prokka+Bakta
+        // run, e.g. Bacteria→Bakta / Archaea→Prokka) is handled transparently.
+        annotations_faa  = load_files("${results_dir}/**/functional_annotation/prokka/*.faa",  '\\.faa')
+             .mix(load_files("${results_dir}/**/functional_annotation/bakta/*.faa",            '\\.faa'))
+        annotations_gbk  = load_files("${results_dir}/**/functional_annotation/prokka/*.gbk",  '\\.gbk')
+             .mix(load_files("${results_dir}/**/functional_annotation/bakta/*.gbff",           '\\.gbff'))
+        annotations_gff  = load_files("${results_dir}/**/functional_annotation/prokka/*.gff",  '\\.gff')
+             .mix(load_files("${results_dir}/**/functional_annotation/bakta/*.gff3",           '\\.gff3'))
         eggnog_files     = load_files("${results_dir}/**/functional_annotation/eggnog_mapper/*.emapper.annotations",'\\.emapper\\.annotations')
         ncrna_files      = load_files("${results_dir}/**/rnas/ncrna/*.ncrna.deoverlap.tbl",'\\.ncrna\\.deoverlap\\.tbl')
         trna_files       = load_files("${results_dir}/**/rnas/trna/*_trna.gff",'_trna\\.gff')
