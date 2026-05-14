@@ -122,6 +122,8 @@ Here,
 `prefix` is the prefix and the locus tag that will be assigned to output files and proteins during the annotation process;
 maximum length is 24 characters; the prefix may contain letters, digits, dashes, underscores, periods.
 
+**Each prefix must be unique within the input file.** Duplicate prefixes cause output files to overwrite each other and channel joins to silently pair the wrong files across samples — the pipeline will abort with an error if duplicates are detected.
+
 `assembly` is the path to where the assembly file in FASTA format is located;
 
 `taxid` is the NCBI TaxId (if the species-level TaxId is not known, a TaxId for a higher taxonomic level can be used). If the taxonomy is known, look up the TaxID [here](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi).
