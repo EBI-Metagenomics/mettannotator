@@ -43,30 +43,36 @@ if (params.dbs == null && (
     params.eggnog_db == null ||
     params.rfam_ncrna_models == null
 )) {
-    log.error "Error: If the parameter '--dbs' is null, you must specify individual paths for each database."
+    log.error "If the parameter '--dbs' is null, you must specify individual paths for each database."
     System.exit(1)
 }
 
 // Validate add_slow_tools and fast are not used together
 if (params.add_slow_tools && params.fast) {
-    log.error "Error: '--add-slow-tools' and '--fast' cannot be used together. Use '--fast' for initial run, then '--add-slow-tools' to add slow annotations."
+    log.error "'--add_slow_tools' and '--fast' cannot be used together. Use '--fast' for initial run, then '--add-slow-tools' to add slow annotations."
     System.exit(1)
 }
 
-// --skip-fast-staging only makes sense alongside --add-slow-tools
+// Validate add_slow_tools and --skip-fast-staging are used together
 if (params.skip_fast_staging && !params.add_slow_tools) {
-    log.error "Error: '--skip-fast-staging' can only be used together with '--add-slow-tools'."
+    log.error "'--skip_fast_staging' can only be used together with '--add_slow_tools'."
     System.exit(1)
 }
 
-// --allow-missing-files only makes sense alongside --add-slow-tools
+// Validate add_slow_tools and --allow-missing-files are used together
 if (params.allow_missing_files && !params.add_slow_tools) {
-    log.error "Error: '--allow-missing-files' can only be used together with '--add-slow-tools'."
+    log.error "'--allow_missing_files' can only be used together with '--add_slow_tools'."
+    System.exit(1)
+}
+
+// --ignore-version-mismatch only makes sense alongside --add_slow_tools
+if (params.ignore_version_mismatch && !params.add_slow_tools) {
+    log.error "'--ignore_version_mismatch' can only be used together with '--add_slow_tools'."
     System.exit(1)
 }
 
 WorkflowMain.initialise(workflow, params, log)
-WorkflowMettannotator.initialise(params, log)
+WorkflowMettannotator.initialise(params, log, workflow)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

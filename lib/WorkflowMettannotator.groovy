@@ -10,10 +10,65 @@ class WorkflowMettannotator {
     //
     // Check and validate parameters
     //
-    public static void initialise(params, log) {
+    public static void initialise(params, log, workflow) {
         if (params.add_slow_tools) {
-            validateFastRunInputs(params, log)
+           checkVersionConsistency(params, log, workflow.manifest.name as String, workflow.manifest.version as String)
+           validateFastRunInputs(params, log)
         }
+    }
+    
+
+    //
+    // Verify that the fast-run results were produced by the same pipeline version.
+    // by reading the version recorded in pipeline_info/software_versions.yml.
+    //
+    public static void checkVersionConsistency(params, log, String pipelineName, String currentVersion) {
+        def versionsFile = new File("${params.add_slow_tools}/pipeline_info/software_versions.yml")
+        if (!versionsFile.exists()) {
+            log.warn(
+                "WARNING: '${versionsFile.absolutePath}' not found in the fast-run output.\n" +
+                "  Version compatibility cannot be verified. If the fast results were generated\n" +
+                "  with a different pipeline version, results may be inconsistent."
+            )
+            return
+        }
+
+        def fastVersion = extractPipelineVersion(versionsFile.text, pipelineName)
+        if (fastVersion == null) {
+            log.warn(
+                "WARNING: Could not determine pipeline version from '${versionsFile.absolutePath}'.\n" +
+                "  Version compatibility cannot be verified."
+            )
+            return
+        }
+
+        if (fastVersion == currentVersion) {
+            return
+        }
+
+        def msg = (
+            "Pipeline version mismatch detected.\n" +
+            "  Fast results generated with : v${fastVersion}\n" +
+            "  Current pipeline version    : v${currentVersion}\n" +
+            "  Re-run the fast step with the current pipeline version, or use\n" +
+            "  '--ignore_version_mismatch' to proceed anyway."
+        )
+
+        if (params.ignore_version_mismatch) {
+            log.warn("${msg}\n  Skipping version check because '--ignore_version_mismatch' was set.")
+        } else {
+            Nextflow.error(msg)
+        }
+    }
+   
+    //
+    // Extract the pipeline version from the Workflow section of software_versions.yml.
+    // Returns null if the key is not found.
+    //
+    private static String extractPipelineVersion(String yamlContent, String pipelineName) {
+        def escapedName = java.util.regex.Pattern.quote(pipelineName)
+        def matcher = yamlContent =~ /(?m)^\s+${escapedName}:\s*['"]?(\S+?)['"]?\s*$/
+        return matcher ? (matcher[0][1] as String) : null
     }
 
     //
@@ -45,7 +100,6 @@ class WorkflowMettannotator {
     // (e.g. a genome with no CRISPR arrays, or a tool that was intentionally
     // skipped).  annotate_gff.py guards every one of these with a None-check so
     // the annotation step is safely skipped when the file is absent.
-    
     static final Map<String, String> EXPECTED_FAST_RUN_PATTERNS = [
         "CRISPRCasFinder HQ GFF"       : "mobilome/crisprcas_finder/*_crisprcasfinder_hq.gff",
         "AMRFinder+ TSV"               : "antimicrobial_resistance/amrfinder_plus/*_amrfinderplus.tsv",
