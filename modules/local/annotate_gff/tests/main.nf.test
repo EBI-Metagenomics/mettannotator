@@ -183,7 +183,7 @@ nextflow_process {
                     file('${projectDir}/modules/local/annotate_gff/tests/data/test_pseudofinder.gff',                 checkIfExists: true),
                     [], // ips_annotations_tsv  — InterProScan
                     [], // sanntis_annotations_gff — SanntiS
-                    [], // arba    — UniFIRE output 
+                    [], // arba    — UniFIRE output
                     [], // unirule — UniFIRE output
                     [], // pirsr   — UniFIRE output
                 ]

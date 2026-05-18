@@ -197,7 +197,7 @@ workflow METTANNOTATOR {
 
         //
         // In add-slow-tools mode, we read existing results from --fast and run only slow tools
-        //       
+        //
         Channel.fromSamplesheet("input")
                      .map { meta, assembly ->
                         [meta.prefix, meta.taxid]
@@ -206,7 +206,6 @@ workflow METTANNOTATOR {
 
         def results_dir = file(params.add_slow_tools)
 
-        
         def load_files = { pattern, strip_suffix ->
             channel
                 .fromPath(pattern, checkIfExists: false)
@@ -247,7 +246,7 @@ workflow METTANNOTATOR {
                     def sample_dir = file("${results_dir}/${prefix}", checkIfExists: true)
                     tuple([prefix: prefix, taxid: taxid], sample_dir)
                 }
-        
+
             STAGE_FAST_OUTPUTS(stage_fast_input)
         }
 
@@ -266,7 +265,7 @@ workflow METTANNOTATOR {
                 tuple(meta, gbk)
             }
             .set { annotations_gbk }
-        
+
         // For InterProScan, we need to add taxid to the protein FASTA
         ADD_TAXID_TO_PROTEIN_FASTA(
             annotations_faa_input

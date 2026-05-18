@@ -23,7 +23,7 @@ process STAGE_FAST_OUTPUTS {
 
     output:
     tuple val(meta), path("staged/**"), optional: true, emit: staged_files
- 
+
     script:
     def prefix = meta.prefix
     """

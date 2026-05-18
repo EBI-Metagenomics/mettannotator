@@ -16,7 +16,7 @@ class WorkflowMettannotator {
            validateFastRunInputs(params, log)
         }
     }
-    
+
 
     //
     // Verify that the fast-run results were produced by the same pipeline version.
@@ -60,7 +60,7 @@ class WorkflowMettannotator {
             Nextflow.error(msg)
         }
     }
-   
+
     //
     // Extract the pipeline version from the Workflow section of software_versions.yml.
     // Returns null if the key is not found.
@@ -86,7 +86,7 @@ class WorkflowMettannotator {
         "Bakta GFF (.gff3)"           : "functional_annotation/bakta/*.gff3",
     ].asImmutable()
 
-    // Annotation files expected in annotate_gff.py 
+    // Annotation files expected in annotate_gff.py
     static final Map<String, String> REQUIRED_ANNOTATION_INPUTS = [
         "EggNOG annotations (.emapper.annotations)" : "functional_annotation/eggnog_mapper/*.emapper.annotations",
         "ncRNA table (.ncrna.deoverlap.tbl)"         : "rnas/ncrna/*.ncrna.deoverlap.tbl",
@@ -190,7 +190,7 @@ class WorkflowMettannotator {
 
             // Detect annotator and validate required files
             def requiredPatterns = detectAnnotatorPatterns(sampleDir)
- 
+
             if (requiredPatterns == null) {
                 errors << (
                     "Sample '${prefix}': no annotator output directory found.\n" +
@@ -204,7 +204,7 @@ class WorkflowMettannotator {
  
             def annotatorName = (requiredPatterns == WorkflowMettannotator.REQUIRED_BAKTA_PATTERNS) ? "Bakta" : "Prokka"
             log.debug "Sample '${prefix}': detected annotator = ${annotatorName}"
- 
+
             requiredPatterns.each { label, pattern ->
                 def matches = findMatches(sampleDir, pattern)
                 if (matches.isEmpty()) {
@@ -217,7 +217,7 @@ class WorkflowMettannotator {
                     )
                 }
             }
-     
+
             // These files are required by annotate_gff.py with no None-guard.
             REQUIRED_ANNOTATION_INPUTS.each { label, pattern ->
                 def matches = findMatches(sampleDir, pattern)
