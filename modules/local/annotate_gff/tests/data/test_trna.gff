@@ -1,0 +1,2 @@
+##gff-version 3
+contig_1	tRNAscan-SE	tRNA	2000	2072	.	+	.	ID=contig_1_trna1;locus_tag=contig_1_trna1;product=tRNA-Ala

@@ -1,0 +1,2 @@
+Protein id	Contig id	Start	Stop	Strand	Gene symbol	Sequence name	Scope	Element type	Element subtype	Drug class	Drug subclass	Method	Target length
+TESTPFX_00001	contig_1	100	600	+	blaZ	Beta-lactamase BlaZ	core	AMR	BETA-LACTAM	BETA-LACTAM	PENICILLIN	EXACTX	501

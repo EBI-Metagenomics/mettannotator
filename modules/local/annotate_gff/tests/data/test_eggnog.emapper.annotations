@@ -1,0 +1,2 @@
+#query	seed_ortholog	evalue	score	eggNOG_OGs	max_annot_lvl	COG_category	Description	Preferred_name	GOs	EC	KEGG_ko	KEGG_Pathway	KEGG_Module	KEGG_Reaction	KEGG_rclass	BRITE	KEGG_TC	CAZy	BiGG_Reaction	PFAMs
+TESTPFX_00001	1234567.PROT_00001	1e-20	300.0	COG0001@1|root	root	K	kinase	kinA	GO:0003824	-	ko:K00001	-	-	-	-	-	-	-	-	PF00001

@@ -1,0 +1,2 @@
+##gff-version 3
+contig_1	GECCO	gene_cluster	50	700	.	+	.	ID=contig_1_cluster1;Type=PKS
