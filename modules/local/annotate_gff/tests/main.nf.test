@@ -17,10 +17,10 @@ nextflow_process {
                 """
                 input[0] = [
                     [ prefix: 'TESTPFX' ],
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test.gff',                              checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_eggnog.emapper.annotations',       checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_trna.gff',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',       checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                         checkIfExists: true),
                     [], // crisprcas_hq_gff
                     [], // amrfinder_tsv
                     [], // antismash_gff
@@ -35,7 +35,7 @@ nextflow_process {
                     [], // pirsr
                 ]
                 input[1] = [
-                    file('${projectDir}/modules/local/annotate_gff/tests/data', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
                     '5.75-106.0'
                 ]
                 """
@@ -66,25 +66,25 @@ nextflow_process {
                 """
                 input[0] = [
                     [ prefix: 'TESTPFX' ],
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test.gff',                              checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_eggnog.emapper.annotations',       checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_trna.gff',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',       checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                         checkIfExists: true),
                     [], // crisprcas_hq_gff  — absent, accepted by --allow-missing-files
                     [], // amrfinder_tsv     — absent
                     [], // antismash_gff     — absent
                     [], // gecco_gff         — absent
                     [], // dbcan_gff         — absent
                     [], // df_gff            — absent
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_pseudofinder.gff',                 checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ips.tsv',                          checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_sanntis.gff',                      checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_arba.tsv',                         checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_unirule.tsv',                      checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_pirsr.tsv',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ips.tsv',                          checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_sanntis.gff',                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_arba.tsv',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_unirule.tsv',                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pirsr.tsv',                        checkIfExists: true),
                 ]
                 input[1] = [
-                    file('${projectDir}/modules/local/annotate_gff/tests/data', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
                     '5.75-106.0'
                 ]
                 """
@@ -170,17 +170,17 @@ nextflow_process {
                 """
                 input[0] = [
                     [ prefix: 'TESTPFX' ],
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test.gff',                              checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_eggnog.emapper.annotations',       checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_trna.gff',                         checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_crispr_hq.gff',                    checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_amr.tsv',                          checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_antismash.gff',                    checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_gecco.gff',                        checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_dbcan.gff',                        checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_defense_finder.gff',               checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_pseudofinder.gff',                 checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',       checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_crispr_hq.gff',                    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_amr.tsv',                          checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_antismash.gff',                    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_gecco.gff',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_dbcan.gff',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_defense_finder.gff',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
                     [], // ips_annotations_tsv  — InterProScan
                     [], // sanntis_annotations_gff — SanntiS
                     [], // arba    — UniFIRE output
@@ -188,7 +188,7 @@ nextflow_process {
                     [], // pirsr   — UniFIRE output
                 ]
                 input[1] = [
-                    file('${projectDir}/modules/local/annotate_gff/tests/data', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
                     '5.75-106.0'
                 ]
                 """
@@ -270,10 +270,10 @@ nextflow_process {
                 """
                 input[0] = [
                     [ prefix: 'TESTPFX' ],
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test.gff',                                      checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_eggnog_bad_header.emapper.annotations',    checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_trna.gff',                                checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog_bad_header.emapper.annotations',    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                                checkIfExists: true),
                     [], // crisprcas_hq_gff
                     [], // amrfinder_tsv
                     [], // antismash_gff
@@ -288,7 +288,7 @@ nextflow_process {
                     [], // pirsr
                 ]
                 input[1] = [
-                    file('${projectDir}/modules/local/annotate_gff/tests/data', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
                     '5.75-106.0'
                 ]
                 """
@@ -313,17 +313,17 @@ nextflow_process {
                 """
                 input[0] = [
                     [ prefix: 'TESTPFX' ],
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test.gff',                                      checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_eggnog_empty.emapper.annotations',         checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_trna.gff',                                checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog_empty.emapper.annotations',         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                                checkIfExists: true),
                     [], // crisprcas_hq_gff
                     [], // amrfinder_tsv
                     [], // antismash_gff
                     [], // gecco_gff
                     [], // dbcan_gff
                     [], // df_gff
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_pseudofinder.gff', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff', checkIfExists: true),
                     [], // ips_annotations_tsv
                     [], // sanntis_annotations_gff
                     [], // arba
@@ -331,7 +331,7 @@ nextflow_process {
                     [], // pirsr
                 ]
                 input[1] = [
-                    file('${projectDir}/modules/local/annotate_gff/tests/data', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
                     '5.75-106.0'
                 ]
                 """
@@ -386,17 +386,17 @@ nextflow_process {
                 """
                 input[0] = [
                     [ prefix: 'TESTPFX' ],
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_corrupted.gff',                            checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_eggnog.emapper.annotations',              checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_trna.gff',                                checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_corrupted.gff',                            checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                                checkIfExists: true),
                     [], // crisprcas_hq_gff
                     [], // amrfinder_tsv
                     [], // antismash_gff
                     [], // gecco_gff
                     [], // dbcan_gff
                     [], // df_gff
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_pseudofinder.gff', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff', checkIfExists: true),
                     [], // ips_annotations_tsv
                     [], // sanntis_annotations_gff
                     [], // arba
@@ -404,7 +404,7 @@ nextflow_process {
                     [], // pirsr
                 ]
                 input[1] = [
-                    file('${projectDir}/modules/local/annotate_gff/tests/data', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
                     '5.75-106.0'
                 ]
                 """
@@ -449,25 +449,25 @@ nextflow_process {
                 """
                 input[0] = [
                     [ prefix: 'TESTPFX' ],
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test.gff',                              checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_eggnog.emapper.annotations',       checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_trna.gff',                         checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_crispr_hq.gff',                    checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_amr.tsv',                          checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_antismash.gff',                    checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_gecco.gff',                        checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_dbcan.gff',                        checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_defense_finder.gff',               checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_pseudofinder.gff',                 checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_ips.tsv',                          checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_sanntis.gff',                      checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_arba.tsv',                         checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_unirule.tsv',                      checkIfExists: true),
-                    file('${projectDir}/modules/local/annotate_gff/tests/data/test_pirsr.tsv',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',       checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_crispr_hq.gff',                    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_amr.tsv',                          checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_antismash.gff',                    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_gecco.gff',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_dbcan.gff',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_defense_finder.gff',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ips.tsv',                          checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_sanntis.gff',                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_arba.tsv',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_unirule.tsv',                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pirsr.tsv',                        checkIfExists: true),
                 ]
                 input[1] = [
-                    file('${projectDir}/modules/local/annotate_gff/tests/data', checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
                     '5.75-106.0'
                 ]
                 """
