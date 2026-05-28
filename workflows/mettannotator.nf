@@ -332,6 +332,7 @@ workflow METTANNOTATOR {
             annotate_gff_input,
             interpro_entry_list
         )
+        ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
 
         CUSTOM_DUMPSOFTWAREVERSIONS(
             ch_versions.unique().collectFile(name: 'collated_versions.yml')
