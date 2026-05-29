@@ -333,7 +333,7 @@ workflow METTANNOTATOR {
                     ips, sanntis, arba, unirule, pirsr
                 )
             }
-                    
+
         ANNOTATE_GFF(
             annotate_gff_input,
             interpro_entry_list
