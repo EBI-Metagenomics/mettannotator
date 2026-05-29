@@ -6,24 +6,6 @@
 
 include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-validation'
 
-def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-def summary_params = paramsSummaryMap(workflow)
-
-// Print parameter summary log to screen
-log.info logo + paramsSummaryLog(workflow) + citation
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
@@ -80,25 +62,6 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 // MODULE: Installed directly from nf-core/modules
 //
 
-/////////////////////////////////////////////////////
-/* --  Create channels for reference databases  -- */
-/////////////////////////////////////////////////////
-
-amrfinder_plus_db = channel.empty()
-
-defense_finder_db = channel.empty()
-dbcan_db = channel.empty()
-
-interproscan_db = channel.empty()
-interpro_entry_list = channel.empty()
-
-eggnog_db = channel.empty()
-eggnog_diamond_db = channel.empty()
-eggnog_data = channel.empty()
-
-rfam_ncrna_models = channel.empty()
-
-pseudofinder_db = channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -106,10 +69,53 @@ pseudofinder_db = channel.empty()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Info required for completion email and summary
-def multiqc_report = []
 
 workflow METTANNOTATOR {
+
+
+    def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
+    def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
+    def summary_params = paramsSummaryMap(workflow)
+
+    // Print parameter summary log to screen
+    log.info logo + paramsSummaryLog(workflow) + citation
+
+    /////////////////////////////////////////////////////
+    /* --  Create channels for reference databases  -- */
+    /////////////////////////////////////////////////////
+
+    amrfinder_plus_db = channel.empty()
+
+    defense_finder_db = channel.empty()
+    dbcan_db = channel.empty()
+
+    interproscan_db = channel.empty()
+    interpro_entry_list = channel.empty()
+
+    eggnog_db = channel.empty()
+    eggnog_diamond_db = channel.empty()
+    eggnog_data = channel.empty()
+
+    rfam_ncrna_models = channel.empty()
+
+    pseudofinder_db = channel.empty()
+
+
+    // Info required for completion email and summary
+    def multiqc_report = []
+
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        CONFIG FILES
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+    ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+
 
     if (params.dbs) {
         // Download databases (if needed) //
