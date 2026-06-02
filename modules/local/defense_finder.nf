@@ -3,7 +3,7 @@ process DEFENSE_FINDER {
     tag "${meta.prefix}"
 
     // using quay.io for both singularity and docker due to and issue with the galaxy versions of the container
-    container 'biocontainers/defense-finder:2.0.0--pyhdfd78af_0'
+    container 'quay.io/biocontainers/defense-finder:2.0.1--pyhdfd78af_0'
 
     input:
     tuple val(meta), path(faa), path(prokka_gff)
@@ -20,6 +20,7 @@ process DEFENSE_FINDER {
     defense-finder run \\
         -o defense_finder_output \\
         --antidefensefinder \\
+        --skip-model-version-check \\
         --models-dir ${defense_finder_db} \\
         ${faa}
 
