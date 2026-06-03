@@ -66,6 +66,19 @@
           "help_text": "By default, when --add-slow-tools is used, the pipeline checks that the fast-run results were produced by the same pipeline version. Use this flag to suppress the version mismatch error and proceed anyway — a warning will still be printed. Can only be used together with --add-slow-tools.",
           "fa_icon": "fas fa-code-branch"
         },
+        "gene_calling_only": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run only the gene calling step (Prokka/Bakta) and stop. Outputs can be used with --gene-calls in a subsequent run.",
+          "help_text": "When set, the pipeline runs LOOKUP_KINGDOM and Prokka/Bakta, writes all gene calling outputs to --outdir, then stops. Cannot be used together with --fast, --add-slow-tools, or --gene-calls.",
+          "fa_icon": "fas fa-dna"
+        },
+        "gene_calls": {
+          "type": "string",
+          "description": "Path to an existing gene calling output directory. Skips Prokka/Bakta and starts the pipeline from annotation.",
+          "help_text": "The directory must contain Prokka or Bakta outputs in the standard mettannotator layout (functional_annotation/prokka/ or functional_annotation/bakta/). Cannot be used together with --add-slow-tools or --gene-calling-only.",
+          "fa_icon": "fas fa-folder-open"
+        },
         "email": {
           "type": "string",
           "description": "Email address for completion summary.",
