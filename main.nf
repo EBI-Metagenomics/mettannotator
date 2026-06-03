@@ -84,6 +84,30 @@ workflow EBIMETAGENOMICS_METTANNOTATOR {
         System.exit(1)
     }
 
+    // --gene_calling_only is incompatible with other run-mode flags
+    if (params.gene_calling_only && params.fast) {
+        log.error "'--gene_calling_only' and '--fast' cannot be used together."
+        System.exit(1)
+    }
+    if (params.gene_calling_only && params.add_slow_tools) {
+        log.error "'--gene_calling_only' and '--add_slow_tools' cannot be used together."
+        System.exit(1)
+    }
+    if (params.gene_calling_only && params.gene_calls) {
+        log.error "'--gene_calling_only' and '--gene_calls' cannot be used together."
+        System.exit(1)
+    }
+
+    // --gene_calls is incompatible with other run-mode flags
+    if (params.gene_calls && params.add_slow_tools) {
+        log.error "'--gene_calls' and '--add_slow_tools' cannot be used together."
+        System.exit(1)
+    }
+    if (params.gene_calls && params.fast) {
+        log.error "'--gene_calls' and '--fast' cannot be used together. Use '--gene_calling_only' first, then '--gene_calls' without '--fast' for the full annotation run."
+        System.exit(1)
+    }
+
     WorkflowMain.initialise(workflow, params, log)
     WorkflowMettannotator.initialise(params, log, workflow)
 
