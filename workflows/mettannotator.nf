@@ -359,324 +359,356 @@ workflow METTANNOTATOR {
 
         assemblies_with_kingdom = assemblies.join( LOOKUP_KINGDOM.out.detected_kingdom )
 
-        if ( params.bakta ) {
+        if ( params.gene_calls ) {
 
-            assemblies_with_kingdom.branch {
-                bacteria: it[2] == "Bacteria"
-                archaea: it[2] == "Archaea"
-            }.set { assemblies_to_annotate }
+            def gene_calls_dir = file(params.gene_calls)
 
-            BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
-            ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
-
-            prokka_input = assemblies_to_annotate.archaea
-
-        } else {
-
-            prokka_input = assemblies_with_kingdom
-
-        }
-
-        // Prokka crashes with long contig names, so we temporary rename contigs before running it
-        SHORTEN_CONTIG_NAMES(
-            prokka_input.map { meta, fasta, _kingdom -> [ meta, fasta ] },
-            []
-        )
-        ch_versions = ch_versions.mix(SHORTEN_CONTIG_NAMES.out.versions.first())
-
-        renamed_prokka_input = SHORTEN_CONTIG_NAMES.out.modified_fasta
-            .join( prokka_input )
-            .map { meta, renamed_fasta, _original_fasta, kingdom ->
-                [ meta, renamed_fasta, kingdom ]
+            def load_files = { pattern, strip_suffix ->
+                channel
+                    .fromPath(pattern, checkIfExists: false)
+                    .map { f ->
+                        def name = f.name.replaceAll(strip_suffix + '$', '')
+                        tuple(name, f)
+                    }
             }
-        PROKKA_STANDARD( renamed_prokka_input, Channel.value("standard") )
-        PROKKA_COMPLIANT( renamed_prokka_input, Channel.value("compliant") )
 
-        ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
+            // Preserve the original samplesheet meta (needed for downstream joins, e.g. LOOKUP_KINGDOM)
+            assemblies_by_prefix = assemblies.map { meta, assembly -> [meta.prefix, meta] }
 
-        // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
-        PROKKA_STANDARD.out.gbk
-            .mix(PROKKA_STANDARD.out.gff)
-            .mix(PROKKA_STANDARD.out.fna)
-            .groupTuple()
-            .join(SHORTEN_CONTIG_NAMES.out.fasta_ids_mapping)
-            .multiMap { meta, files_list, names_mapping ->
-                files: [ meta, files_list ]
-                mapping: names_mapping
-        }.set { revert_contig_renaming_input }
-        REVERT_CONTIG_RENAMING(
-            revert_contig_renaming_input.files,
-            revert_contig_renaming_input.mapping
-        )
+            // Load annotation files from the appropriate tool's output directory.
+            // When --bakta is set, load from functional_annotation/bakta/ (bakta compliant = standard bakta outputs).
+            // Otherwise load from functional_annotation/prokka/ and functional_annotation/prokka_compliant/.
+            // Prokka: .faa / .gbk / .gff / .fna   Bakta: .faa / .gbff / .gff3 / .fna
+            if ( params.bakta ) {
+                gc_faa           = load_files("${gene_calls_dir}/**/functional_annotation/bakta/*.faa",   '\\.faa')
+                gc_gbk           = load_files("${gene_calls_dir}/**/functional_annotation/bakta/*.gbff",  '\\.gbff')
+                gc_gff           = load_files("${gene_calls_dir}/**/functional_annotation/bakta/*.gff3",  '\\.gff3')
+                gc_fna           = load_files("${gene_calls_dir}/**/functional_annotation/bakta/*.fna",   '\\.fna')
+                gc_compliant_gbk = load_files("${gene_calls_dir}/**/functional_annotation/bakta/*.gbff",  '\\.gbff')
+                gc_compliant_gff = load_files("${gene_calls_dir}/**/functional_annotation/bakta/*.gff3",  '\\.gff3')
+            } else {
+                gc_faa           = load_files("${gene_calls_dir}/**/functional_annotation/prokka/*.faa",            '\\.faa')
+                gc_gbk           = load_files("${gene_calls_dir}/**/functional_annotation/prokka/*.gbk",            '\\.gbk')
+                gc_gff           = load_files("${gene_calls_dir}/**/functional_annotation/prokka/*.gff",            '\\.gff')
+                gc_fna           = load_files("${gene_calls_dir}/**/functional_annotation/prokka/*.fna",            '\\.fna')
+                gc_compliant_gbk = load_files("${gene_calls_dir}/**/functional_annotation/prokka_compliant/*.gbk", '\\.gbk')
+                gc_compliant_gff = load_files("${gene_calls_dir}/**/functional_annotation/prokka_compliant/*.gff", '\\.gff')
+            }
 
-        if ( params.bakta ) {
-
-            annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( REVERT_CONTIG_RENAMING.out.modified_gbk )
-            annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( REVERT_CONTIG_RENAMING.out.modified_gff )
-            annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( REVERT_CONTIG_RENAMING.out.modified_fasta )
-            annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
-            compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
-            compliant_gff = compliant_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
+            annotations_faa  = assemblies_by_prefix.join(gc_faa).map           { prefix, meta, f -> tuple(meta, f) }
+            annotations_gbk  = assemblies_by_prefix.join(gc_gbk).map           { prefix, meta, f -> tuple(meta, f) }
+            annotations_gff  = assemblies_by_prefix.join(gc_gff).map           { prefix, meta, f -> tuple(meta, f) }
+            annotations_fna  = assemblies_by_prefix.join(gc_fna).map           { prefix, meta, f -> tuple(meta, f) }
+            compliant_gbk    = assemblies_by_prefix.join(gc_compliant_gbk).map { prefix, meta, f -> tuple(meta, f) }
+            compliant_gff    = assemblies_by_prefix.join(gc_compliant_gff).map { prefix, meta, f -> tuple(meta, f) }
 
         } else {
 
-            annotations_gbk = REVERT_CONTIG_RENAMING.out.modified_gbk
-            annotations_gff = REVERT_CONTIG_RENAMING.out.modified_gff
-            annotations_fna = REVERT_CONTIG_RENAMING.out.modified_fasta
-            annotations_faa = PROKKA_STANDARD.out.faa
+            if ( params.bakta ) {
 
-            compliant_gbk = PROKKA_COMPLIANT.out.gbk
-            compliant_gff = PROKKA_COMPLIANT.out.gff
-        }
+                assemblies_with_kingdom.branch {
+                    bacteria: it[2] == "Bacteria"
+                    archaea: it[2] == "Archaea"
+                }.set { assemblies_to_annotate }
 
-        assemblies_for_quast = assemblies.join(
-            annotations_gff
-        ).map { it -> tuple(it[0], it[1], it[2]) }
+                BAKTA_BAKTA( assemblies_to_annotate.bacteria, bakta_db )
+                ch_versions = ch_versions.mix(BAKTA_BAKTA.out.versions.first())
 
-        QUAST(
-            assemblies_for_quast.map { tuple(it[0], it[1]) }, // the assembly
-            assemblies_for_quast.map { tuple(it[0], it[2]) }, // the GFF
-        )
+                prokka_input = assemblies_to_annotate.archaea
 
-        ch_versions = ch_versions.mix(QUAST.out.versions.first())
+            } else {
 
-        PSEUDOFINDER(
-            compliant_gbk,
-            pseudofinder_db
-        )
+                prokka_input = assemblies_with_kingdom
 
-        ch_versions = ch_versions.mix(PSEUDOFINDER.out.versions.first())
+            }
 
-        PSEUDOFINDER_POSTPROCESSING(
-            annotations_gff.join(
-                compliant_gff
-            ).join(
-                PSEUDOFINDER.out.pseudofinder_gff
+            // Prokka crashes with long contig names, so we temporary rename contigs before running it
+            SHORTEN_CONTIG_NAMES(
+                prokka_input.map { meta, fasta, _kingdom -> [ meta, fasta ] },
+                []
             )
-        )
+            ch_versions = ch_versions.mix(SHORTEN_CONTIG_NAMES.out.versions.first())
 
-        ch_versions = ch_versions.mix(PSEUDOFINDER_POSTPROCESSING.out.versions.first())
+            renamed_prokka_input = SHORTEN_CONTIG_NAMES.out.modified_fasta
+                .join( prokka_input )
+                .map { meta, renamed_fasta, _original_fasta, kingdom ->
+                    [ meta, renamed_fasta, kingdom ]
+                }
+            PROKKA_STANDARD( renamed_prokka_input, Channel.value("standard") )
+            PROKKA_COMPLIANT( renamed_prokka_input, Channel.value("compliant") )
+            ch_versions = ch_versions.mix(PROKKA_STANDARD.out.versions.first())
 
-        CRISPRCAS_FINDER( assemblies )
+            // Revert contig renaming in both GBK and GFF files, so they match the original FASTA
+            PROKKA_STANDARD.out.gbk
+                .mix(PROKKA_STANDARD.out.gff)
+                .mix(PROKKA_STANDARD.out.fna)
+                .groupTuple()
+                .join(SHORTEN_CONTIG_NAMES.out.fasta_ids_mapping)
+                .multiMap { meta, files_list, names_mapping ->
+                    files: [ meta, files_list ]
+                    mapping: names_mapping
+            }.set { revert_contig_renaming_input }
+            REVERT_CONTIG_RENAMING(
+                revert_contig_renaming_input.files,
+                revert_contig_renaming_input.mapping
+            )
 
-        ch_versions = ch_versions.mix(CRISPRCAS_FINDER.out.versions.first())
+            if ( params.bakta ) {
 
-        // EGGNOG_MAPPER_ORTHOLOGS - needs a third empty file in mode=mapper
-        proteins_for_emapper_orth = annotations_faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
+                annotations_gbk = annotations_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( REVERT_CONTIG_RENAMING.out.modified_gbk )
+                annotations_gff = annotations_gff.mix( BAKTA_BAKTA.out.gff ).mix( REVERT_CONTIG_RENAMING.out.modified_gff )
+                annotations_fna = annotations_fna.mix( BAKTA_BAKTA.out.fna ).mix( REVERT_CONTIG_RENAMING.out.modified_fasta )
+                annotations_faa = annotations_faa.mix( BAKTA_BAKTA.out.faa ).mix( PROKKA_STANDARD.out.faa )
+                compliant_gbk = compliant_gbk.mix( BAKTA_BAKTA.out.gbk ).mix( PROKKA_COMPLIANT.out.gbk )
+                compliant_gff = compliant_gff.mix( BAKTA_BAKTA.out.gff ).mix( PROKKA_COMPLIANT.out.gff )
 
-        EGGNOG_MAPPER_ORTHOLOGS(
-            proteins_for_emapper_orth,
-            Channel.value("mapper"),
-            eggnog_db
-        )
+            } else {
 
-        ch_versions = ch_versions.mix(EGGNOG_MAPPER_ORTHOLOGS.out.versions.first())
+                annotations_gbk = REVERT_CONTIG_RENAMING.out.modified_gbk
+                annotations_gff = REVERT_CONTIG_RENAMING.out.modified_gff
+                annotations_fna = REVERT_CONTIG_RENAMING.out.modified_fasta
+                annotations_faa = PROKKA_STANDARD.out.faa
 
-        // EGGNOG_MAPPER_ANNOTATIONS - needs a second empty file in mode=annotations
-        orthologs_for_annotations = assemblies.join(EGGNOG_MAPPER_ORTHOLOGS.out.orthologs, by: 0).map {
-            it -> {
-                tuple(it[0], file("NO_FILE"), file(it[2])) // tuple( meta , <empty> , assembly )
+                compliant_gbk = PROKKA_COMPLIANT.out.gbk
+                compliant_gff = PROKKA_COMPLIANT.out.gff
             }
         }
 
-        EGGNOG_MAPPER_ANNOTATIONS(
-            orthologs_for_annotations,
-            Channel.value("annotations"),
-            eggnog_db
-        )
+        if ( !params.gene_calling_only ) {
 
-        ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
+            assemblies_for_quast = assemblies.join(
+                annotations_gff
+            ).map { it -> tuple(it[0], it[1], it[2]) }
 
-        if ( !params.fast ) {
-            ADD_TAXID_TO_PROTEIN_FASTA(
-                annotations_faa
+            QUAST(
+                assemblies_for_quast.map { tuple(it[0], it[1]) }, // the assembly
+                assemblies_for_quast.map { tuple(it[0], it[2]) }, // the GFF
             )
-            ch_versions = ch_versions.mix(ADD_TAXID_TO_PROTEIN_FASTA.out.versions.first())
+            ch_versions = ch_versions.mix(QUAST.out.versions.first())
 
-            INTERPROSCAN(
-                ADD_TAXID_TO_PROTEIN_FASTA.out.annotations_faa_with_taxid,
-                interproscan_db
+            PSEUDOFINDER(
+                compliant_gbk,
+                pseudofinder_db
             )
-            ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
+            ch_versions = ch_versions.mix(PSEUDOFINDER.out.versions.first())
 
-            UNIFIRE (
-                INTERPROSCAN.out.ips_xml
+            PSEUDOFINDER_POSTPROCESSING(
+                annotations_gff.join(
+                    compliant_gff
+                ).join(
+                    PSEUDOFINDER.out.pseudofinder_gff
+                )
             )
-            ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
-        }
+            ch_versions = ch_versions.mix(PSEUDOFINDER_POSTPROCESSING.out.versions.first())
 
-        assemblies_plus_faa_and_gff = assemblies.join(
-            annotations_faa
-        ).join(
-            annotations_gff
-        )
+            CRISPRCAS_FINDER( assemblies )
+            ch_versions = ch_versions.mix(CRISPRCAS_FINDER.out.versions.first())
 
-        AMRFINDER_PLUS_GET_SPECIES_NAME(
-            assemblies,
-            amrfinder_plus_db
-        )
+            // EGGNOG_MAPPER_ORTHOLOGS - needs a third empty file in mode=mapper
+            proteins_for_emapper_orth = annotations_faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
 
-        AMRFINDER_PLUS(
-            assemblies_plus_faa_and_gff.join(AMRFINDER_PLUS_GET_SPECIES_NAME.out.detected_organism),
-            amrfinder_plus_db
-        )
-
-        ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
-
-        AMRFINDER_PLUS_TSV_POSTPROCESSING(AMRFINDER_PLUS.out.amrfinder_tsv)
-
-        ch_versions = ch_versions.mix(AMRFINDER_PLUS_TSV_POSTPROCESSING.out.versions.first())
-
-        AMRFINDER_PLUS_TO_GFF( AMRFINDER_PLUS_TSV_POSTPROCESSING.out.amrfinder_tsv )
-
-        ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
-
-        DEFENSE_FINDER(
-            annotations_faa.join( annotations_gff ),
-            defense_finder_db
-        )
-
-        ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
-
-        DETECT_TRNA(
-            annotations_fna.join( LOOKUP_KINGDOM.out.detected_kingdom )
-        )
-
-        ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
-
-        DETECT_NCRNA(
-            annotations_fna,
-            rfam_ncrna_models
-        )
-
-        ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
-
-        if ( !params.fast ) {
-            SANNTIS(
-                INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
+            EGGNOG_MAPPER_ORTHOLOGS(
+                proteins_for_emapper_orth,
+                Channel.value("mapper"),
+                eggnog_db
             )
-            ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
-        }
+            ch_versions = ch_versions.mix(EGGNOG_MAPPER_ORTHOLOGS.out.versions.first())
 
-
-        GECCO_RUN(
-            annotations_gbk.map { meta, gbk -> [meta, gbk, []] }, []
-        )
-
-        ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
-
-        ANTISMASH(
-            annotations_gbk,
-            antismash_db
-        )
-
-        ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
-
-        ANTISMASH_TO_GFF(
-            ANTISMASH.out.json
-        )
-
-        ch_versions = ch_versions.mix(ANTISMASH_TO_GFF.out.versions.first())
-
-        ANTISMASH_SUMMARY(
-            ANTISMASH_TO_GFF.out.gff
-        )
-
-        ch_versions = ch_versions.mix(ANTISMASH_SUMMARY.out.versions.first())
-
-        DBCAN(
-            annotations_faa.join( annotations_gff ),
-            dbcan_db
-        )
-
-        ch_versions = ch_versions.mix(DBCAN.out.versions.first())
-
-        /**********************************************/
-        /* Combine the results into a single GFF file */
-        /**********************************************/
-        annotate_gff_input = annotations_gff.join(
-            EGGNOG_MAPPER_ANNOTATIONS.out.annotations
-        ).join(
-            DETECT_NCRNA.out.ncrna_tblout
-        ).join(
-            DETECT_TRNA.out.trna_gff
-        ).join(
-            CRISPRCAS_FINDER.out.hq_gff, remainder: true
-        ).join(
-            AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
-        ).join(
-            ANTISMASH_TO_GFF.out.gff, remainder: true
-        ).join(
-            GECCO_RUN.out.gff, remainder: true
-        ).join(
-            DBCAN.out.dbcan_gff, remainder: true
-        ).join(
-            DEFENSE_FINDER.out.gff, remainder: true
-        ).join(
-            PSEUDOFINDER_POSTPROCESSING.out.pseudofinder_processed_gff, remainder: true
-        )
-
-        if ( !params.fast ) {
-            annotate_gff_input = annotate_gff_input.join(
-                INTERPROSCAN.out.ips_annotations
-            ).join(
-                SANNTIS.out.sanntis_gff, remainder: true
-            ).join(
-                UNIFIRE.out.arba, remainder: true
-            ).join(
-                UNIFIRE.out.unirule, remainder: true
-            ).join(
-                UNIFIRE.out.pirsr, remainder: true
-            )
-        } else {
-            annotate_gff_input = annotate_gff_input.map { it -> {
-                    // IPS, SanntiS, UniFire{arba,unirule,pirsr}
-                    // meta, <files> //
-                    it + [[], [], [], [], []]
+            // EGGNOG_MAPPER_ANNOTATIONS - needs a second empty file in mode=annotations
+            orthologs_for_annotations = assemblies.join(EGGNOG_MAPPER_ORTHOLOGS.out.orthologs, by: 0).map {
+                it -> {
+                    tuple(it[0], file("NO_FILE"), file(it[2])) // tuple( meta , <empty> , assembly )
                 }
             }
-        }
 
-        ANNOTATE_GFF(
-            annotate_gff_input,
-            interpro_entry_list
-        )
+            EGGNOG_MAPPER_ANNOTATIONS(
+                orthologs_for_annotations,
+                Channel.value("annotations"),
+                eggnog_db
+            )
+            ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
-        ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
+            if ( !params.fast ) {
+                ADD_TAXID_TO_PROTEIN_FASTA(
+                    annotations_faa
+                )
+                ch_versions = ch_versions.mix(ADD_TAXID_TO_PROTEIN_FASTA.out.versions.first())
 
-        CIRCOS_PLOT(
-            ANNOTATE_GFF.out.annotated_gff
-        )
+                INTERPROSCAN(
+                    ADD_TAXID_TO_PROTEIN_FASTA.out.annotations_faa_with_taxid,
+                    interproscan_db
+                )
+                ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
 
-        ch_versions = ch_versions.mix(CIRCOS_PLOT.out.versions.first())
+                UNIFIRE (
+                    INTERPROSCAN.out.ips_xml
+                )
+                ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
+            }
+
+            assemblies_plus_faa_and_gff = assemblies.join(
+                annotations_faa
+            ).join(
+                annotations_gff
+            )
+
+            AMRFINDER_PLUS_GET_SPECIES_NAME(
+                assemblies,
+                amrfinder_plus_db
+            )
+
+            AMRFINDER_PLUS(
+                assemblies_plus_faa_and_gff.join(AMRFINDER_PLUS_GET_SPECIES_NAME.out.detected_organism),
+                amrfinder_plus_db
+            )
+            ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
+
+            AMRFINDER_PLUS_TSV_POSTPROCESSING(AMRFINDER_PLUS.out.amrfinder_tsv)
+            ch_versions = ch_versions.mix(AMRFINDER_PLUS_TSV_POSTPROCESSING.out.versions.first())
+
+            AMRFINDER_PLUS_TO_GFF( AMRFINDER_PLUS_TSV_POSTPROCESSING.out.amrfinder_tsv )
+            ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
+
+            DEFENSE_FINDER(
+                annotations_faa.join( annotations_gff ),
+                defense_finder_db
+            )
+            ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
+
+            DETECT_TRNA(
+                annotations_fna.join( LOOKUP_KINGDOM.out.detected_kingdom )
+            )
+            ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
+
+            DETECT_NCRNA(
+                annotations_fna,
+                rfam_ncrna_models
+            )
+            ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
+
+            if ( !params.fast ) {
+                SANNTIS(
+                    INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
+                )
+                ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
+            }
+
+            GECCO_RUN(
+                annotations_gbk.map { meta, gbk -> [meta, gbk, []] }, []
+            )
+            ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
+
+            ANTISMASH(
+                annotations_gbk,
+                antismash_db
+            )
+            ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
+
+            ANTISMASH_TO_GFF(
+                ANTISMASH.out.json
+            )
+
+            ch_versions = ch_versions.mix(ANTISMASH_TO_GFF.out.versions.first())
+
+            ANTISMASH_SUMMARY(
+                ANTISMASH_TO_GFF.out.gff
+            )
+            ch_versions = ch_versions.mix(ANTISMASH_SUMMARY.out.versions.first())
+
+            DBCAN(
+                annotations_faa.join( annotations_gff ),
+                dbcan_db
+            )
+            ch_versions = ch_versions.mix(DBCAN.out.versions.first())
+
+            /**********************************************/
+            /* Combine the results into a single GFF file */
+            /**********************************************/
+            annotate_gff_input = annotations_gff.join(
+                EGGNOG_MAPPER_ANNOTATIONS.out.annotations
+            ).join(
+                DETECT_NCRNA.out.ncrna_tblout
+            ).join(
+                DETECT_TRNA.out.trna_gff
+            ).join(
+                CRISPRCAS_FINDER.out.hq_gff, remainder: true
+            ).join(
+                AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
+            ).join(
+                ANTISMASH_TO_GFF.out.gff, remainder: true
+            ).join(
+                GECCO_RUN.out.gff, remainder: true
+            ).join(
+                DBCAN.out.dbcan_gff, remainder: true
+            ).join(
+                DEFENSE_FINDER.out.gff, remainder: true
+            ).join(
+                PSEUDOFINDER_POSTPROCESSING.out.pseudofinder_processed_gff, remainder: true
+            )
+
+            if ( !params.fast ) {
+                annotate_gff_input = annotate_gff_input.join(
+                    INTERPROSCAN.out.ips_annotations
+                ).join(
+                    SANNTIS.out.sanntis_gff, remainder: true
+                ).join(
+                    UNIFIRE.out.arba, remainder: true
+                ).join(
+                    UNIFIRE.out.unirule, remainder: true
+                ).join(
+                    UNIFIRE.out.pirsr, remainder: true
+                )
+            } else {
+                annotate_gff_input = annotate_gff_input.map { it -> {
+                        // IPS, SanntiS, UniFire{arba,unirule,pirsr}
+                        // meta, <files> //
+                        it + [[], [], [], [], []]
+                    }
+                }
+            }
+
+            ANNOTATE_GFF(
+                annotate_gff_input,
+                interpro_entry_list
+            )
+            ch_versions = ch_versions.mix(ANNOTATE_GFF.out.versions.first())
+
+            CIRCOS_PLOT(
+                ANNOTATE_GFF.out.annotated_gff
+            )
+            ch_versions = ch_versions.mix(CIRCOS_PLOT.out.versions.first())
+
+        } 
 
         CUSTOM_DUMPSOFTWAREVERSIONS(
             ch_versions.unique().collectFile(name: 'collated_versions.yml')
         )
 
-        //
-        // MODULE: MultiQC
-        //
-        workflow_summary    = WorkflowMettannotator.paramsSummaryMultiqc(workflow, summary_params)
-        ch_workflow_summary = Channel.value(workflow_summary)
+        if ( !params.gene_calling_only ) {
+            //
+            // MODULE: MultiQC
+            //
+            workflow_summary    = WorkflowMettannotator.paramsSummaryMultiqc(workflow, summary_params)
+            ch_workflow_summary = Channel.value(workflow_summary)
 
-        methods_description    = WorkflowMettannotator.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
-        ch_methods_description = Channel.value(methods_description)
+            methods_description    = WorkflowMettannotator.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
+            ch_methods_description = Channel.value(methods_description)
 
-        ch_multiqc_files = Channel.empty()
-        ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-        ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-        ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-        ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.results.collect { it[1] }.ifEmpty([]) )
+            ch_multiqc_files = Channel.empty()
+            ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+            ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
+            ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+            ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.results.collect { it[1] }.ifEmpty([]) )
 
 
-        MULTIQC(
-            ch_multiqc_files.collect(),
-            ch_multiqc_config.toList(),
-            ch_multiqc_custom_config.toList(),
-            ch_multiqc_logo.toList()
-        )
-        multiqc_report = MULTIQC.out.report.toList()
+            MULTIQC(
+                ch_multiqc_files.collect(),
+                ch_multiqc_config.toList(),
+                ch_multiqc_custom_config.toList(),
+                ch_multiqc_logo.toList()
+            )
+            multiqc_report = MULTIQC.out.report.toList()
+        }
     }
 }
 
