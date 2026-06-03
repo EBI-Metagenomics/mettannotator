@@ -271,11 +271,33 @@ class MettannotatorValidation {
             )
         }
 
-        def sampleDirs = geneCallsDir.listFiles()?.findAll { it.isDirectory() } ?: []
+        def inputFile = new File(params.input as String)
+        def lines = inputFile.readLines()
+        def header = lines[0].split(',')*.trim()
+        def prefixIdx = header.indexOf('prefix')
+
+        if (prefixIdx < 0) {
+            Nextflow.error("Samplesheet '${inputFile}' has no 'prefix' column.")
+        }
+
         def errors = []
 
-        sampleDirs.each { sampleDir ->
-            def prefix = sampleDir.name
+        lines.drop(1).each { line ->
+            if (line.trim().isEmpty()) return
+
+            def prefix = line.split(',')*.trim()[prefixIdx]
+            def sampleDir = new File(geneCallsDir, prefix)
+
+            if (!sampleDir.isDirectory()) {
+                errors << (
+                    "Sample '${prefix}': output directory not found in gene calls directory.\n" +
+                    "  Expected: ${sampleDir.absolutePath}\n" +
+                    "  Ensure '--gene_calling_only' was run for this sample and that\n" +
+                    "  '--gene_calls' points to the correct output directory."
+                )
+                return
+            }
+
             def hasProkka = new File("${sampleDir}/functional_annotation/prokka").isDirectory()
             def hasBakta  = new File("${sampleDir}/functional_annotation/bakta").isDirectory()
 
@@ -297,6 +319,7 @@ class MettannotatorValidation {
 
         log.info "Gene calls input validation passed for all samples in '${params.gene_calls}'."
     }
+
 
     /**
      * Detect which annotator was used for a given sample by checking which
