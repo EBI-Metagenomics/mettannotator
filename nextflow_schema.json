@@ -76,7 +76,7 @@
         "gene_calls": {
           "type": "string",
           "description": "Path to an existing gene calling output directory. Skips Prokka/Bakta and starts the pipeline from annotation.",
-          "help_text": "The directory must contain Prokka or Bakta outputs in the standard mettannotator layout (functional_annotation/prokka/ or functional_annotation/bakta/). Cannot be used together with --add-slow-tools or --gene-calling-only.",
+          "help_text": "The directory must follow the standard mettannotator layout. When --bakta is set, Bakta outputs are expected at functional_annotation/bakta/. Otherwise, Prokka outputs are expected at functional_annotation/prokka/ (standard annotation) and functional_annotation/prokka_compliant/ (used by Pseudofinder). The samplesheet must still specify the assembly FASTA and taxid. Cannot be used together with --add-slow-tools or --gene-calling-only.",
           "fa_icon": "fas fa-folder-open"
         },
         "email": {
