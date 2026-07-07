@@ -42,6 +42,15 @@ def reformat_line(line, taxid):
     description = (
         description.replace('"', "").replace("'", "").replace("‘", "").replace("’", "")
     )
+    # InterProScan truncates the XML name attribute at 255 characters. If the
+    # description is long enough to push OX= past that limit, the taxid in the
+    # XML gets cut (e.g. OX=1523156 → OX=15), causing UNIFIRE to crash on an
+    # unrecognised taxid. Truncate here so OX= is always intact in the XML.
+    prefix = f"tr|{protein_id}|"
+    suffix = f" OX={taxid}"
+    max_desc = 255 - len(prefix) - len(suffix)
+    if len(description) > max_desc:
+        description = description[:max_desc]
     formatted_line = f">tr|{protein_id}|{description} OX={taxid}\n"
     return formatted_line
 
