@@ -38,6 +38,9 @@ include { CIRCOS_PLOT                                } from '../modules/local/ci
 include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
 include { PSEUDOFINDER_POSTPROCESSING                } from '../modules/local/pseudofinder'
 include { STAGE_FAST_OUTPUTS                         } from '../modules/local/stage_fast_outputs'
+include { NORMALIZE_ENSEMBL_GFF                      } from '../modules/local/normalize_ensembl_gff'
+include { GFF_TO_GBK                                 } from '../modules/local/gff_to_gbk'
+
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
 
@@ -346,13 +349,64 @@ workflow METTANNOTATOR {
 
     } else {
 
-        assemblies = Channel.fromSamplesheet("input")
+        assemblies_raw = Channel.fromSamplesheet("input")
+        // [meta, assembly] for all samples — feeds LOOKUP_KINGDOM and all assembly-level tools
+        assemblies = assemblies_raw.map { row -> [row[0], row[1]] }
         annotations_fna = channel.empty()
         annotations_gbk = channel.empty()
         annotations_faa = channel.empty()
         annotations_gff = channel.empty()
         compliant_gbk = channel.empty()
         compliant_gff = channel.empty()
+
+        // Per-sample external gene calls: rows where annotation_source is prokka/bakta/ensembl.
+        // When the gene_calls_gff column is absent (standard samplesheet), this channel is empty.
+        // Tuple: [meta, assembly, gene_calls_gff, gene_calls_faa, gene_calls_gbk]
+        ext_gene_call_rows = assemblies_raw
+            .filter { it[0].annotation_source in ['prokka', 'bakta', 'ensembl'] }
+            .map { [it[0], it[1], it[2], it[3], it[4]] }
+
+        ext_gene_call_rows.branch {
+            ensembl: it[0].annotation_source == 'ensembl'
+            direct:  true   // prokka or bakta — GFF used as-is
+        }.set { ext_gc_branches }
+
+        NORMALIZE_ENSEMBL_GFF(
+            ext_gc_branches.ensembl.map { meta, _assembly, gff, _faa, _gbk -> [meta, gff] }
+        )
+        ch_versions = ch_versions.mix(NORMALIZE_ENSEMBL_GFF.out.versions)
+
+        // Ensembl samples with a user-supplied GBK skip GFF_TO_GBK.
+        ext_gc_branches.ensembl.branch {
+            has_gbk:   it[4]
+            needs_gbk: true
+        }.set { ensembl_gbk_branches }
+
+        GFF_TO_GBK(
+            NORMALIZE_ENSEMBL_GFF.out.normalised_gff
+                .join( ensembl_gbk_branches.needs_gbk.map { meta, _assembly, _gff, faa, _gbk -> [meta, faa] } )
+                .join( ensembl_gbk_branches.needs_gbk.map { meta, assembly, _gff, _faa, _gbk -> [meta, assembly] } )
+        )
+        ch_versions = ch_versions.mix(GFF_TO_GBK.out.versions)
+
+        ext_annotations_gff = NORMALIZE_ENSEMBL_GFF.out.normalised_gff
+            .mix( ext_gc_branches.direct.map { meta, _assembly, gff, _faa, _gbk -> [meta, gff] } )
+        ext_annotations_faa = ext_gc_branches.ensembl.map { meta, _assembly, _gff, faa, _gbk -> [meta, faa] }
+            .mix( ext_gc_branches.direct.map { meta, _assembly, _gff, faa, _gbk -> [meta, faa] } )
+        ext_annotations_fna = ext_gc_branches.ensembl.map { meta, assembly, _gff, _faa, _gbk -> [meta, assembly] }
+            .mix( ext_gc_branches.direct.map { meta, assembly, _gff, _faa, _gbk -> [meta, assembly] } )
+
+        // Any external sample (ensembl or direct) that provides a GBK uses it directly,
+        // bypassing GFF_TO_GBK. compliant_gff for direct samples uses their GFF as-is
+        // (no contig renaming). Ensembl compliant_gff comes from NORMALIZE_ENSEMBL_GFF.
+        ext_gbk = ensembl_gbk_branches.has_gbk
+            .map    { meta, _assembly, _gff, _faa, gbk -> [meta, gbk] }
+            .mix( ext_gc_branches.direct
+                .filter { meta, _assembly, _gff, _faa, gbk -> gbk }
+                .map    { meta, _assembly, _gff, _faa, gbk -> [meta, gbk] } )
+        ext_direct_compliant_gff = ext_gc_branches.direct
+            .filter { meta, _assembly, _gff, _faa, gbk -> gbk }
+            .map    { meta, _assembly, gff, _faa, _gbk -> [meta, gff] }
 
         LOOKUP_KINGDOM( assemblies )
         ch_versions = ch_versions.mix(LOOKUP_KINGDOM.out.versions.first())
@@ -404,9 +458,14 @@ workflow METTANNOTATOR {
 
         } else {
 
+            // Exclude samples that supply per-sample external gene calls from Prokka/Bakta
+            assemblies_for_gene_calling = assemblies_with_kingdom.filter { meta, _assembly, _kingdom ->
+                !(meta.annotation_source in ['prokka', 'bakta', 'ensembl'])
+            }
+
             if ( params.bakta ) {
 
-                assemblies_with_kingdom.branch {
+                assemblies_for_gene_calling.branch {
                     bacteria: it[2] == "Bacteria"
                     archaea: it[2] == "Archaea"
                 }.set { assemblies_to_annotate }
@@ -418,7 +477,7 @@ workflow METTANNOTATOR {
 
             } else {
 
-                prokka_input = assemblies_with_kingdom
+                prokka_input = assemblies_for_gene_calling
 
             }
 
@@ -473,6 +532,16 @@ workflow METTANNOTATOR {
                 compliant_gff = PROKKA_COMPLIANT.out.gff
             }
         }
+
+        // Mix per-sample external gene calls (samplesheet gene_calls_gff column) into the main
+        // annotation channels. Empty no-op when no external gene calls are provided.
+        annotations_gff = annotations_gff.mix(ext_annotations_gff)
+        annotations_faa = annotations_faa.mix(ext_annotations_faa)
+        annotations_fna = annotations_fna.mix(ext_annotations_fna)
+        annotations_gbk = annotations_gbk.mix(GFF_TO_GBK.out.gbk).mix(ext_gbk)
+        compliant_gbk   = compliant_gbk.mix(GFF_TO_GBK.out.gbk).mix(ext_gbk)
+        compliant_gff   = compliant_gff.mix(NORMALIZE_ENSEMBL_GFF.out.normalised_gff).mix(ext_direct_compliant_gff)
+
 
         if ( !params.gene_calling_only ) {
 
@@ -659,12 +728,11 @@ workflow METTANNOTATOR {
                     UNIFIRE.out.pirsr, remainder: true
                 )
             } else {
-                annotate_gff_input = annotate_gff_input.map { it -> {
+                annotate_gff_input = annotate_gff_input.map { it ->
                         // IPS, SanntiS, UniFire{arba,unirule,pirsr}
                         // meta, <files> //
                         it + [[], [], [], [], []]
                     }
-                }
             }
 
             ANNOTATE_GFF(
