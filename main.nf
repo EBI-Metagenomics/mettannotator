@@ -108,6 +108,18 @@ workflow EBIMETAGENOMICS_METTANNOTATOR {
         System.exit(1)
     }
 
+    // --gene_calls (directory) and samplesheet gene_calls_gff column are mutually exclusive.
+    if (params.gene_calls && params.input) {
+        def ssHeader = new File(params.input as String).readLines()[0].split(',')*.trim()
+        if (ssHeader.contains('gene_calls_gff')) {
+            log.error (
+                "'--gene_calls' cannot be used when the samplesheet contains a 'gene_calls_gff' " +
+                "column. Use one mechanism or the other, not both."
+            )
+            System.exit(1)
+        }
+    }
+
     WorkflowMain.initialise(workflow, params, log)
     WorkflowMettannotator.initialise(params, log, workflow)
 

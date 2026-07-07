@@ -370,4 +370,98 @@ class MettannotatorValidation {
 
         return current
     }
+
+    /**
+     * Validate samplesheet rows that use per-sample external gene calls.
+     * Called when the samplesheet contains a 'gene_calls_gff' column.
+     *   - annotation_source must be set (prokka/bakta/ensembl) when gene_calls_gff is set
+     *   - gene_calls_faa must be set when gene_calls_gff is set
+     *   - both files must exist on disk
+     */
+    public static void validateExternalGeneCalls(params, log) {
+        def inputFile = new File(params.input as String)
+        def lines     = inputFile.readLines()
+        def header    = lines[0].split(',')*.trim()
+
+        def gffIdx    = header.indexOf('gene_calls_gff')
+
+        // Column not present in samplesheet at all — nothing to validate.
+        if (gffIdx < 0) return
+
+        def prefixIdx = header.indexOf('prefix')
+        def faaIdx    = header.indexOf('gene_calls_faa')
+        def gbkIdx    = header.indexOf('gene_calls_gbk')
+        def sourceIdx = header.indexOf('annotation_source')
+
+        def valid_sources = ['prokka', 'bakta', 'ensembl'] as Set
+        def errors        = []
+
+        lines.drop(1).eachWithIndex { line, idx ->
+            if (line.trim().isEmpty()) return
+
+            def fields = line.split(',')*.trim()
+            def rowNum = idx + 2  // 1-based, accounting for header row
+
+            def prefix = prefixIdx >= 0 && prefixIdx < fields.size() ? fields[prefixIdx] : ''
+            def gff    = gffIdx    >= 0 && gffIdx    < fields.size() ? fields[gffIdx]    : ''
+            def faa    = faaIdx    >= 0 && faaIdx    < fields.size() ? fields[faaIdx]    : ''
+            def gbk    = gbkIdx    >= 0 && gbkIdx    < fields.size() ? fields[gbkIdx]    : ''
+            def source = sourceIdx >= 0 && sourceIdx < fields.size() ? fields[sourceIdx] : ''
+
+            if (!gff) {
+                // FAA, GBK, or annotation_source set without a GFF is likely a user mistake
+                if (faa || gbk || source) {
+                    errors << (
+                        "Row ${rowNum} (prefix='${prefix}'): 'gene_calls_faa', 'gene_calls_gbk', or " +
+                        "'annotation_source' is set but 'gene_calls_gff' is missing. " +
+                        "'gene_calls_gff' is required when providing external gene call files."
+                    )
+                }
+                return
+            }
+
+            if (!source || !valid_sources.contains(source)) {
+                errors << (
+                    "Row ${rowNum} (prefix='${prefix}'): 'gene_calls_gff' is set but " +
+                    "'annotation_source' is missing or invalid (got '${source}').\n" +
+                    "  Valid values: prokka, bakta, ensembl"
+                )
+            }
+
+            if (!faa) {
+                errors << (
+                    "Row ${rowNum} (prefix='${prefix}'): 'gene_calls_gff' is set but " +
+                    "'gene_calls_faa' is missing. Both must be provided together."
+                )
+            }
+
+            if (gff && !new File(gff).exists()) {
+                errors << (
+                    "Row ${rowNum} (prefix='${prefix}'): gene_calls_gff file not found:\n" +
+                    "  ${gff}"
+                )
+            }
+
+            if (faa && !new File(faa).exists()) {
+                errors << (
+                    "Row ${rowNum} (prefix='${prefix}'): gene_calls_faa file not found:\n" +
+                    "  ${faa}"
+                )
+            }
+
+            if (gbk && !new File(gbk).exists()) {
+                errors << (
+                    "Row ${rowNum} (prefix='${prefix}'): gene_calls_gbk file not found:\n" +
+                    "  ${gbk}"
+                )
+            }
+        }
+
+        if (errors) {
+            Nextflow.error(
+                "External gene-calls samplesheet validation failed:\n" +
+                errors.collect { "  - ${it}" }.join("\n")
+            )
+        }
+    }
 }
