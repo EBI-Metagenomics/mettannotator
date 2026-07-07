@@ -128,6 +128,19 @@ maximum length is 24 characters; the prefix may contain letters, digits, dashes,
 
 `taxid` is the NCBI TaxId (if the species-level TaxId is not known, a TaxId for a higher taxonomic level can be used). If the taxonomy is known, look up the TaxID [here](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi).
 
+#### External gene calls (optional columns)
+
+To use pre-computed gene calls for individual samples, add up to four optional columns:
+
+| Column | Description |
+|--------|-------------|
+| `gene_calls_gff` | GFF/GFF3 file with CDS features (anchor field) |
+| `gene_calls_faa` | Matching protein FASTA — required when `gene_calls_gff` is set |
+| `annotation_source` | Source format: `prokka`, `bakta`, or `ensembl` — required when `gene_calls_gff` is set |
+| `gene_calls_gbk` | Optional GenBank file; enables Pseudofinder, GECCO, antiSMASH, and SanntiS |
+
+Samples without external gene calls leave these columns empty. Standard (3-column) and extended-column rows can coexist in the same samplesheet.
+
 #### Finding TaxIds
 
 If NCBI taxonomies of input genomes are not known, a tool such as [CAT/BAT](https://github.com/MGXlab/CAT_pack) can be used.
@@ -281,6 +294,39 @@ nextflow run ebi-metagenomics/mettannotator \
    --outdir <OUTDIR> \
    --dbs <PATH/TO/WHERE/DBS/WILL/BE/SAVED>
 ```
+
+#### Gene-calling-only mode
+
+To run gene calling only and stop before functional annotation:
+
+```bash
+nextflow run ebi-metagenomics/mettannotator \
+   -profile <docker/singularity/...> \
+   --input assemblies_sheet.csv \
+   --outdir gene_calls_outdir \
+   --dbs <PATH/TO/DBS> \
+   --gene_calling_only
+```
+
+The outputs can then be reused in a separate full annotation run:
+
+```bash
+nextflow run ebi-metagenomics/mettannotator \
+   -profile <docker/singularity/...> \
+   --input assemblies_sheet.csv \
+   --outdir annotation_outdir \
+   --dbs <PATH/TO/DBS> \
+   --gene_calls gene_calls_outdir
+```
+
+`--gene_calls` discovers Prokka/Bakta outputs by sample prefix and skips gene calling.
+It cannot be combined with `--fast`, `--add_slow_tools`, or the samplesheet `gene_calls_gff` column.
+
+#### Per-sample external gene calls
+
+To use pre-computed gene calls from an external source (e.g. Ensembl Bacteria), add the optional samplesheet columns described in [External gene calls](#external-gene-calls-optional-columns)
+and set `annotation_source` accordingly. For `ensembl`, the GFF3 is normalised automatically
+and a GenBank file is generated if `gene_calls_gbk` is not provided.
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
