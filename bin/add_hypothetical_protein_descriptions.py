@@ -31,9 +31,10 @@ MINIMUM_IPR_MATCH = 0.10
 class GeneCaller(Enum):
     PROKKA = "Prokka"
     BAKTA = "Bakta"
+    ENSEMBL = "Ensembl"
 
 
-def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile):
+def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile, annotation_source="prokka"):
     eggnog_info = load_eggnog(eggnog_file)
     if ipr_file:
         levels = load_hierarchy(hierarchy_file)
@@ -43,7 +44,7 @@ def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile)
         ipr_info = dict()
         ipr_memberdb_only = dict()
 
-    gene_caller = GeneCaller.PROKKA
+    gene_caller = GeneCaller(annotation_source.capitalize())
     fasta_flag = False
     with open(infile) as file_in, open(outfile, "w") as file_out:
         for line in file_in:
@@ -1055,6 +1056,13 @@ def parse_args():
         required=True,
         help="Path to the output file where the result will be saved.",
     )
+    parser.add_argument(
+        "--annotation-source",
+        dest="annotation_source",
+        default="prokka",
+        choices=["prokka", "bakta", "ensembl"],
+        help="Gene calling source (default: prokka). Controls the product_source label.",
+    )
     return parser.parse_args()
 
 
@@ -1075,4 +1083,5 @@ if __name__ == "__main__":
         args.eggnog_output,
         args.infile,
         args.outfile,
+        args.annotation_source,
     )
