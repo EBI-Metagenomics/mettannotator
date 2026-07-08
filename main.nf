@@ -60,55 +60,46 @@ workflow EBIMETAGENOMICS_METTANNOTATOR {
         System.exit(1)
     }
 
-    // Validate add_slow_tools and fast are not used together
     if (params.add_slow_tools && params.fast) {
         log.error "'--add_slow_tools' and '--fast' cannot be used together. Use '--fast' for initial run, then '--add-slow-tools' to add slow annotations."
         System.exit(1)
     }
 
-    // Validate add_slow_tools and --skip-fast-staging are used together
     if (params.skip_fast_staging && !params.add_slow_tools) {
         log.error "'--skip_fast_staging' can only be used together with '--add_slow_tools'."
         System.exit(1)
     }
 
-    // Validate add_slow_tools and --allow-missing-files are used together
     if (params.allow_missing_files && !params.add_slow_tools) {
         log.error "'--allow_missing_files' can only be used together with '--add_slow_tools'."
         System.exit(1)
     }
 
-    // --ignore-version-mismatch only makes sense alongside --add_slow_tools
     if (params.ignore_version_mismatch && !params.add_slow_tools) {
         log.error "'--ignore_version_mismatch' can only be used together with '--add_slow_tools'."
         System.exit(1)
     }
 
-    // --gene_calling_only is incompatible with other run-mode flags
     if (params.gene_calling_only && params.fast) {
         log.error "'--gene_calling_only' and '--fast' cannot be used together."
         System.exit(1)
     }
+
     if (params.gene_calling_only && params.add_slow_tools) {
         log.error "'--gene_calling_only' and '--add_slow_tools' cannot be used together."
         System.exit(1)
     }
+
     if (params.gene_calling_only && params.gene_calls) {
         log.error "'--gene_calling_only' and '--gene_calls' cannot be used together."
         System.exit(1)
     }
 
-    // --gene_calls is incompatible with other run-mode flags
     if (params.gene_calls && params.add_slow_tools) {
         log.error "'--gene_calls' and '--add_slow_tools' cannot be used together."
         System.exit(1)
     }
-    if (params.gene_calls && params.fast) {
-        log.error "'--gene_calls' and '--fast' cannot be used together. Use '--gene_calling_only' first, then '--gene_calls' without '--fast' for the full annotation run."
-        System.exit(1)
-    }
 
-    // --gene_calls (directory) and samplesheet gene_calls_gff column are mutually exclusive.
     if (params.gene_calls && params.input) {
         def ssHeader = new File(params.input as String).readLines()[0].split(',')*.trim()
         if (ssHeader.contains('gene_calls_gff')) {
