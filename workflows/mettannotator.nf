@@ -23,12 +23,8 @@ include { DEFENSE_FINDER                             } from '../modules/local/de
 include { CRISPRCAS_FINDER                           } from '../modules/local/crisprcasfinder'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
 include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
-include { ADD_TAXID_TO_PROTEIN_FASTA                 } from '../modules/local/add_taxid'
-include { INTERPROSCAN                               } from '../modules/local/interproscan'
 include { DETECT_TRNA                                } from '../modules/local/detect_trna'
 include { DETECT_NCRNA                               } from '../modules/local/detect_ncrna'
-include { SANNTIS                                    } from '../modules/local/sanntis'
-include { UNIFIRE                                    } from '../modules/local/unifire'
 include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
 include { ANTISMASH                                  } from '../modules/local/antismash'
 include { ANTISMASH_TO_GFF                           } from '../modules/local/antismash'
@@ -43,6 +39,7 @@ include { GFF_TO_GBK                                 } from '../modules/local/gf
 
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
+include { SLOW_ANNOTATION                            } from '../subworkflows/slow_annotation'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -207,10 +204,8 @@ workflow METTANNOTATOR {
         //
         // In add-slow-tools mode, we read existing results from --fast and run only slow tools
         //
-        Channel.fromSamplesheet("input")
-                     .map { meta, assembly ->
-                        [meta.prefix, meta.taxid]
-                    }
+       Channel.fromSamplesheet("input")
+                    .map { row -> [row[0].prefix, row[0].taxid] }
                     .set { samplesheet }
 
         def results_dir = file(params.add_slow_tools)
@@ -275,34 +270,15 @@ workflow METTANNOTATOR {
             }
             .set { annotations_gbk }
 
-        // For InterProScan, we need to add taxid to the protein FASTA
-        ADD_TAXID_TO_PROTEIN_FASTA(
-            annotations_faa_input
-        )
-        ch_versions = ch_versions.mix(ADD_TAXID_TO_PROTEIN_FASTA.out.versions.first())
+        SLOW_ANNOTATION(annotations_faa_input, annotations_gbk, interproscan_db)
+        ch_versions = ch_versions.mix(SLOW_ANNOTATION.out.versions)
 
-        INTERPROSCAN(
-            ADD_TAXID_TO_PROTEIN_FASTA.out.annotations_faa_with_taxid,
-            interproscan_db
-        )
-        ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
-
-        UNIFIRE (
-            INTERPROSCAN.out.ips_xml
-        )
-        ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
-
-        SANNTIS(
-           INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
-        )
-        ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
-
-        // Re-key slow tool outputs by prefix string for joining
-        ips_by_prefix     = INTERPROSCAN.out.ips_annotations.map { meta, f -> [meta.prefix, f] }
-        sanntis_by_prefix = SANNTIS.out.sanntis_gff.map         { meta, f -> [meta.prefix, f] }
-        arba_by_prefix    = UNIFIRE.out.arba.map                { meta, f -> [meta.prefix, f] }
-        unirule_by_prefix = UNIFIRE.out.unirule.map             { meta, f -> [meta.prefix, f] }
-        pirsr_by_prefix   = UNIFIRE.out.pirsr.map               { meta, f -> [meta.prefix, f] }
+        // Re-key slow tool outputs by prefix string for joining with disk-loaded fast results
+        ips_by_prefix     = SLOW_ANNOTATION.out.ips_annotations.map { meta, f -> [meta.prefix, f] }
+        sanntis_by_prefix = SLOW_ANNOTATION.out.sanntis_gff.map     { meta, f -> [meta.prefix, f] }
+        arba_by_prefix    = SLOW_ANNOTATION.out.arba.map            { meta, f -> [meta.prefix, f] }
+        unirule_by_prefix = SLOW_ANNOTATION.out.unirule.map         { meta, f -> [meta.prefix, f] }
+        pirsr_by_prefix   = SLOW_ANNOTATION.out.pirsr.map           { meta, f -> [meta.prefix, f] }
 
         // Build fast results channel keyed by prefix
         fast_results = samplesheet
@@ -598,21 +574,8 @@ workflow METTANNOTATOR {
             ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
 
             if ( !params.fast ) {
-                ADD_TAXID_TO_PROTEIN_FASTA(
-                    annotations_faa
-                )
-                ch_versions = ch_versions.mix(ADD_TAXID_TO_PROTEIN_FASTA.out.versions.first())
-
-                INTERPROSCAN(
-                    ADD_TAXID_TO_PROTEIN_FASTA.out.annotations_faa_with_taxid,
-                    interproscan_db
-                )
-                ch_versions = ch_versions.mix(INTERPROSCAN.out.versions.first())
-
-                UNIFIRE (
-                    INTERPROSCAN.out.ips_xml
-                )
-                ch_versions = ch_versions.mix(UNIFIRE.out.versions.first())
+                SLOW_ANNOTATION(annotations_faa, annotations_gbk, interproscan_db)
+                ch_versions = ch_versions.mix(SLOW_ANNOTATION.out.versions)
             }
 
             assemblies_plus_faa_and_gff = assemblies.join(
@@ -654,13 +617,6 @@ workflow METTANNOTATOR {
                 rfam_ncrna_models
             )
             ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
-
-            if ( !params.fast ) {
-                SANNTIS(
-                    INTERPROSCAN.out.ips_annotations.join(annotations_gbk)
-                )
-                ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
-            }
 
             GECCO_RUN(
                 annotations_gbk.map { meta, gbk -> [meta, gbk, []] }, []
@@ -717,15 +673,15 @@ workflow METTANNOTATOR {
 
             if ( !params.fast ) {
                 annotate_gff_input = annotate_gff_input.join(
-                    INTERPROSCAN.out.ips_annotations
+                    SLOW_ANNOTATION.out.ips_annotations
                 ).join(
-                    SANNTIS.out.sanntis_gff, remainder: true
+                    SLOW_ANNOTATION.out.sanntis_gff, remainder: true
                 ).join(
-                    UNIFIRE.out.arba, remainder: true
+                    SLOW_ANNOTATION.out.arba, remainder: true
                 ).join(
-                    UNIFIRE.out.unirule, remainder: true
+                    SLOW_ANNOTATION.out.unirule, remainder: true
                 ).join(
-                    UNIFIRE.out.pirsr, remainder: true
+                    SLOW_ANNOTATION.out.pirsr, remainder: true
                 )
             } else {
                 annotate_gff_input = annotate_gff_input.map { it ->
