@@ -132,12 +132,12 @@ maximum length is 24 characters; the prefix may contain letters, digits, dashes,
 
 To use pre-computed gene calls for individual samples, add up to four optional columns:
 
-| Column | Description |
-|--------|-------------|
-| `gene_calls_gff` | GFF/GFF3 file with CDS features (anchor field) |
-| `gene_calls_faa` | Matching protein FASTA — required when `gene_calls_gff` is set |
+| Column              | Description                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| `gene_calls_gff`    | GFF/GFF3 file with CDS features (anchor field)                                         |
+| `gene_calls_faa`    | Matching protein FASTA — required when `gene_calls_gff` is set                         |
 | `annotation_source` | Source format: `prokka`, `bakta`, or `ensembl` — required when `gene_calls_gff` is set |
-| `gene_calls_gbk` | Optional GenBank file; enables Pseudofinder, GECCO, antiSMASH, and SanntiS |
+| `gene_calls_gbk`    | Optional GenBank file; enables Pseudofinder, GECCO, antiSMASH, and SanntiS             |
 
 Samples without external gene calls leave these columns empty. Standard (3-column) and extended-column rows can coexist in the same samplesheet.
 

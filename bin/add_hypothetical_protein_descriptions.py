@@ -34,7 +34,15 @@ class GeneCaller(Enum):
     ENSEMBL = "Ensembl"
 
 
-def main(ipr_types_file, ipr_file, hierarchy_file, eggnog_file, infile, outfile, annotation_source="prokka"):
+def main(
+    ipr_types_file,
+    ipr_file,
+    hierarchy_file,
+    eggnog_file,
+    infile,
+    outfile,
+    annotation_source="prokka",
+):
     eggnog_info = load_eggnog(eggnog_file)
     if ipr_file:
         levels = load_hierarchy(hierarchy_file)
