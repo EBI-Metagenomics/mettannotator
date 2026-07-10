@@ -11,50 +11,22 @@ include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { AMRFINDER_PLUS_GET_SPECIES_NAME            } from '../modules/local/amrfinder_plus'
-include { AMRFINDER_PLUS; AMRFINDER_PLUS_TO_GFF      } from '../modules/local/amrfinder_plus'
-include { AMRFINDER_PLUS_TSV_POSTPROCESSING          } from '../modules/local/amrfinder_plus'
-include { DEFENSE_FINDER                             } from '../modules/local/defense_finder'
-include { CRISPRCAS_FINDER                           } from '../modules/local/crisprcasfinder'
-include { EGGNOG_MAPPER as EGGNOG_MAPPER_ORTHOLOGS   } from '../modules/local/eggnog'
-include { EGGNOG_MAPPER as EGGNOG_MAPPER_ANNOTATIONS } from '../modules/local/eggnog'
-include { DETECT_TRNA                                } from '../modules/local/detect_trna'
-include { DETECT_NCRNA                               } from '../modules/local/detect_ncrna'
 include { ANNOTATE_GFF                               } from '../modules/local/annotate_gff'
-include { ANTISMASH                                  } from '../modules/local/antismash'
-include { ANTISMASH_TO_GFF                           } from '../modules/local/antismash'
-include { ANTISMASH_SUMMARY                          } from '../modules/local/antismash'
-include { DBCAN                                      } from '../modules/local/dbcan'
 include { CIRCOS_PLOT                                } from '../modules/local/circos_plot'
-include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
-include { PSEUDOFINDER_POSTPROCESSING                } from '../modules/local/pseudofinder'
 include { STAGE_FAST_OUTPUTS                         } from '../modules/local/stage_fast_outputs'
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
 include { SLOW_ANNOTATION                            } from '../subworkflows/slow_annotation'
 include { GENE_CALLING                               } from '../subworkflows/gene_calling'
+include { FAST_ANNOTATION                            } from '../subworkflows/fast_annotation'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { BAKTA_BAKTA                 } from '../modules/nf-core/bakta/bakta/main'
-include { GECCO_RUN                   } from '../modules/nf-core/gecco/run/main'
-include { QUAST                       } from '../modules/nf-core/quast/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT NF-CORE MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-//
-// MODULE: Installed directly from nf-core/modules
-//
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -334,154 +306,53 @@ workflow METTANNOTATOR {
 
         if ( !params.gene_calling_only ) {
 
-            assemblies_for_quast = assemblies.join(
-                annotations_gff
-            ).map { it -> tuple(it[0], it[1], it[2]) }
-
-            QUAST(
-                assemblies_for_quast.map { tuple(it[0], it[1]) }, // the assembly
-                assemblies_for_quast.map { tuple(it[0], it[2]) }, // the GFF
-            )
-            ch_versions = ch_versions.mix(QUAST.out.versions.first())
-
-            PSEUDOFINDER(
+            FAST_ANNOTATION(
+                annotations_faa,
+                annotations_gff,
+                annotations_gbk,
+                annotations_fna,
                 compliant_gbk,
+                compliant_gff,
+                assemblies,
+                GENE_CALLING.out.detected_kingdom,
+                amrfinder_plus_db,
+                antismash_db,
+                defense_finder_db,
+                dbcan_db,
+                eggnog_db,
+                rfam_ncrna_models,
                 pseudofinder_db
             )
-            ch_versions = ch_versions.mix(PSEUDOFINDER.out.versions.first())
-
-            PSEUDOFINDER_POSTPROCESSING(
-                annotations_gff.join(
-                    compliant_gff
-                ).join(
-                    PSEUDOFINDER.out.pseudofinder_gff
-                )
-            )
-            ch_versions = ch_versions.mix(PSEUDOFINDER_POSTPROCESSING.out.versions.first())
-
-            CRISPRCAS_FINDER( assemblies )
-            ch_versions = ch_versions.mix(CRISPRCAS_FINDER.out.versions.first())
-
-            // EGGNOG_MAPPER_ORTHOLOGS - needs a third empty file in mode=mapper
-            proteins_for_emapper_orth = annotations_faa.map { it -> tuple( it[0], file(it[1]), file("NO_FILE") ) }
-
-            EGGNOG_MAPPER_ORTHOLOGS(
-                proteins_for_emapper_orth,
-                Channel.value("mapper"),
-                eggnog_db
-            )
-            ch_versions = ch_versions.mix(EGGNOG_MAPPER_ORTHOLOGS.out.versions.first())
-
-            // EGGNOG_MAPPER_ANNOTATIONS - needs a second empty file in mode=annotations
-            orthologs_for_annotations = assemblies.join(EGGNOG_MAPPER_ORTHOLOGS.out.orthologs, by: 0).map {
-                it -> {
-                    tuple(it[0], file("NO_FILE"), file(it[2])) // tuple( meta , <empty> , assembly )
-                }
-            }
-
-            EGGNOG_MAPPER_ANNOTATIONS(
-                orthologs_for_annotations,
-                Channel.value("annotations"),
-                eggnog_db
-            )
-            ch_versions = ch_versions.mix(EGGNOG_MAPPER_ANNOTATIONS.out.versions.first())
+            ch_versions = ch_versions.mix(FAST_ANNOTATION.out.versions)
 
             if ( !params.fast ) {
                 SLOW_ANNOTATION(annotations_faa, annotations_gbk, interproscan_db)
                 ch_versions = ch_versions.mix(SLOW_ANNOTATION.out.versions)
             }
 
-            assemblies_plus_faa_and_gff = assemblies.join(
-                annotations_faa
-            ).join(
-                annotations_gff
-            )
-
-            AMRFINDER_PLUS_GET_SPECIES_NAME(
-                assemblies,
-                amrfinder_plus_db
-            )
-
-            AMRFINDER_PLUS(
-                assemblies_plus_faa_and_gff.join(AMRFINDER_PLUS_GET_SPECIES_NAME.out.detected_organism),
-                amrfinder_plus_db
-            )
-            ch_versions = ch_versions.mix(AMRFINDER_PLUS.out.versions.first())
-
-            AMRFINDER_PLUS_TSV_POSTPROCESSING(AMRFINDER_PLUS.out.amrfinder_tsv)
-            ch_versions = ch_versions.mix(AMRFINDER_PLUS_TSV_POSTPROCESSING.out.versions.first())
-
-            AMRFINDER_PLUS_TO_GFF( AMRFINDER_PLUS_TSV_POSTPROCESSING.out.amrfinder_tsv )
-            ch_versions = ch_versions.mix(AMRFINDER_PLUS_TO_GFF.out.versions.first())
-
-            DEFENSE_FINDER(
-                annotations_faa.join( annotations_gff ),
-                defense_finder_db
-            )
-            ch_versions = ch_versions.mix(DEFENSE_FINDER.out.versions.first())
-
-            DETECT_TRNA(
-                annotations_fna.join( GENE_CALLING.out.detected_kingdom )
-            )
-            ch_versions = ch_versions.mix(DETECT_TRNA.out.versions.first())
-
-            DETECT_NCRNA(
-                annotations_fna,
-                rfam_ncrna_models
-            )
-            ch_versions = ch_versions.mix(DETECT_NCRNA.out.versions.first())
-
-            GECCO_RUN(
-                annotations_gbk.map { meta, gbk -> [meta, gbk, []] }, []
-            )
-            ch_versions = ch_versions.mix(GECCO_RUN.out.versions.first())
-
-            ANTISMASH(
-                annotations_gbk,
-                antismash_db
-            )
-            ch_versions = ch_versions.mix(ANTISMASH.out.versions.first())
-
-            ANTISMASH_TO_GFF(
-                ANTISMASH.out.json
-            )
-
-            ch_versions = ch_versions.mix(ANTISMASH_TO_GFF.out.versions.first())
-
-            ANTISMASH_SUMMARY(
-                ANTISMASH_TO_GFF.out.gff
-            )
-            ch_versions = ch_versions.mix(ANTISMASH_SUMMARY.out.versions.first())
-
-            DBCAN(
-                annotations_faa.join( annotations_gff ),
-                dbcan_db
-            )
-            ch_versions = ch_versions.mix(DBCAN.out.versions.first())
-
             /**********************************************/
             /* Combine the results into a single GFF file */
             /**********************************************/
             annotate_gff_input = annotations_gff.join(
-                EGGNOG_MAPPER_ANNOTATIONS.out.annotations
+                FAST_ANNOTATION.out.eggnog_annotations
             ).join(
-                DETECT_NCRNA.out.ncrna_tblout
+                FAST_ANNOTATION.out.ncrna_tblout
             ).join(
-                DETECT_TRNA.out.trna_gff
+                FAST_ANNOTATION.out.trna_gff
             ).join(
-                CRISPRCAS_FINDER.out.hq_gff, remainder: true
+                FAST_ANNOTATION.out.crisprcas_hq_gff, remainder: true
             ).join(
-                AMRFINDER_PLUS.out.amrfinder_tsv, remainder: true
+                FAST_ANNOTATION.out.amrfinder_tsv, remainder: true
             ).join(
-                ANTISMASH_TO_GFF.out.gff, remainder: true
+                FAST_ANNOTATION.out.antismash_gff, remainder: true
             ).join(
-                GECCO_RUN.out.gff, remainder: true
+                FAST_ANNOTATION.out.gecco_gff, remainder: true
             ).join(
-                DBCAN.out.dbcan_gff, remainder: true
+                FAST_ANNOTATION.out.dbcan_gff, remainder: true
             ).join(
-                DEFENSE_FINDER.out.gff, remainder: true
+                FAST_ANNOTATION.out.defense_gff, remainder: true
             ).join(
-                PSEUDOFINDER_POSTPROCESSING.out.pseudofinder_processed_gff, remainder: true
+                FAST_ANNOTATION.out.pseudofinder_gff, remainder: true
             )
 
             if ( !params.fast ) {
@@ -535,7 +406,7 @@ workflow METTANNOTATOR {
             ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
             ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
             ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-            ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.results.collect { it[1] }.ifEmpty([]) )
+            ch_multiqc_files = ch_multiqc_files.mix( FAST_ANNOTATION.out.quast_results.collect { it[1] }.ifEmpty([]) )
 
 
             MULTIQC(
