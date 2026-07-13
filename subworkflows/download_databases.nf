@@ -8,8 +8,8 @@ include { ANTISMASH_GETDB          } from '../modules/local/antismash_getdb'
 include { DBCAN_GETDB              } from '../modules/local/dbcan_getdb'
 include { DEFENSE_FINDER_GETDB     } from '../modules/local/defense_finder_getdb'
 include { EGGNOG_MAPPER_GETDB      } from '../modules/local/eggnog_getdb'
-include { INTEPROSCAN_GETDB        } from '../modules/local/interproscan_getdb'
-include { INTEPRO_ENTRY_LIST_GETDB } from '../modules/local/interpro_list_getdb'
+include { INTERPROSCAN_GETDB        } from '../modules/local/interproscan_getdb'
+include { INTERPRO_ENTRY_LIST_GETDB } from '../modules/local/interpro_list_getdb'
 include { RFAM_GETMODELS           } from '../modules/local/rfam_getmodels'
 include { BAKTA_GETDB              } from '../modules/local/bakta_getdb'
 include { PSEUDOFINDER_GETDB       } from '../modules/local/pseudofinder_getdb'
@@ -92,8 +92,8 @@ workflow DOWNLOAD_DATABASES {
                 file("${interproscan_dir}/VERSION.txt", checkIfExists: true).text // the DB version
             )
         } else {
-            INTEPROSCAN_GETDB()
-            interproscan_db = INTEPROSCAN_GETDB.out.interproscan_db.first()
+            INTERPROSCAN_GETDB()
+            interproscan_db = INTERPROSCAN_GETDB.out.interproscan_db.first()
         }
 
         if (interpro_entry_list_dir.exists()) {
@@ -103,8 +103,8 @@ workflow DOWNLOAD_DATABASES {
                 file("${interpro_entry_list_dir}/VERSION.txt", checkIfExists: true).text // the DB version
             )
         } else {
-            INTEPRO_ENTRY_LIST_GETDB()
-            interpro_entry_list = INTEPRO_ENTRY_LIST_GETDB.out.interpro_entry_list.first()
+            INTERPRO_ENTRY_LIST_GETDB()
+            interpro_entry_list = INTERPRO_ENTRY_LIST_GETDB.out.interpro_entry_list.first()
         }
 
         if (eggnog_data_dir.exists()) {

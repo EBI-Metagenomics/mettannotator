@@ -1,0 +1,3 @@
+##gff-version 3
+contig_1	CRISPRCasFinder	CRISPRdr	2500	2520	.	+	.	ID=contig_1_CRISPR1_1
+contig_1	CRISPRCasFinder	CRISPRdr	2521	2540	.	+	.	ID=contig_1_CRISPR1_2
