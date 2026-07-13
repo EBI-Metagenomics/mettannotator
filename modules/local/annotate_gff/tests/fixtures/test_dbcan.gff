@@ -1,0 +1,3 @@
+##gff-version 3
+contig_1	dbCAN	predicted PUL	50	700	.	+	.	ID=cgc1;substrate_dbcan-pul=amylose;substrate_dbcan-sub=starch
+contig_1	dbCAN	GH13	100	600	.	+	.	ID=TESTPFX_00001;annotation=GH13_amylase;Parent=cgc1

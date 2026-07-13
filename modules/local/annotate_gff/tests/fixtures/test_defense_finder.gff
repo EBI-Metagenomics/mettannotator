@@ -1,0 +1,3 @@
+##gff-version 3
+contig_1	DefenseFinder	defense_system	50	700	.	+	.	ID=sys1;type=RM;subtype=RM_typeI
+contig_1	DefenseFinder	gene	100	600	.	+	.	ID=TESTPFX_00001;Parent=sys1

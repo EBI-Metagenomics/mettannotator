@@ -1,0 +1,561 @@
+nextflow_process {
+
+    name "Test Process ANNOTATE_GFF"
+    script "../../annotate_gff.nf"
+    process "ANNOTATE_GFF"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "annotate_gff"
+
+    test("annotate_gff - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ prefix: 'TESTPFX' ],
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',       checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                         checkIfExists: true),
+                    [], // crisprcas_hq_gff
+                    [], // amrfinder_tsv
+                    [], // antismash_gff
+                    [], // gecco_gff
+                    [], // dbcan_gff
+                    [], // df_gff
+                    [], // pseudofinder_gff
+                    [], // ips_annotations_tsv
+                    [], // sanntis_annotations_gff
+                    [], // arba
+                    [], // unirule
+                    [], // pirsr
+                ]
+                input[1] = [
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
+                    '5.75-106.0'
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+
+    test("annotate_gff - mandatory and slow-tool annotations transferred when optional fast-run files are absent") {
+
+        // Represents --add_slow_tools + --allow_missing_files: fast-run optional tool
+        // outputs (CRISPR, AMR, BGC tools, DefenseFinder) are absent for this sample.
+        // ANNOTATE_GFF must succeed, mandatory and slow-tool annotations must be present,
+        // and absent optional-tool attributes must not appear in the output.
+
+        when {
+            params {
+                add_slow_tools      = true
+                allow_missing_files = true
+            }
+            process {
+                """
+                input[0] = [
+                    [ prefix: 'TESTPFX' ],
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',       checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                         checkIfExists: true),
+                    [], // crisprcas_hq_gff  — absent, accepted by --allow-missing-files
+                    [], // amrfinder_tsv     — absent
+                    [], // antismash_gff     — absent
+                    [], // gecco_gff         — absent
+                    [], // dbcan_gff         — absent
+                    [], // df_gff            — absent
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ips.tsv',                          checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_sanntis.gff',                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_arba.tsv',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_unirule.tsv',                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pirsr.tsv',                        checkIfExists: true),
+                ]
+                input[1] = [
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
+                    '5.75-106.0'
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                {
+                    assert process.out.annotated_gff.size() == 1
+
+                    def gff_file = process.out.annotated_gff.get(0).get(1)
+                    def gff_content = path(gff_file).text
+
+                    assert !gff_content.isEmpty()
+                    assert gff_content.contains("##gff-version 3")
+
+                    // ── GFF structural integrity and per-line lookup ───────────────────
+                    def in_fasta = false
+                    def data_lines = gff_content.readLines().findAll { line ->
+                        if (line.startsWith("##FASTA")) { in_fasta = true }
+                        !in_fasta && !line.startsWith("#") && !line.trim().isEmpty()
+                    }
+                    assert !data_lines.isEmpty()
+                    assert data_lines.every { it.split("\t").length == 9 } :
+                        "One or more GFF data lines do not have exactly 9 tab-separated columns"
+
+                    def cds_line = data_lines.find { it.contains("TESTPFX_00001") }
+                    assert cds_line != null : "TESTPFX_00001 CDS line not found in output"
+                    assert data_lines.any { it.contains("TESTPFX_00002") } : "TESTPFX_00002 missing from output"
+
+                    // ── Mandatory annotations must be present on the CDS line ─────────
+                    assert cds_line.contains("eggNOG="),
+                        "eggNOG= not on TESTPFX_00001 — annotation was not transferred or mapped to wrong feature"
+
+                    assert gff_content.contains("rRNA") || gff_content.contains("ncRNA"),
+                        "ncRNA/rRNA feature missing — Rfam/cmscan results were not transferred"
+
+                    assert gff_content.contains("tRNAscan-SE"),
+                        "tRNA feature missing — tRNAscan-SE results were not transferred"
+
+                    // ── Slow-tool annotations must be present on the CDS line ──────────
+                    assert cds_line.contains("pfam="),
+                        "pfam= not on TESTPFX_00001 — get_iprs() did not write Pfam accession"
+
+                    assert cds_line.contains("interpro="),
+                        "interpro= not on TESTPFX_00001 — get_iprs() did not write IPR accession"
+
+                    assert cds_line.contains("nearest_MiBIG="),
+                        "nearest_MiBIG= not on TESTPFX_00001 — get_bgcs(tool='sanntis') did not annotate CDS"
+
+                    assert cds_line.contains("uf_prot_rec_fullname="),
+                        "uf_prot_rec_fullname= not on TESTPFX_00001 — process_unifire_output.py did not transfer ARBA annotation"
+
+                    // ── Absent optional inputs must not produce spurious attributes ──
+                    assert !gff_content.contains("amrfinderplus_element_symbol="),
+                        "amrfinderplus_element_symbol= present but amrfinder_tsv was not provided"
+
+                    assert !gff_content.contains("antismash_product="),
+                        "antismash_product= present but antismash_gff was not provided"
+
+                    assert !gff_content.contains("gecco_bgc_type="),
+                        "gecco_bgc_type= present but gecco_gff was not provided"
+
+                    assert !gff_content.contains("dbcan_annotation="),
+                        "dbcan_annotation= present but dbcan_gff was not provided"
+
+                    assert !gff_content.contains("defense_finder_type="),
+                        "defense_finder_type= present but df_gff was not provided"
+                }
+            )
+        }
+    }
+
+    test("annotate_gff - all optional tool annotations are transferred into output GFF") {
+
+        when {
+            params {
+                fast = true
+            }
+            process {
+                """
+                input[0] = [
+                    [ prefix: 'TESTPFX' ],
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',       checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_crispr_hq.gff',                    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_amr.tsv',                          checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_antismash.gff',                    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_gecco.gff',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_dbcan.gff',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_defense_finder.gff',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
+                    [], // ips_annotations_tsv  — InterProScan
+                    [], // sanntis_annotations_gff — SanntiS
+                    [], // arba    — UniFIRE output
+                    [], // unirule — UniFIRE output
+                    [], // pirsr   — UniFIRE output
+                ]
+                input[1] = [
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
+                    '5.75-106.0'
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                {
+                    assert process.out.annotated_gff.size() == 1
+
+                    def gff_file = process.out.annotated_gff.get(0).get(1)
+                    def gff_content = path(gff_file).text
+
+                    // ── GFF structural integrity and per-line lookup ───────────────────
+                    // With many annotations loaded every CDS line grows long.
+                    // Verify no line was split or truncated: all data lines must still
+                    // have exactly 9 tab-separated columns.
+                    def in_fasta = false
+                    def data_lines = gff_content.readLines().findAll { line ->
+                        if (line.startsWith("##FASTA")) { in_fasta = true }
+                        !in_fasta && !line.startsWith("#") && !line.trim().isEmpty()
+                    }
+                    assert !data_lines.isEmpty()
+                    assert data_lines.every { it.split("\t").length == 9 } :
+                        "One or more GFF data lines do not have exactly 9 tab-separated columns after annotation"
+
+                    def cds_line = data_lines.find { it.contains("TESTPFX_00001") }
+                    assert cds_line != null : "TESTPFX_00001 CDS line not found in output"
+
+                    // ── Fast-tool annotations ────────────────────────────────────────
+                    // Each assertion targets the attribute key on the specific CDS line.
+                    // A missing attribute means the tool result was silently skipped —
+                    // a format mismatch, wrong column, or parser bug.
+
+                    assert cds_line.contains("eggNOG="),
+                        "eggNOG= not on TESTPFX_00001 — annotate_gff.py silently dropped the EggNOG hit"
+
+                    assert gff_content.contains("rRNA") || gff_content.contains("ncRNA"),
+                        "ncRNA/rRNA feature missing — Rfam/cmscan results were not transferred"
+
+                    assert gff_content.contains("tRNAscan-SE"),
+                        "tRNA feature missing — tRNAscan-SE results were not transferred"
+
+                    assert cds_line.contains("amrfinderplus_element_symbol="),
+                        "amrfinderplus_element_symbol= not on TESTPFX_00001 — check get_amr() column mapping in annotate_gff.py"
+
+                    assert gff_content.contains("CRISPRCasFinder"),
+                        "CRISPR feature missing — load_crispr() did not write the CRISPR array to output"
+
+                    assert cds_line.contains("antismash_product="),
+                        "antismash_product= not on TESTPFX_00001 — check get_bgcs(tool='antismash') in annotate_gff.py"
+
+                    assert cds_line.contains("gecco_bgc_type="),
+                        "gecco_bgc_type= not on TESTPFX_00001 — check get_bgcs(tool='gecco') in annotate_gff.py"
+
+                    assert cds_line.contains("dbcan_annotation="),
+                        "dbcan_annotation= not on TESTPFX_00001 — check get_dbcan() in annotate_gff.py"
+
+                    assert cds_line.contains("defense_finder_type="),
+                        "defense_finder_type= not on TESTPFX_00001 — check get_defense_finder() in annotate_gff.py"
+                }
+            )
+        }
+    }
+
+    test("annotate_gff - malformed eggNOG header causes process failure") {
+
+        // annotate_gff.py calls sys.exit() when the GOs column is absent or renamed
+        // in the eggNOG-mapper header.  The process must fail rather than silently
+        // producing an output with no eggNOG annotations.
+
+        when {
+            params {
+                fast = true
+            }
+            process {
+                """
+                input[0] = [
+                    [ prefix: 'TESTPFX' ],
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog_bad_header.emapper.annotations',    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                                checkIfExists: true),
+                    [], // crisprcas_hq_gff
+                    [], // amrfinder_tsv
+                    [], // antismash_gff
+                    [], // gecco_gff
+                    [], // dbcan_gff
+                    [], // df_gff
+                    [], // pseudofinder_gff
+                    [], // ips_annotations_tsv
+                    [], // sanntis_annotations_gff
+                    [], // arba
+                    [], // unirule
+                    [], // pirsr
+                ]
+                input[1] = [
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
+                    '5.75-106.0'
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.failed
+        }
+    }
+
+    test("annotate_gff - empty eggNOG file produces valid GFF with no eggNOG annotations") {
+
+        // A header-only eggNOG file (no data rows) must not crash the process or
+        // silently drop CDS features — it should simply produce output with no eggNOG= attributes.
+
+        when {
+            params {
+                fast = true
+            }
+            process {
+                """
+                input[0] = [
+                    [ prefix: 'TESTPFX' ],
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog_empty.emapper.annotations',         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                                checkIfExists: true),
+                    [], // crisprcas_hq_gff
+                    [], // amrfinder_tsv
+                    [], // antismash_gff
+                    [], // gecco_gff
+                    [], // dbcan_gff
+                    [], // df_gff
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff', checkIfExists: true),
+                    [], // ips_annotations_tsv
+                    [], // sanntis_annotations_gff
+                    [], // arba
+                    [], // unirule
+                    [], // pirsr
+                ]
+                input[1] = [
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
+                    '5.75-106.0'
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                {
+                    def gff_content = path(process.out.annotated_gff.get(0).get(1)).text
+
+                    assert gff_content.contains("##gff-version 3")
+
+                    // Both CDS features must still be present — an empty eggNOG file
+                    // must not cause features to be silently dropped
+                    assert gff_content.contains("TESTPFX_00001") :
+                        "TESTPFX_00001 missing — CDS features should not be dropped when eggNOG file is empty"
+                    assert gff_content.contains("TESTPFX_00002") :
+                        "TESTPFX_00002 missing — CDS features should not be dropped when eggNOG file is empty"
+
+                    // No eggNOG= annotation should be present — nothing was in the file to transfer
+                    assert !gff_content.contains("eggNOG=") :
+                        "eggNOG= attribute present but eggNOG file had no data rows"
+
+                    // ── GFF structural integrity ──────────────────────────────────────
+                    def in_fasta = false
+                    def data_lines = gff_content.readLines().findAll { line ->
+                        if (line.startsWith("##FASTA")) { in_fasta = true }
+                        !in_fasta && !line.startsWith("#") && !line.trim().isEmpty()
+                    }
+                    assert !data_lines.isEmpty()
+                    assert data_lines.every { it.split("\t").length == 9 } :
+                        "One or more GFF data lines do not have exactly 9 tab-separated columns"
+                }
+            )
+        }
+    }
+
+    test("annotate_gff - malformed GFF lines with wrong column count are silently skipped") {
+
+        // annotate_gff.py processes only lines with exactly 9 tab-separated columns.
+        // Lines with fewer columns are silently skipped — the feature is absent from
+        // the output without any error or warning.
+        // test_corrupted.gff: TESTPFX_00001 has 8 columns (phase missing), TESTPFX_00002 is valid.
+
+        when {
+            params {
+                fast = true
+            }
+            process {
+                """
+                input[0] = [
+                    [ prefix: 'TESTPFX' ],
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_corrupted.gff',                            checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                                checkIfExists: true),
+                    [], // crisprcas_hq_gff
+                    [], // amrfinder_tsv
+                    [], // antismash_gff
+                    [], // gecco_gff
+                    [], // dbcan_gff
+                    [], // df_gff
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff', checkIfExists: true),
+                    [], // ips_annotations_tsv
+                    [], // sanntis_annotations_gff
+                    [], // arba
+                    [], // unirule
+                    [], // pirsr
+                ]
+                input[1] = [
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
+                    '5.75-106.0'
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                {
+                    def gff_content = path(process.out.annotated_gff.get(0).get(1)).text
+
+                    // The 8-column line (TESTPFX_00001) is silently skipped
+                    assert !gff_content.contains("TESTPFX_00001") :
+                        "TESTPFX_00001 present in output despite being on an 8-column (malformed) GFF line — annotate_gff.py behaviour may have changed"
+
+                    // The valid 9-column line (TESTPFX_00002) must still appear
+                    assert gff_content.contains("TESTPFX_00002") :
+                        "TESTPFX_00002 missing — valid GFF features must not be dropped"
+
+                    // ── GFF structural integrity ──────────────────────────────────────
+                    def in_fasta = false
+                    def data_lines = gff_content.readLines().findAll { line ->
+                        if (line.startsWith("##FASTA")) { in_fasta = true }
+                        !in_fasta && !line.startsWith("#") && !line.trim().isEmpty()
+                    }
+                    assert !data_lines.isEmpty()
+                    assert data_lines.every { it.split("\t").length == 9 } :
+                        "One or more GFF data lines do not have exactly 9 tab-separated columns"
+                }
+            )
+        }
+    }
+
+    test("annotate_gff - slow-tool annotations transferred (add_slow_tools mode)") {
+
+        when {
+            params {
+                add_slow_tools = true
+            }
+            process {
+                """
+                input[0] = [
+                    [ prefix: 'TESTPFX' ],
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test.gff',                              checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_eggnog.emapper.annotations',       checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ncrna.ncrna.deoverlap.tbl',        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_trna.gff',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_crispr_hq.gff',                    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_amr.tsv',                          checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_antismash.gff',                    checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_gecco.gff',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_dbcan.gff',                        checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_defense_finder.gff',               checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ips.tsv',                          checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_sanntis.gff',                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_arba.tsv',                         checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_unirule.tsv',                      checkIfExists: true),
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pirsr.tsv',                        checkIfExists: true),
+                ]
+                input[1] = [
+                    file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
+                    '5.75-106.0'
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                {
+                    // ── annotated_gff (always present) ───────────────────────────────
+                    assert process.out.annotated_gff.size() == 1
+
+                    def gff_file = process.out.annotated_gff.get(0).get(1)
+                    def gff_content = path(gff_file).text
+
+                    assert !gff_content.isEmpty()
+                    assert gff_content.contains("##gff-version 3")
+
+                    // ── GFF structural integrity and per-line lookup ───────────────────
+                    def in_fasta = false
+                    def data_lines = gff_content.readLines().findAll { line ->
+                        if (line.startsWith("##FASTA")) { in_fasta = true }
+                        !in_fasta && !line.startsWith("#") && !line.trim().isEmpty()
+                    }
+                    assert !data_lines.isEmpty()
+                    assert data_lines.every { it.split("\t").length == 9 } :
+                        "One or more GFF data lines do not have exactly 9 tab-separated columns"
+
+                    def cds_line = data_lines.find { it.contains("TESTPFX_00001") }
+                    assert cds_line != null : "TESTPFX_00001 CDS line not found in output"
+
+                    // ── Fast-tool annotations ────────────────────────────────────────
+                    assert cds_line.contains("eggNOG="),
+                        "eggNOG= not on TESTPFX_00001"
+
+                    assert gff_content.contains("rRNA") || gff_content.contains("ncRNA"),
+                        "ncRNA/rRNA feature missing"
+
+                    assert gff_content.contains("tRNAscan-SE"),
+                        "tRNA feature missing"
+
+                    assert cds_line.contains("amrfinderplus_element_symbol="),
+                        "amrfinderplus_element_symbol= not on TESTPFX_00001 — check get_amr() in annotate_gff.py"
+
+                    assert gff_content.contains("CRISPRCasFinder"),
+                        "CRISPR feature missing"
+
+                    assert cds_line.contains("antismash_product="),
+                        "antismash_product= not on TESTPFX_00001 — check get_bgcs(tool='antismash') in annotate_gff.py"
+
+                    assert cds_line.contains("gecco_bgc_type="),
+                        "gecco_bgc_type= not on TESTPFX_00001 — check get_bgcs(tool='gecco') in annotate_gff.py"
+
+                    assert cds_line.contains("dbcan_annotation="),
+                        "dbcan_annotation= not on TESTPFX_00001 — check get_dbcan() in annotate_gff.py"
+
+                    assert cds_line.contains("defense_finder_type="),
+                        "defense_finder_type= not on TESTPFX_00001 — check get_defense_finder() in annotate_gff.py"
+
+                    // ── Slow-tool annotations ────────────────────────────────────────
+                    assert cds_line.contains("pfam="),
+                        "pfam= not on TESTPFX_00001 — get_iprs() did not write Pfam accession to output"
+
+                    assert cds_line.contains("interpro="),
+                        "interpro= not on TESTPFX_00001 — get_iprs() did not write IPR accession to output"
+
+                    assert cds_line.contains("nearest_MiBIG="),
+                        "nearest_MiBIG= not on TESTPFX_00001 — get_bgcs(tool='sanntis') did not annotate CDS"
+
+                    assert cds_line.contains("uf_prot_rec_fullname="),
+                        "uf_prot_rec_fullname= not on TESTPFX_00001 — process_unifire_output.py did not transfer ARBA annotation"
+                },
+                {
+                    // ── annotated_desc_gff (only present when fast=false) ────────────
+                    assert process.out.annotated_desc_gff.size() == 1,
+                        "annotated_desc_gff output missing — add_interpro_descriptions.py did not run (fast=false required)"
+
+                    def desc_gff_file = process.out.annotated_desc_gff.get(0).get(1)
+                    def desc_gff_content = path(desc_gff_file).text
+
+                    assert !desc_gff_content.isEmpty()
+
+                    // add_interpro_descriptions.py expands IPR000001 → "IPR000001: Kinase family [F]"
+                    assert desc_gff_content.contains("IPR000001: Kinase family [F]"),
+                        "IPR description not expanded — add_interpro_descriptions.py did not enrich interpro= attribute"
+                }
+            )
+        }
+    }
+}
