@@ -343,11 +343,10 @@ The pipeline will load the existing fast-run results for each sample, run only t
 into a final annotated GFF. Both Prokka and Bakta outputs from the fast run are supported.
 
 By default, the fast-run outputs are also staged into `--outdir` so the final directory contains both fast and slow
-results. To write only the slow-tool results, add `--skip_fast_staging`.
+results. To write only the slow-tool results, add `--skip_fast_staging` (this option saves space and avoids duplication of files that are already present in the fast-run output folder).
 
-**Optional fast-run outputs**: some tools (CRISPR, AMR, BGC tools, DefenseFinder) may produce no output for a given
-sample (e.g. no CRISPR arrays found). By default, missing files are treated as errors. Use `--allow_missing_files` to
-downgrade these to warnings and allow the slow run to proceed:
+**Running slow tools on incomplete fast-run ouptut**: By default, missing files in the fast-run output folder are treated as errors. However, in some cases, users may still want to run the slow tools on the available outputs. Use `--allow_missing_files` to
+downgrade the missing file errors to warnings and allow the slow run to proceed:
 
 ```bash
 nextflow run ebi-metagenomics/mettannotator \
@@ -360,7 +359,7 @@ nextflow run ebi-metagenomics/mettannotator \
 ```
 
 **Version consistency**: the pipeline always checks that the fast-run outputs were produced by the same pipeline
-version. If a mismatch is detected, the pipeline will error. Use `--ignore_version_mismatch` to downgrade this to
+version. If a mismatch is detected, the pipeline will produce an error. Use `--ignore_version_mismatch` to downgrade this to
 a warning and allow the run to proceed.
 
 <a name="test"></a>
