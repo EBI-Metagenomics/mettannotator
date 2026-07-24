@@ -74,8 +74,8 @@ workflow DOWNLOAD_DATABASES {
             defense_finder_db = DEFENSE_FINDER_GETDB.out.defense_finder_db.first()
         }
 
-        if (dbcan_dir.exists()) {
-            log.info("DBCan database exists, or at least the expected folder.")
+        if (file("${dbcan_dir}/CAZy.dmnd").exists()) {
+            log.info("DBCan database exists (CAZy.dmnd found).")
             dbcan_db = tuple(
                 dbcan_dir,
                 file("${dbcan_dir}/VERSION.txt", checkIfExists: true).text // the DB version
@@ -118,11 +118,11 @@ workflow DOWNLOAD_DATABASES {
             eggnog_db = EGGNOG_MAPPER_GETDB.out.eggnog_db.first()
         }
 
-        if (!rfam_ncrna_models.exists()) {
+        if (!file("${rfam_ncrna_models}/Rfam.cm").exists()) {
             RFAM_GETMODELS()
             rfam_ncrna_models = RFAM_GETMODELS.out.rfam_ncrna_cms.first()
         } else {
-            log.info("RFam model files exists, or at least the expected folders.")
+            log.info("RFam model files exist (Rfam.cm found).")
             rfam_ncrna_models = tuple(
                 rfam_ncrna_models,
                 file("${rfam_ncrna_models}/VERSION.txt", checkIfExists: true).text
