@@ -28,10 +28,10 @@ EGGNOG_NOTE_LENGTH_LIMIT = 70
 MINIMUM_IPR_MATCH = 0.10
 
 
-class GeneCaller(Enum):
-    PROKKA = "Prokka"
-    BAKTA = "Bakta"
-    ENSEMBL = "Ensembl"
+class GeneCaller(str, Enum):
+    PROKKA = "prokka"
+    BAKTA = "bakta"
+    ENSEMBL = "ensembl"
 
 
 def main(
@@ -41,7 +41,7 @@ def main(
     eggnog_file,
     infile,
     outfile,
-    annotation_source="prokka",
+    annotation_source: GeneCaller = GeneCaller.PROKKA,
 ):
     eggnog_info = load_eggnog(eggnog_file)
     if ipr_file:
@@ -52,7 +52,7 @@ def main(
         ipr_info = dict()
         ipr_memberdb_only = dict()
 
-    gene_caller = GeneCaller(annotation_source.capitalize())
+    gene_caller = annotation_source
     fasta_flag = False
     with open(infile) as file_in, open(outfile, "w") as file_out:
         for line in file_in:
@@ -1067,8 +1067,9 @@ def parse_args():
     parser.add_argument(
         "--annotation-source",
         dest="annotation_source",
-        default="prokka",
-        choices=["prokka", "bakta", "ensembl"],
+        type=GeneCaller,
+        choices=GeneCaller,
+        default=GeneCaller.PROKKA,
         help="Gene calling source (default: prokka). Controls the product_source label.",
     )
     return parser.parse_args()
