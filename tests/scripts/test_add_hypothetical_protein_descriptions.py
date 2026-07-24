@@ -196,7 +196,7 @@ def test_keep_or_move_to_note_sentence():
     )
     assert result == (
         "hypothetical protein",
-        "Prokka",
+        "prokka",
         {"ID": "123", "locus_tag": "locus_tag", "Note": "eggNOG:This is a protein"},
     )
 
