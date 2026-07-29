@@ -246,7 +246,7 @@ Reference databases
   --defense_finder_db_version        [string]  The Defense Finder models version. [default: 1.2.3]
   --antismash_db                     [string]  antiSMASH reference database, go to this documentation to do the database setup
                                                https://docs.antismash.secondarymetabolites.org/install/#installing-the-latest-antismash-release.
-  --antismash_db_version             [string]  The antiSMASH reference database version. [default: 7.1.0]
+  --antismash_db_version             [string]  The antiSMASH reference database version. [default: 8.0.1]
   --dbcan_db                         [string]  dbCAN indexed reference database, please go to the documentation for the setup
                                                https://dbcan.readthedocs.io/en/latest/. The Microbiome Informatics team provides a pre-indexed version of the
                                                database for version 4.0 on this ftp location:
