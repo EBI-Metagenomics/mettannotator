@@ -213,7 +213,7 @@
         },
         "pseudofinder_db_version": {
           "type": "string",
-          "default": "2024_06",
+          "default": "2026_02",
           "description": "SwissProt version."
         }
       },

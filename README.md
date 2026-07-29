@@ -36,12 +36,12 @@
 The workflow uses the following tools and databases:
 
 | Tool/Database                                                                                    | Version          | Purpose                                                                                                                |
-| ------------------------------------------------------------------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------------------------------------------------ |------------------| ---------------------------------------------------------------------------------------------------------------------- |
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6           | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.11.4           | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | v6.0             | Bakta DB (when Bakta is used as the gene caller)                                                                       |
 | [Pseudofinder](https://github.com/filip-husnik/pseudofinder)                                     | v1.1.0           | Identification of possible pseudogenes                                                                                 |
-| [Swiss-Prot](https://www.uniprot.org/help/downloads)                                             | 2024_06          | Database for Pseudofinder                                                                                              |
+| [Swiss-Prot](https://www.uniprot.org/help/downloads)                                             | 2026_02          | Database for Pseudofinder                                                                                              |
 | [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.75-106.0       | Protein annotation (InterPro, Pfam)                                                                                    |
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11           | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
