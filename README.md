@@ -227,10 +227,10 @@ Reference databases
                                                mixing the --dbs flag with individual database paths and versions is not allowed; they are mutually
                                                exclusive.
   --interproscan_db                  [string]  The InterProScan reference database, ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/
-  --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.75-106.0]
+  --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.76-107.0]
   --interpro_entry_list              [string]  TSV file listing basic InterPro entry information - the accessions, types and names,
-                                               ftp://ftp.ebi.ac.uk/pub/databases/interpro/releases/106.0/entry.list
-  --interpro_entry_list_version      [string]  InterPro entry list version [default: 106.0]
+                                               ftp://ftp.ebi.ac.uk/pub/databases/interpro/releases/107.0/entry.list
+  --interpro_entry_list_version      [string]  InterPro entry list version [default: 107.0]
   --eggnog_db                        [string]  The EggNOG reference database folder,
                                                https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.12#requirements
   --eggnog_db_version                [string]  The EggNOG reference database version. [default: 5.0.2]
