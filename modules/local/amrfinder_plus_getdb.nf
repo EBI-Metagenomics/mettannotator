@@ -1,7 +1,7 @@
 
 process AMRFINDER_PLUS_GETDB {
 
-    tag "AMR Finder DB 2025-07-16.1"
+    tag "AMR Finder DB 2026-05-15.1"
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
         'https://depot.galaxyproject.org/singularity/ncbi-amrfinderplus:4.2.7--hf69ffd2_0' :
@@ -13,7 +13,7 @@ process AMRFINDER_PLUS_GETDB {
     publishDir "$params.dbs", mode: 'copy'
 
     output:
-    tuple path("amrfinder", type: "dir"), val("2025-07-16.1"), emit: amrfinder_plus_db
+    tuple path("amrfinder", type: "dir"), val("2026-05-15.1"), emit: amrfinder_plus_db
 
     script:
     """
@@ -21,12 +21,12 @@ process AMRFINDER_PLUS_GETDB {
     mkdir -p "\$PWD/tmp"
 
     wget -r -nH --cut-dirs=5 \\
-    ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/4.0/2025-07-16.1/
+    ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/4.2/2026-05-15.1/
 
-    amrfinder_index 2025-07-16.1
+    amrfinder_index 2026-05-15.1
 
-    mv 2025-07-16.1 amrfinder
+    mv 2026-05-15.1 amrfinder
 
-    echo "2025-07-16.1" > amrfinder/VERSION.txt
+    echo "2026-05-15.1" > amrfinder/VERSION.txt
     """
 }

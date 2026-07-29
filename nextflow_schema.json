@@ -158,7 +158,7 @@
         },
         "amrfinder_plus_db_version": {
           "type": "string",
-          "default": "2025-07-16.1",
+          "default": "2026-05-15.1",
           "description": "The AMRFinderPlus reference database version."
         },
         "defense_finder_db": {

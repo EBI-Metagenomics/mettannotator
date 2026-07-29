@@ -47,7 +47,7 @@ The workflow uses the following tools and databases:
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
 | [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.2           | Protein annotation                                                                                                     |
 | [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.2.7            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
-| [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.0 2025-07-16.1 | Database for AMRFinderPlus                                                                                             |
+| [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.2 2026-05-15.1 | Database for AMRFinderPlus                                                                                             |
 | [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 2.0.0            | Annotation of anti-phage systems                                                                                       |
 | [DefenseFinder models](https://github.com/mdmparis/defense-finder-models)                        | 2.0.2            | Database for DefenseFinder                                                                                             |
 | [GECCO](https://github.com/zellerlab/GECCO)                                                      | 0.9.8            | Biosynthetic gene cluster annotation                                                                                   |
@@ -239,7 +239,7 @@ Reference databases
   --amrfinder_plus_db                [string]  AMRFinderPlus reference database,
                                                https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/. Go to the following
                                                documentation for the db setup https://github.com/ncbi/amr/wiki/Upgrading#database-updates.
-  --amrfinder_plus_db_version        [string]  The AMRFinderPlus reference database version. [default: 2023-02-23.1]
+  --amrfinder_plus_db_version        [string]  The AMRFinderPlus reference database version. [default: 2026-05-15.1]
   --defense_finder_db                [string]  Defense Finder reference models, https://github.com/mdmparis/defense-finder#updating-defensefinder. The
                                                Microbiome Informatics team provides a pre-indexed version of the models for version 1.2.3 on this ftp location:
                                                ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.
