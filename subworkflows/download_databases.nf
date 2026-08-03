@@ -89,7 +89,7 @@ workflow DOWNLOAD_DATABASES {
             log.info("InterproScan database exists, or at least the expected folder.")
             interproscan_db = tuple(
                 interproscan_dir,
-                file("${interproscan_dir}/VERSION.txt", checkIfExists: true).text // the DB version
+                file("${interproscan_dir}/VERSION.txt", checkIfExists: true).text.trim() // the DB version
             )
         } else {
             INTERPROSCAN_GETDB()
