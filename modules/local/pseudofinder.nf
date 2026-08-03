@@ -14,9 +14,17 @@ process PSEUDOFINDER {
 
     script:
     """
+    # pseudofinder --diamond requires a pre-built <fasta>.dmnd alongside the FASTA and does
+    # not build it itself; the staged DB ships only uniprot_sprot.fasta, so build the index
+    # here in the (writable) work dir using the same diamond that runs the search.
+    diamond makedb \
+    --in ${pseudofinder_db}/uniprot_sprot.fasta \
+    --db uniprot_sprot.fasta \
+    --threads ${task.cpus}
+
     pseudofinder.py annotate \
     -g ${compliant_gbk} \
-    -db ${pseudofinder_db}/uniprot_sprot.fasta.dmnd \
+    -db uniprot_sprot.fasta \
     -op ${meta.prefix} \
     -t ${task.cpus} \
     --diamond

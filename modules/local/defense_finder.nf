@@ -17,6 +17,10 @@ process DEFENSE_FINDER {
 
     script:
     """
+    # defense-finder writes ~/.defensefinder_model_lastversion to \$HOME on every run;
+    # the container's \$HOME may not exist/be writable, so point it at the task workdir.
+    export HOME=\$PWD
+
     defense-finder run \\
         -o defense_finder_output \\
         --antidefensefinder \\

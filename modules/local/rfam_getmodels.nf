@@ -16,7 +16,7 @@ process RFAM_GETMODELS {
     """
     mkdir -p rfam_ncrna_cms/
 
-    wget --recursive --cut-dirs=5 -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/rfam_15.0/ncrna_cms/ -P rfam_ncrna_cms
+    wget --recursive --cut-dirs=6 -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/rfam_15.0/ncrna_cms/ -P rfam_ncrna_cms
 
     echo '15.0' > rfam_ncrna_cms/VERSION.txt
     """
