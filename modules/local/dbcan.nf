@@ -3,7 +3,7 @@ process DBCAN {
     tag "${meta.prefix}"
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'https://depot.galaxyproject.org/singularity/dbcan-5.1.2--pyhdfd78af_0' :
+        'https://depot.galaxyproject.org/singularity/dbcan:5.1.2--pyhdfd78af_0' :
         'biocontainers/dbcan-5.1.2--pyhdfd78af_0' }"
 
     input:
