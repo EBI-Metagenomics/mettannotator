@@ -17,16 +17,21 @@ process DETECT_NCRNA {
 
     script:
     """
+    path_rfam=${rfam_ncrna_models}
+    if [[ ! -f \${path_rfam}/Rfam.cm ]];then
+	path_rfam=${rfam_ncrna_models}/ncrna_cms
+    fi
+
     cmscan \
     --cpu ${task.cpus} \
     --tblout overlapped_${fasta.baseName} \
     --hmmonly \
-    --clanin ${rfam_ncrna_models}/Rfam.clanin \
+    --clanin \${path_rfam}/Rfam.clanin \
     --fmt 2 \
     --cut_ga \
     --noali \
     -o /dev/null \
-    ${rfam_ncrna_models}/Rfam.cm \
+    \${path_rfam}/Rfam.cm \
     ${fasta}
 
     # De-overlap #
