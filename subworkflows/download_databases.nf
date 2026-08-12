@@ -148,7 +148,7 @@ workflow DOWNLOAD_DATABASES {
         if (diamond_uniref90_dir.exists()) {
             log.info("DIAMOND UniRef90 database exists, or at least the expected folder.")
             diamond_uniref90_db = tuple(
-                diamond_uniref90_dir,
+                file("${diamond_uniref90_dir}/db.dmnd", checkIfExists: true),
                 file("${diamond_uniref90_dir}/VERSION.txt", checkIfExists: true).text
             )
         } else {
@@ -159,7 +159,7 @@ workflow DOWNLOAD_DATABASES {
         if (diamond_uniref50_dir.exists()) {
             log.info("DIAMOND UniRef50 database exists, or at least the expected folder.")
             diamond_uniref50_db = tuple(
-                diamond_uniref50_dir,
+                file("${diamond_uniref50_dir}/db.dmnd", checkIfExists: true),
                 file("${diamond_uniref50_dir}/VERSION.txt", checkIfExists: true).text
             )
         } else {

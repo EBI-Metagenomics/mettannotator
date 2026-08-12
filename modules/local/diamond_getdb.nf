@@ -14,7 +14,8 @@ process DIAMOND_GETDB {
     val db_name
 
     output:
-    tuple path("${db_name}"), env("VERSION"), emit: diamond_uniref_db
+    tuple path("${db_name}/db.dmnd"), env("VERSION"), emit: diamond_uniref_db
+    path "${db_name}/VERSION.txt",                    emit: db_version_file
 
     script:
     """

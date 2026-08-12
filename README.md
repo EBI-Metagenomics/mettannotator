@@ -46,6 +46,8 @@ The workflow uses the following tools and databases:
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11           | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
 | [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.2           | Protein annotation                                                                                                     |
+| [DIAMOND](https://github.com/bbuchfink/diamond)                                                  | 2.2.5            | Homology search of hypothetical proteins against UniRef                                                                 |
+| [UniRef90 / UniRef50](https://www.uniprot.org/help/downloads)                                    | 2026_02          | Databases for DIAMOND search                                                                                       |
 | [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.2.7            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
 | [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.2 2026-05-15.1 | Database for AMRFinderPlus                                                                                             |
 | [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 2.0.0            | Annotation of anti-phage systems                                                                                       |
@@ -217,8 +219,8 @@ Input/output options
   --input                            [string]  Path to comma-separated file containing information about the assemblies with the prefix to be used.
   --outdir                           [string]  The output directory where the results will be saved. You have to use absolute paths to storage on Cloud
                                                infrastructure.
-  --fast                             [boolean] Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, and SanntiS won't be executed, saving
-                                               resources and speeding up the pipeline.
+  --fast                             [boolean] Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, SanntiS and the DIAMOND search against
+                                               UniRef won't be executed, saving resources and speeding up the pipeline.
   --email                            [string]  Email address for completion summary.
   --multiqc_title                    [string]  MultiQC report title. Printed as page header, used for filename if not otherwise specified.
 
@@ -265,7 +267,8 @@ Generic options
 Other parameters
   --bakta                            [boolean] Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.
   --add_slow_tools                   [string]  Path to a previous --fast output directory. Loads existing results and
-                                               runs only InterProScan, SanntiS and UniFIRE. Cannot be used with --fast.
+                                               runs only the slow tools (InterProScan, SanntiS, UniFIRE and the UniRef
+                                               DIAMOND search). Cannot be used with --fast.
   --allow_missing_files              [boolean] When used with --add_slow_tools, downgrades missing optional fast-run
                                                tool outputs (CRISPR, AMR, BGC tools, DefenseFinder) from hard errors
                                                to warnings.
@@ -368,7 +371,8 @@ Prokka as Bakta is only intended for annotation of bacterial genomes.
 ### Fast mode
 
 To reduce the compute time and the amount of resources used, the pipeline can be executed with the `--fast` flag. When
-run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE and SanntiS. This could be a suitable option
+run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE, SanntiS and the DIAMOND search of hypothetical
+proteins against UniRef. This could be a suitable option
 for a first-pass of annotation or if computational resources are limited, however, we recommend running the full version
 of the pipeline whenever possible.
 
@@ -377,8 +381,9 @@ bacteria and `2157` for Archaea) in the "taxid" column rather than the taxid of 
 
 ### Two-phase annotation (--add_slow_tools)
 
-If you have already run the pipeline in `--fast` mode and want to add InterProScan, SanntiS and UniFIRE annotations
-without re-running the full pipeline, use the `--add_slow_tools` flag pointing to the previous fast-run output directory:
+If you have already run the pipeline in `--fast` mode and want to add InterProScan, SanntiS, UniFIRE and the UniRef
+DIAMOND search, without re-running the full pipeline, use the `--add_slow_tools` flag pointing to the previous fast-run
+output directory:
 
 ```bash
 nextflow run ebi-metagenomics/mettannotator \
@@ -452,7 +457,8 @@ The output folder structure will look as follows:
    │  ├─merged_gff
    │  ├─prokka
    │  ├─pseudofinder
-   │  └─unifire
+   │  ├─unifire
+   │  └─uniref
    ├─mobilome
    │  └─crisprcas_finder
    ├─quast
