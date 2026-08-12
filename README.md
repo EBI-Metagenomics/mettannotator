@@ -46,8 +46,8 @@ The workflow uses the following tools and databases:
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11           | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
 | [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.2           | Protein annotation                                                                                                     |
-| [DIAMOND](https://github.com/bbuchfink/diamond)                                                  | 2.2.5            | Homology search of hypothetical proteins against UniRef                                                                 |
-| [UniRef90 / UniRef50](https://www.uniprot.org/help/downloads)                                    | 2026_02          | Databases for DIAMOND search                                                                                       |
+| [DIAMOND](https://github.com/bbuchfink/diamond)                                                  | 2.2.5            | Similarity search of hypothetical proteins against UniRef                                                                |
+| [UniRef90 / UniRef50](https://www.uniprot.org/help/downloads)                                    | 2026_02          | Databases for the DIAMOND search                                                                                       |
 | [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.2.7            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
 | [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.2 2026-05-15.1 | Database for AMRFinderPlus                                                                                             |
 | [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 2.0.0            | Annotation of anti-phage systems                                                                                       |
@@ -95,7 +95,10 @@ The pipeline needs reference databases in order to work, they take roughly 180G.
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
 | pseudofinder        | 273M |
+| uniref90            | TBD  |
+| uniref50            | TBD  |
 | total               | 184G |
+
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
@@ -372,9 +375,8 @@ Prokka as Bakta is only intended for annotation of bacterial genomes.
 
 To reduce the compute time and the amount of resources used, the pipeline can be executed with the `--fast` flag. When
 run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE, SanntiS and the DIAMOND search of hypothetical
-proteins against UniRef. This could be a suitable option
-for a first-pass of annotation or if computational resources are limited, however, we recommend running the full version
-of the pipeline whenever possible.
+proteins against UniRef. This could be a suitable option for a first-pass of annotation or if computational resources
+are limited, however, we recommend running the full version of the pipeline whenever possible.
 
 When generating an input file for a fast mode run, it is sufficient to indicate the taxid of the superkingdom (`2` for
 bacteria and `2157` for Archaea) in the "taxid" column rather than the taxid of the lowest known taxon.
@@ -382,7 +384,7 @@ bacteria and `2157` for Archaea) in the "taxid" column rather than the taxid of 
 ### Two-phase annotation (--add_slow_tools)
 
 If you have already run the pipeline in `--fast` mode and want to add InterProScan, SanntiS, UniFIRE and the UniRef
-DIAMOND search, without re-running the full pipeline, use the `--add_slow_tools` flag pointing to the previous fast-run
+DIAMOND search without re-running the full pipeline, use the `--add_slow_tools` flag pointing to the previous fast-run
 output directory:
 
 ```bash

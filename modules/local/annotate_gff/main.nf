@@ -25,7 +25,9 @@ process ANNOTATE_GFF {
         file(sanntis_annotations_gff), // empty in fast mode
         file(arba),                    // empty in fast mode
         file(unirule),                 // empty in fast mode
-        file(pirsr)                    // empty in fast mode
+        file(pirsr),                   // empty in fast mode
+        file(uniref90_tsv),            // empty in fast mode
+        file(uniref50_tsv)             // empty in fast mode
     tuple path(interpro_entry_list), val(db_version)
 
     output:

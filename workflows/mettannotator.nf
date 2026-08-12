@@ -250,15 +250,23 @@ workflow METTANNOTATOR {
             }
             .set { annotations_gbk }
 
-        SLOW_ANNOTATION(annotations_faa_input, annotations_gbk, interproscan_db)
+        SLOW_ANNOTATION(
+            annotations_faa_input,
+            annotations_gbk,
+            interproscan_db,
+            diamond_uniref90_db,
+            diamond_uniref50_db
+        )
         ch_versions = ch_versions.mix(SLOW_ANNOTATION.out.versions)
 
         // Re-key slow tool outputs by prefix string for joining with disk-loaded fast results
-        ips_by_prefix     = SLOW_ANNOTATION.out.ips_annotations.map { meta, f -> [meta.prefix, f] }
-        sanntis_by_prefix = SLOW_ANNOTATION.out.sanntis_gff.map     { meta, f -> [meta.prefix, f] }
-        arba_by_prefix    = SLOW_ANNOTATION.out.arba.map            { meta, f -> [meta.prefix, f] }
-        unirule_by_prefix = SLOW_ANNOTATION.out.unirule.map         { meta, f -> [meta.prefix, f] }
-        pirsr_by_prefix   = SLOW_ANNOTATION.out.pirsr.map           { meta, f -> [meta.prefix, f] }
+        ips_by_prefix      = SLOW_ANNOTATION.out.ips_annotations.map { meta, f -> [meta.prefix, f] }
+        sanntis_by_prefix  = SLOW_ANNOTATION.out.sanntis_gff.map     { meta, f -> [meta.prefix, f] }
+        arba_by_prefix     = SLOW_ANNOTATION.out.arba.map            { meta, f -> [meta.prefix, f] }
+        unirule_by_prefix  = SLOW_ANNOTATION.out.unirule.map         { meta, f -> [meta.prefix, f] }
+        pirsr_by_prefix    = SLOW_ANNOTATION.out.pirsr.map           { meta, f -> [meta.prefix, f] }
+        uniref90_by_prefix = SLOW_ANNOTATION.out.uniref90_tsv.map    { meta, f -> [meta.prefix, f] }
+        uniref50_by_prefix = SLOW_ANNOTATION.out.uniref50_tsv.map    { meta, f -> [meta.prefix, f] }
 
         // Build fast results channel keyed by prefix
         fast_results = samplesheet
@@ -281,15 +289,19 @@ workflow METTANNOTATOR {
             .join(arba_by_prefix,    remainder: true)
             .join(unirule_by_prefix, remainder: true)
             .join(pirsr_by_prefix,   remainder: true)
+            .join(uniref90_by_prefix)
+            .join(uniref50_by_prefix)
             .map { prefix, taxid,
                 gff, eggnog, ncrna, trna, crisprcas, amr,
                 antismash, gecco, dbcan, df, pseudo,
-                ips, sanntis, arba, unirule, pirsr ->
+                ips, sanntis, arba, unirule, pirsr,
+                uniref90, uniref50 ->
                 tuple(
                     [prefix: prefix, taxid: taxid],
                     gff, eggnog, ncrna, trna, crisprcas, amr,
                     antismash, gecco, dbcan, df, pseudo,
-                    ips, sanntis, arba, unirule, pirsr
+                    ips, sanntis, arba, unirule, pirsr,
+                    uniref90, uniref50
                 )
             }
 
@@ -340,7 +352,13 @@ workflow METTANNOTATOR {
             ch_versions = ch_versions.mix(FAST_ANNOTATION.out.versions)
 
             if ( !params.fast ) {
-                SLOW_ANNOTATION(annotations_faa, annotations_gbk, interproscan_db)
+                SLOW_ANNOTATION(
+                    annotations_faa,
+                    annotations_gbk,
+                    interproscan_db,
+                    diamond_uniref90_db,
+                    diamond_uniref50_db
+                )
                 ch_versions = ch_versions.mix(SLOW_ANNOTATION.out.versions)
             }
 
@@ -380,12 +398,16 @@ workflow METTANNOTATOR {
                     SLOW_ANNOTATION.out.unirule, remainder: true
                 ).join(
                     SLOW_ANNOTATION.out.pirsr, remainder: true
+                ).join(
+                    SLOW_ANNOTATION.out.uniref90_tsv
+                ).join(
+                    SLOW_ANNOTATION.out.uniref50_tsv
                 )
             } else {
                 annotate_gff_input = annotate_gff_input.map { it ->
-                        // IPS, SanntiS, UniFire{arba,unirule,pirsr}
+                        // IPS, SanntiS, UniFire{arba,unirule,pirsr}, UniRef{90,50}
                         // meta, <files> //
-                        it + [[], [], [], [], []]
+                        it + [[], [], [], [], [], [], []]
                     }
             }
 
