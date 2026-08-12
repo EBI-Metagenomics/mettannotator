@@ -105,6 +105,10 @@ workflow METTANNOTATOR {
 
         pseudofinder_db = DOWNLOAD_DATABASES.out.pseudofinder_db
 
+        diamond_uniref90_db = DOWNLOAD_DATABASES.out.diamond_uniref90_db
+
+        diamond_uniref50_db = DOWNLOAD_DATABASES.out.diamond_uniref50_db
+
         if (params.bakta) {
             bakta_db = DOWNLOAD_DATABASES.out.bakta_db
         }
@@ -153,6 +157,16 @@ workflow METTANNOTATOR {
         pseudofinder_db = tuple(
             file(params.pseudofinder_db, checkIfExists: true),
             params.pseudofinder_db_version
+        )
+
+        diamond_uniref90_db = tuple(
+            file(params.diamond_uniref90_db, checkIfExists: true),
+            params.diamond_uniref90_db_version
+        )
+
+        diamond_uniref50_db = tuple(
+            file(params.diamond_uniref50_db, checkIfExists: true),
+            params.diamond_uniref50_db_version
         )
 
         if (params.bakta) {

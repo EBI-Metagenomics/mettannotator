@@ -215,6 +215,28 @@
           "type": "string",
           "default": "2026_02",
           "description": "SwissProt version."
+        },
+        "diamond_uniref90_db": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "UniRef90 reference database formatted with DIAMOND.",
+          "help_text": "Set this variable to the path of the folder containing the db.dmnd file built with 'diamond makedb' from uniref90.fasta.gz."
+        },
+        "diamond_uniref90_db_version": {
+          "type": "string",
+          "default": "2026_02",
+          "description": "UniRef90 version."
+        },
+        "diamond_uniref50_db": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "UniRef50 reference database formatted with DIAMOND.",
+          "help_text": "Set this variable to the path of the folder containing the db.dmnd file built with 'diamond makedb' from uniref50.fasta.gz."
+        },
+        "diamond_uniref50_db_version": {
+          "type": "string",
+          "default": "2026_02",
+          "description": "UniRef50 version."
         }
       },
       "fa_icon": "fas fa-database"

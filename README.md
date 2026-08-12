@@ -254,6 +254,10 @@ Reference databases
   --dbcan_db_version                 [string]  The dbCAN reference database version. [default: 4.1.3_V12]
   --pseudofinder_db                  [string]  Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.
   --pseudofinder_db_version          [string]  SwissProt version. [default: 2024_06]
+  --diamond_uniref90_db              [string]  UniRef90 reference database formatted with DIAMOND.
+  --diamond_uniref90_db_version      [string]  UniRef90 version. [default: 2026_02]
+  --diamond_uniref50_db              [string]  UniRef50 reference database formatted with DIAMOND.
+  --diamond_uniref50_db_version      [string]  UniRef50 version. [default: 2026_02]
 
 Generic options
   --multiqc_methods_description      [string]  Custom MultiQC yaml file containing HTML including a methods description.

@@ -13,6 +13,8 @@ include { INTERPRO_ENTRY_LIST_GETDB } from '../modules/local/interpro_list_getdb
 include { RFAM_GETMODELS           } from '../modules/local/rfam_getmodels'
 include { BAKTA_GETDB              } from '../modules/local/bakta_getdb'
 include { PSEUDOFINDER_GETDB       } from '../modules/local/pseudofinder_getdb'
+include { DIAMOND_GETDB as DIAMOND_GETDB_UNIREF90 } from '../modules/local/diamond_getdb'
+include { DIAMOND_GETDB as DIAMOND_GETDB_UNIREF50 } from '../modules/local/diamond_getdb'
 
 
 workflow DOWNLOAD_DATABASES {
@@ -28,7 +30,8 @@ workflow DOWNLOAD_DATABASES {
         eggnog_db = channel.empty()
         bakta_db = channel.empty()
         pseudofinder_db = channel.empty()
-
+        diamond_uniref90_db = channel.empty()
+        diamond_uniref50_db = channel.empty()
         amrfinder_plus_dir = file("$params.dbs/amrfinder/")
         antismash_dir = file("$params.dbs/antismash")
         defense_finder_dir = file("$params.dbs/defense_finder/")
@@ -39,6 +42,8 @@ workflow DOWNLOAD_DATABASES {
         rfam_ncrna_models = file("$params.dbs/rfam_models/rfam_ncrna_cms")
         bakta_dir = file("$params.dbs/bakta")
         pseudofinder_dir = file("$params.dbs/uniprot_sprot")
+        diamond_uniref90_dir = file("$params.dbs/uniref90")
+        diamond_uniref50_dir = file("$params.dbs/uniref50")
 
         if (amrfinder_plus_dir.exists()) {
             amrfinder_plus_db = tuple(
@@ -140,6 +145,28 @@ workflow DOWNLOAD_DATABASES {
             pseudofinder_db = PSEUDOFINDER_GETDB.out.pseudofinder_db.first()
         }
 
+        if (diamond_uniref90_dir.exists()) {
+            log.info("DIAMOND UniRef90 database exists, or at least the expected folder.")
+            diamond_uniref90_db = tuple(
+                diamond_uniref90_dir,
+                file("${diamond_uniref90_dir}/VERSION.txt", checkIfExists: true).text
+            )
+        } else {
+            DIAMOND_GETDB_UNIREF90("uniref90")
+            diamond_uniref90_db = DIAMOND_GETDB_UNIREF90.out.diamond_uniref_db.first()
+        }
+
+        if (diamond_uniref50_dir.exists()) {
+            log.info("DIAMOND UniRef50 database exists, or at least the expected folder.")
+            diamond_uniref50_db = tuple(
+                diamond_uniref50_dir,
+                file("${diamond_uniref50_dir}/VERSION.txt", checkIfExists: true).text
+            )
+        } else {
+            DIAMOND_GETDB_UNIREF50("uniref50")
+            diamond_uniref50_db = DIAMOND_GETDB_UNIREF50.out.diamond_uniref_db.first()
+        }
+
         if (params.bakta) {
             if (bakta_dir.exists()) {
                 log.info("Bakta database exists, or at least the expected folders.")
@@ -163,5 +190,6 @@ workflow DOWNLOAD_DATABASES {
         rfam_ncrna_models = rfam_ncrna_models
         bakta_db = bakta_db
         pseudofinder_db = pseudofinder_db
-
+        diamond_uniref90_db = diamond_uniref90_db
+        diamond_uniref50_db = diamond_uniref50_db
 }
