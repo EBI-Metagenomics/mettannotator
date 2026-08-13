@@ -36,7 +36,7 @@
 The workflow uses the following tools and databases:
 
 | Tool/Database                                                                                    | Version          | Purpose                                                                                                                |
-| ------------------------------------------------------------------------------------------------ |------------------| ---------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------------------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6           | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.11.4           | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | v6.0             | Bakta DB (when Bakta is used as the gene caller)                                                                       |
@@ -46,7 +46,7 @@ The workflow uses the following tools and databases:
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11           | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
 | [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.2           | Protein annotation                                                                                                     |
-| [DIAMOND](https://github.com/bbuchfink/diamond)                                                  | 2.2.5            | Similarity search of hypothetical proteins against UniRef                                                                |
+| [DIAMOND](https://github.com/bbuchfink/diamond)                                                  | 2.2.5            | Similarity search of hypothetical proteins against UniRef                                                              |
 | [UniRef90 / UniRef50](https://www.uniprot.org/help/downloads)                                    | 2026_02          | Databases for the DIAMOND search                                                                                       |
 | [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.2.7            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
 | [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.2 2026-05-15.1 | Database for AMRFinderPlus                                                                                             |
@@ -98,7 +98,6 @@ The pipeline needs reference databases in order to work, they take roughly 180G.
 | uniref90            | TBD  |
 | uniref50            | TBD  |
 | total               | 184G |
-
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
 
