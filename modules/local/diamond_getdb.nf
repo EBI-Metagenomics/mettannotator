@@ -30,6 +30,6 @@ process DIAMOND_GETDB {
 
     VERSION=\$(cat ${db_name}/VERSION.txt)
 
-    rm ${db_name}.fasta.gz RELEASE.metalink
+    rm RELEASE.metalink
     """
 }
