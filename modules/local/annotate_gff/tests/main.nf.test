@@ -27,14 +27,14 @@ nextflow_process {
                     [], // gecco_gff
                     [], // dbcan_gff
                     [], // df_gff
+                    [], // uniref90_tsv
+                    [], // uniref50_tsv
                     [], // pseudofinder_gff
                     [], // ips_annotations_tsv
                     [], // sanntis_annotations_gff
                     [], // arba
                     [], // unirule
                     [], // pirsr
-                    [], // uniref90_tsv
-                    [], // uniref50_tsv
                 ]
                 input[1] = [
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
@@ -78,14 +78,14 @@ nextflow_process {
                     [], // gecco_gff         — absent
                     [], // dbcan_gff         — absent
                     [], // df_gff            — absent
+                    [], // uniref90_tsv
+                    [], // uniref50_tsv
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ips.tsv',                          checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_sanntis.gff',                      checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_arba.tsv',                         checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_unirule.tsv',                      checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pirsr.tsv',                        checkIfExists: true),
-                    [], // uniref90_tsv
-                    [], // uniref50_tsv
                 ]
                 input[1] = [
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
@@ -184,14 +184,14 @@ nextflow_process {
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_gecco.gff',                        checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_dbcan.gff',                        checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_defense_finder.gff',               checkIfExists: true),
+                    [], // uniref90_tsv
+                    [], // uniref50_tsv
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
                     [], // ips_annotations_tsv  — InterProScan
                     [], // sanntis_annotations_gff — SanntiS
                     [], // arba    — UniFIRE output
                     [], // unirule — UniFIRE output
                     [], // pirsr   — UniFIRE output
-                    [], // uniref90_tsv
-                    [], // uniref50_tsv
                 ]
                 input[1] = [
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
@@ -286,14 +286,14 @@ nextflow_process {
                     [], // gecco_gff
                     [], // dbcan_gff
                     [], // df_gff
+                    [], // uniref90_tsv
+                    [], // uniref50_tsv
                     [], // pseudofinder_gff
                     [], // ips_annotations_tsv
                     [], // sanntis_annotations_gff
                     [], // arba
                     [], // unirule
                     [], // pirsr
-                    [], // uniref90_tsv
-                    [], // uniref50_tsv
                 ]
                 input[1] = [
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
@@ -331,14 +331,14 @@ nextflow_process {
                     [], // gecco_gff
                     [], // dbcan_gff
                     [], // df_gff
+                    [], // uniref90_tsv
+                    [], // uniref50_tsv
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff', checkIfExists: true),
                     [], // ips_annotations_tsv
                     [], // sanntis_annotations_gff
                     [], // arba
                     [], // unirule
                     [], // pirsr
-                    [], // uniref90_tsv
-                    [], // uniref50_tsv
                 ]
                 input[1] = [
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
@@ -406,14 +406,14 @@ nextflow_process {
                     [], // gecco_gff
                     [], // dbcan_gff
                     [], // df_gff
+                    [], // uniref90_tsv
+                    [], // uniref50_tsv
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff', checkIfExists: true),
                     [], // ips_annotations_tsv
                     [], // sanntis_annotations_gff
                     [], // arba
                     [], // unirule
                     [], // pirsr
-                    [], // uniref90_tsv
-                    [], // uniref50_tsv
                 ]
                 input[1] = [
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),
@@ -471,14 +471,14 @@ nextflow_process {
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_gecco.gff',                        checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_dbcan.gff',                        checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_defense_finder.gff',               checkIfExists: true),
+                    [], // uniref90_tsv
+                    [], // uniref50_tsv
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pseudofinder.gff',                 checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_ips.tsv',                          checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_sanntis.gff',                      checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_arba.tsv',                         checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_unirule.tsv',                      checkIfExists: true),
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures/test_pirsr.tsv',                        checkIfExists: true),
-                    [], // uniref90_tsv
-                    [], // uniref50_tsv
                 ]
                 input[1] = [
                     file('${projectDir}/modules/local/annotate_gff/tests/fixtures', checkIfExists: true),

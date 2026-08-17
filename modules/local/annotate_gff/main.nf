@@ -20,14 +20,14 @@ process ANNOTATE_GFF {
         file(gecco_gff),
         file(dbcan_gff),
         file(df_gff),
+        file(uniref90_tsv),
+        file(uniref50_tsv),
         file(pseudofinder_gff),
         file(ips_annotations_tsv),     // empty in fast mode
         file(sanntis_annotations_gff), // empty in fast mode
         file(arba),                    // empty in fast mode
         file(unirule),                 // empty in fast mode
-        file(pirsr),                   // empty in fast mode
-        file(uniref90_tsv),            // empty in fast mode
-        file(uniref50_tsv)             // empty in fast mode
+        file(pirsr)                    // empty in fast mode
     tuple path(interpro_entry_list), val(db_version)
 
     output:

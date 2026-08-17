@@ -1,10 +1,7 @@
-include { ADD_TAXID_TO_PROTEIN_FASTA         } from '../modules/local/add_taxid'
-include { INTERPROSCAN                       } from '../modules/local/interproscan'
-include { UNIFIRE                            } from '../modules/local/unifire'
-include { SANNTIS                            } from '../modules/local/sanntis'
-include { SELECT_HYPOTHETICAL_PROTEINS       } from '../modules/local/select_hypothetical_proteins'
-include { DIAMOND_BLASTP as DIAMOND_UNIREF90 } from '../modules/local/diamond_blastp'
-include { DIAMOND_BLASTP as DIAMOND_UNIREF50 } from '../modules/local/diamond_blastp'
+include { ADD_TAXID_TO_PROTEIN_FASTA } from '../modules/local/add_taxid'
+include { INTERPROSCAN               } from '../modules/local/interproscan'
+include { UNIFIRE                    } from '../modules/local/unifire'
+include { SANNTIS                    } from '../modules/local/sanntis'
 
 workflow SLOW_ANNOTATION {
 
@@ -12,8 +9,6 @@ workflow SLOW_ANNOTATION {
     faa             // channel: [meta, faa]
     gbk             // channel: [meta, gbk]
     interproscan_db // channel: path
-    uniref90_db     // channel: [path, version]
-    uniref50_db     // channel: [path, version]
 
     main:
     ch_versions = Channel.empty()
@@ -30,21 +25,11 @@ workflow SLOW_ANNOTATION {
     SANNTIS(INTERPROSCAN.out.ips_annotations.join(gbk))
     ch_versions = ch_versions.mix(SANNTIS.out.versions.first())
 
-    SELECT_HYPOTHETICAL_PROTEINS(faa)
-
-    DIAMOND_UNIREF90(SELECT_HYPOTHETICAL_PROTEINS.out.hypothetical_faa, uniref90_db, "uniref90")
-    ch_versions = ch_versions.mix(DIAMOND_UNIREF90.out.versions.first())
-
-    DIAMOND_UNIREF50(SELECT_HYPOTHETICAL_PROTEINS.out.hypothetical_faa, uniref50_db, "uniref50")
-    ch_versions = ch_versions.mix(DIAMOND_UNIREF50.out.versions.first())
-
     emit:
     ips_annotations = INTERPROSCAN.out.ips_annotations
     sanntis_gff     = SANNTIS.out.sanntis_gff
     arba            = UNIFIRE.out.arba
     unirule         = UNIFIRE.out.unirule
     pirsr           = UNIFIRE.out.pirsr
-    uniref90_tsv    = DIAMOND_UNIREF90.out.hits_tsv
-    uniref50_tsv    = DIAMOND_UNIREF50.out.hits_tsv
     versions        = ch_versions
 }

@@ -221,8 +221,8 @@ Input/output options
   --input                            [string]  Path to comma-separated file containing information about the assemblies with the prefix to be used.
   --outdir                           [string]  The output directory where the results will be saved. You have to use absolute paths to storage on Cloud
                                                infrastructure.
-  --fast                             [boolean] Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, SanntiS and the DIAMOND search against
-                                               UniRef won't be executed, saving resources and speeding up the pipeline.
+  --fast                             [boolean] Run the pipeline in fast mode. In this mode, InterProScan, UniFIRE, and SanntiS won't be executed, saving
+                                               resources and speeding up the pipeline.
   --email                            [string]  Email address for completion summary.
   --multiqc_title                    [string]  MultiQC report title. Printed as page header, used for filename if not otherwise specified.
 
@@ -269,8 +269,7 @@ Generic options
 Other parameters
   --bakta                            [boolean] Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.
   --add_slow_tools                   [string]  Path to a previous --fast output directory. Loads existing results and
-                                               runs only the slow tools (InterProScan, SanntiS, UniFIRE and the UniRef
-                                               DIAMOND search). Cannot be used with --fast.
+                                               runs only InterProScan, SanntiS and UniFIRE. Cannot be used with --fast.
   --allow_missing_files              [boolean] When used with --add_slow_tools, downgrades missing optional fast-run
                                                tool outputs (CRISPR, AMR, BGC tools, DefenseFinder) from hard errors
                                                to warnings.
@@ -373,18 +372,17 @@ Prokka as Bakta is only intended for annotation of bacterial genomes.
 ### Fast mode
 
 To reduce the compute time and the amount of resources used, the pipeline can be executed with the `--fast` flag. When
-run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE, SanntiS and the DIAMOND search of hypothetical
-proteins against UniRef. This could be a suitable option for a first-pass of annotation or if computational resources
-are limited, however, we recommend running the full version of the pipeline whenever possible.
+run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE and SanntiS. This could be a suitable option for a first-pass of
+annotation or if computational resources are limited, however, we recommend running the full version of the pipeline
+whenever possible.
 
 When generating an input file for a fast mode run, it is sufficient to indicate the taxid of the superkingdom (`2` for
 bacteria and `2157` for Archaea) in the "taxid" column rather than the taxid of the lowest known taxon.
 
 ### Two-phase annotation (--add_slow_tools)
 
-If you have already run the pipeline in `--fast` mode and want to add InterProScan, SanntiS, UniFIRE and the UniRef
-DIAMOND search without re-running the full pipeline, use the `--add_slow_tools` flag pointing to the previous fast-run
-output directory:
+If you have already run the pipeline in `--fast` mode and want to add InterProScan, SanntiS and UniFIRE annotations
+without re-running the full pipeline, use the `--add_slow_tools` flag pointing to the previous fast-run output directory:
 
 ```bash
 nextflow run ebi-metagenomics/mettannotator \
