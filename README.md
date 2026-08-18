@@ -95,8 +95,8 @@ The pipeline needs reference databases in order to work, they take roughly 180G.
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
 | pseudofinder        | 273M |
-| uniref90            | TBD  |
-| uniref50            | TBD  |
+| uniref90            | 58G  |
+| uniref50            | 17G  |
 | total               | 184G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
