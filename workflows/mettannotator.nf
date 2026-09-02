@@ -105,6 +105,10 @@ workflow METTANNOTATOR {
 
         pseudofinder_db = DOWNLOAD_DATABASES.out.pseudofinder_db
 
+        diamond_uniref90_db = DOWNLOAD_DATABASES.out.diamond_uniref90_db
+
+        diamond_uniref50_db = DOWNLOAD_DATABASES.out.diamond_uniref50_db
+
         if (params.bakta) {
             bakta_db = DOWNLOAD_DATABASES.out.bakta_db
         }
@@ -153,6 +157,16 @@ workflow METTANNOTATOR {
         pseudofinder_db = tuple(
             file(params.pseudofinder_db, checkIfExists: true),
             params.pseudofinder_db_version
+        )
+
+        diamond_uniref90_db = tuple(
+            file(params.diamond_uniref90_db, checkIfExists: true),
+            params.diamond_uniref90_db_version
+        )
+
+        diamond_uniref50_db = tuple(
+            file(params.diamond_uniref50_db, checkIfExists: true),
+            params.diamond_uniref50_db_version
         )
 
         if (params.bakta) {
@@ -206,6 +220,8 @@ workflow METTANNOTATOR {
         dbcan_files      = load_files("${results_dir}/**/functional_annotation/dbcan/*_dbcan.gff",'_dbcan\\.gff')
         df_files         = load_files("${results_dir}/**/antiphage_defense/defense_finder/*_defense_finder.gff",'_defense_finder\\.gff')
         pseudo_files     = load_files("${results_dir}/**/functional_annotation/pseudofinder/*_processed_pseudogenes.gff",'_processed_pseudogenes\\.gff')
+        uniref90_files   = load_files("${results_dir}/**/functional_annotation/uniref/*_uniref90.tsv",'_uniref90\\.tsv')
+        uniref50_files   = load_files("${results_dir}/**/functional_annotation/uniref/*_uniref50.tsv",'_uniref50\\.tsv')
 
         // Stage fast-run outputs into --outdir so the final directory
         // contains both fast and slow results in the expected layout.
@@ -258,6 +274,8 @@ workflow METTANNOTATOR {
             .join(gecco_files,     remainder: true)
             .join(dbcan_files,     remainder: true)
             .join(df_files,        remainder: true)
+            .join(uniref90_files,  remainder: true)
+            .join(uniref50_files,  remainder: true)
             .join(pseudo_files,    remainder: true)
 
         // Merge fast + slow, then build final meta tuple
@@ -269,12 +287,12 @@ workflow METTANNOTATOR {
             .join(pirsr_by_prefix,   remainder: true)
             .map { prefix, taxid,
                 gff, eggnog, ncrna, trna, crisprcas, amr,
-                antismash, gecco, dbcan, df, pseudo,
+                antismash, gecco, dbcan, df, uniref90, uniref50, pseudo,
                 ips, sanntis, arba, unirule, pirsr ->
                 tuple(
                     [prefix: prefix, taxid: taxid],
                     gff, eggnog, ncrna, trna, crisprcas, amr,
-                    antismash, gecco, dbcan, df, pseudo,
+                    antismash, gecco, dbcan, df, uniref90, uniref50, pseudo,
                     ips, sanntis, arba, unirule, pirsr
                 )
             }
@@ -321,7 +339,9 @@ workflow METTANNOTATOR {
                 dbcan_db,
                 eggnog_db,
                 rfam_ncrna_models,
-                pseudofinder_db
+                pseudofinder_db,
+                diamond_uniref90_db,
+                diamond_uniref50_db
             )
             ch_versions = ch_versions.mix(FAST_ANNOTATION.out.versions)
 
@@ -351,6 +371,10 @@ workflow METTANNOTATOR {
                 FAST_ANNOTATION.out.dbcan_gff, remainder: true
             ).join(
                 FAST_ANNOTATION.out.defense_gff, remainder: true
+            ).join(
+                FAST_ANNOTATION.out.uniref90_tsv
+            ).join(
+                FAST_ANNOTATION.out.uniref50_tsv
             ).join(
                 FAST_ANNOTATION.out.pseudofinder_gff, remainder: true
             )

@@ -36,7 +36,7 @@
 The workflow uses the following tools and databases:
 
 | Tool/Database                                                                                    | Version          | Purpose                                                                                                                |
-| ------------------------------------------------------------------------------------------------ |------------------| ---------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------------------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6           | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.11.4           | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | v6.0             | Bakta DB (when Bakta is used as the gene caller)                                                                       |
@@ -46,6 +46,8 @@ The workflow uses the following tools and databases:
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11           | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
 | [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.2           | Protein annotation                                                                                                     |
+| [DIAMOND](https://github.com/bbuchfink/diamond)                                                  | 2.2.5            | Similarity search of hypothetical proteins against UniRef                                                              |
+| [UniRef90 / UniRef50](https://www.uniprot.org/help/downloads)                                    | 2026_02          | Databases for the DIAMOND search                                                                                       |
 | [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.2.7            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
 | [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.2 2026-05-15.1 | Database for AMRFinderPlus                                                                                             |
 | [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 3.0.0            | Annotation of anti-phage systems                                                                                       |
@@ -93,6 +95,8 @@ The pipeline needs reference databases in order to work, they take roughly 180G.
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
 | pseudofinder        | 273M |
+| uniref90            | 58G  |
+| uniref50            | 17G  |
 | total               | 184G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
@@ -254,6 +258,10 @@ Reference databases
   --dbcan_db_version                 [string]  The dbCAN reference database version. [default: 4.1.3_V12]
   --pseudofinder_db                  [string]  Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.
   --pseudofinder_db_version          [string]  SwissProt version. [default: 2024_06]
+  --diamond_uniref90_db              [string]  UniRef90 reference database formatted with DIAMOND.
+  --diamond_uniref90_db_version      [string]  UniRef90 version. [default: 2026_02]
+  --diamond_uniref50_db              [string]  UniRef50 reference database formatted with DIAMOND.
+  --diamond_uniref50_db_version      [string]  UniRef50 version. [default: 2026_02]
 
 Generic options
   --multiqc_methods_description      [string]  Custom MultiQC yaml file containing HTML including a methods description.
@@ -364,9 +372,9 @@ Prokka as Bakta is only intended for annotation of bacterial genomes.
 ### Fast mode
 
 To reduce the compute time and the amount of resources used, the pipeline can be executed with the `--fast` flag. When
-run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE and SanntiS. This could be a suitable option
-for a first-pass of annotation or if computational resources are limited, however, we recommend running the full version
-of the pipeline whenever possible.
+run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE and SanntiS. This could be a suitable option for a first-pass of
+annotation or if computational resources are limited, however, we recommend running the full version of the pipeline
+whenever possible.
 
 When generating an input file for a fast mode run, it is sufficient to indicate the taxid of the superkingdom (`2` for
 bacteria and `2157` for Archaea) in the "taxid" column rather than the taxid of the lowest known taxon.
@@ -448,7 +456,8 @@ The output folder structure will look as follows:
    │  ├─merged_gff
    │  ├─prokka
    │  ├─pseudofinder
-   │  └─unifire
+   │  ├─unifire
+   │  └─uniref
    ├─mobilome
    │  └─crisprcas_finder
    ├─quast
