@@ -169,7 +169,7 @@
         },
         "defense_finder_db_version": {
           "type": "string",
-          "default": "2.0.2",
+          "default": "3.1.0",
           "description": "The Defense Finder models version."
         },
         "antismash_db": {
