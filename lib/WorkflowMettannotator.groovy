@@ -12,9 +12,13 @@ class WorkflowMettannotator {
     //
     public static void initialise(params, log, workflow) {
         MettannotatorValidation.validateSamplesheetPrefixes(params, log)
+        MettannotatorValidation.validateExternalGeneCalls(params, log)
         if (params.add_slow_tools) {
            MettannotatorValidation.checkVersionConsistency(params, log, workflow.manifest.name as String, workflow.manifest.version as String)
            MettannotatorValidation.validateFastRunInputs(params, log)
+        }
+        if (params.gene_calls) {
+            MettannotatorValidation.validateGeneCallsInputs(params, log)
         }
     }
 

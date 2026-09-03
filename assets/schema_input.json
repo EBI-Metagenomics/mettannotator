@@ -23,6 +23,30 @@
         "pattern": "^\\d+$",
         "errorMessage": "NCBI taxid should only contain digits.",
         "meta": ["taxid"]
+      },
+      "gene_calls_gff": {
+        "type": "string",
+        "pattern": "^(\\S+\\.gff3?)?$",
+        "errorMessage": "gene_calls_gff must be a path ending in .gff or .gff3, or left empty.",
+        "description": "Optional path to an external GFF/GFF3 file for this sample. When provided, Prokka/Bakta gene calling is skipped."
+      },
+      "gene_calls_faa": {
+        "type": "string",
+        "pattern": "^(\\S+\\.faa)?$",
+        "errorMessage": "gene_calls_faa must be a path ending in .faa, or left empty.",
+        "description": "Optional path to a protein FASTA (.faa) matching the external GFF. Required when gene_calls_gff is provided."
+      },
+      "gene_calls_gbk": {
+        "type": "string",
+        "pattern": "^(\\S+\\.gbk)?$",
+        "errorMessage": "gene_calls_gbk must be a path ending in .gbk, or left empty.",
+        "description": "Optional GenBank file for external gene call samples with prokka/bakta annotation source. Enables Pseudofinder, GECCO, antiSMASH, and SanntiS for those samples."
+      },
+      "annotation_source": {
+        "type": "string",
+        "enum": ["prokka", "bakta", "ensembl", ""],
+        "meta": ["annotation_source"],
+        "description": "Annotation source for external gene calls: prokka, bakta, or ensembl. Required when gene_calls_gff is provided."
       }
     },
     "required": ["prefix", "assembly", "taxid"]

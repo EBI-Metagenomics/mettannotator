@@ -1,23 +1,25 @@
-process LOOKUP_KINGDOM {
+process NORMALIZE_ENSEMBL_GFF {
 
     tag "${meta.prefix}"
 
     label 'process_nano'
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'oras://community.wave.seqera.io/library/pip_requests_retry:4b6e4901d175ea72' :
-        'community.wave.seqera.io/library/pip_requests_retry:d1a6734506332b90' }"
+        'https://depot.galaxyproject.org/singularity/python:3.9' :
+        'biocontainers/python:3.9' }"
 
     input:
-    tuple val(meta), path(fasta)
+    tuple val(meta), path(ensembl_gff)
 
     output:
-    tuple val(meta), env(detected_kingdom), emit: detected_kingdom
-    path "versions.yml",                    emit: versions
+    tuple val(meta), path("${meta.prefix}_normalised.gff"), emit: normalised_gff
+    path "versions.yml",                                    emit: versions
 
     script:
     """
-    detected_kingdom=\$(identify_kingdom.py -t ${meta.taxid} --include-kingdom)
+    normalize_ensembl_gff.py \\
+        -i ${ensembl_gff} \\
+        -o ${meta.prefix}_normalised.gff
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -27,7 +29,7 @@ process LOOKUP_KINGDOM {
 
     stub:
     """
-    detected_kingdom="Bacteria"
+    touch ${meta.prefix}_normalised.gff
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version 2>&1 | sed 's/Python //g')

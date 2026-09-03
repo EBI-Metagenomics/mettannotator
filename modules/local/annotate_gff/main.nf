@@ -82,6 +82,7 @@ process ANNOTATE_GFF {
     if ( params.fast ) {
         hypothetical_tmp_gff = "${meta.prefix}_temp.gff"
     }
+    def annotation_source_flag = meta.annotation_source ? "--annotation-source ${meta.annotation_source}" : ""
     """
     annotate_gff.py \
     -g ${gff} \
@@ -104,7 +105,7 @@ process ANNOTATE_GFF {
     add_hypothetical_protein_descriptions.py \\
     --eggnog-output ${eggnog_annotations_tsv} \\
     -i ${hypothetical_tmp_gff} \\
-    -o ${meta.prefix}_annotations.gff ${hypothetical_ips_flags}
+    -o ${meta.prefix}_annotations.gff ${hypothetical_ips_flags} ${annotation_source_flag}
 
     prepare_gff_for_conversion.py \\
     -i ${meta.prefix}_annotations.gff \\

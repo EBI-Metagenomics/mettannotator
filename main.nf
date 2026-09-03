@@ -56,32 +56,46 @@ workflow EBIMETAGENOMICS_METTANNOTATOR {
         params.eggnog_db == null ||
         params.rfam_ncrna_models == null
     )) {
-        log.error "If the parameter '--dbs' is null, you must specify individual paths for each database."
-        System.exit(1)
+        error "If the parameter '--dbs' is null, you must specify individual paths for each database."
     }
 
-    // Validate add_slow_tools and fast are not used together
     if (params.add_slow_tools && params.fast) {
-        log.error "'--add_slow_tools' and '--fast' cannot be used together. Use '--fast' for initial run, then '--add-slow-tools' to add slow annotations."
-        System.exit(1)
+        error "'--add_slow_tools' and '--fast' cannot be used together. Use '--fast' for initial run, then '--add-slow-tools' to add slow annotations."
     }
 
-    // Validate add_slow_tools and --skip-fast-staging are used together
     if (params.skip_fast_staging && !params.add_slow_tools) {
-        log.error "'--skip_fast_staging' can only be used together with '--add_slow_tools'."
-        System.exit(1)
+        error "'--skip_fast_staging' can only be used together with '--add_slow_tools'."
     }
 
-    // Validate add_slow_tools and --allow-missing-files are used together
     if (params.allow_missing_files && !params.add_slow_tools) {
-        log.error "'--allow_missing_files' can only be used together with '--add_slow_tools'."
-        System.exit(1)
+        error "'--allow_missing_files' can only be used together with '--add_slow_tools'."
     }
 
-    // --ignore-version-mismatch only makes sense alongside --add_slow_tools
     if (params.ignore_version_mismatch && !params.add_slow_tools) {
-        log.error "'--ignore_version_mismatch' can only be used together with '--add_slow_tools'."
-        System.exit(1)
+        error "'--ignore_version_mismatch' can only be used together with '--add_slow_tools'."
+    }
+
+    if (params.gene_calling_only && params.fast) {
+        error "'--gene_calling_only' and '--fast' cannot be used together."
+    }
+
+    if (params.gene_calling_only && params.add_slow_tools) {
+        error "'--gene_calling_only' and '--add_slow_tools' cannot be used together."
+    }
+
+    if (params.gene_calling_only && params.gene_calls) {
+        error "'--gene_calling_only' and '--gene_calls' cannot be used together."
+    }
+
+    if (params.gene_calls && params.add_slow_tools) {
+        error "'--gene_calls' and '--add_slow_tools' cannot be used together."
+    }
+
+    if (params.gene_calls && params.input) {
+        def ssHeader = new File(params.input as String).readLines()[0].split(',')*.trim()
+        if (ssHeader.contains('gene_calls_gff')) {
+           error "'--gene_calls' cannot be used when the samplesheet contains a 'gene_calls_gff' column. Use one mechanism or the other, not both."
+        }
     }
 
     WorkflowMain.initialise(workflow, params, log)
