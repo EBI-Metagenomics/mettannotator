@@ -268,16 +268,16 @@ Generic options
 
 Other parameters
   --bakta                            [boolean] Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.
-  --add_slow_tools                   [string]  Path to a previous --fast output directory. Loads existing results and
+  --extend_to_full                   [string]  Path to a previous --fast output directory. Loads existing results and
                                                runs only InterProScan, SanntiS and UniFIRE. Cannot be used with --fast.
-  --allow_missing_files              [boolean] When used with --add_slow_tools, downgrades missing optional fast-run
+  --allow_missing_files              [boolean] When used with --extend_to_full, downgrades missing optional fast-run
                                                tool outputs (CRISPR, AMR, BGC tools, DefenseFinder) from hard errors
                                                to warnings.
-  --skip_fast_staging                [boolean] When used with --add_slow_tools, skips copying fast-run outputs into
-                                               --outdir. Use when you only want slow-tool results in the output
+  --skip_fast_staging                [boolean] When used with --extend_to_full, skips copying fast-run outputs into
+                                               --outdir. Use when you only want extended-tool results in the output
                                                directory.
   --ignore_version_mismatch          [boolean] Downgrades the pipeline version mismatch from a hard error to a
-                                               warning. By default, running --add_slow_tools against outputs from
+                                               warning. By default, running --extend_to_full against outputs from
                                                a different pipeline version is a hard error.
 
  !! Hiding 17 params, use --validationShowHiddenParams to show them !!
@@ -328,7 +328,7 @@ nextflow run ebi-metagenomics/mettannotator \
 ```
 
 `--gene_calls` discovers Prokka/Bakta outputs by sample prefix and skips gene calling.
-It cannot be combined with `--fast`, `--add_slow_tools`, or the samplesheet `gene_calls_gff` column.
+It cannot be combined with `--fast`, `--extend_to_full`, or the samplesheet `gene_calls_gff` column.
 
 #### Per-sample external gene calls
 
@@ -379,10 +379,10 @@ whenever possible.
 When generating an input file for a fast mode run, it is sufficient to indicate the taxid of the superkingdom (`2` for
 bacteria and `2157` for Archaea) in the "taxid" column rather than the taxid of the lowest known taxon.
 
-### Two-phase annotation (--add_slow_tools)
+### Two-phase annotation (--extend_to_full)
 
 If you have already run the pipeline in `--fast` mode and want to add InterProScan, SanntiS and UniFIRE annotations
-without re-running the full pipeline, use the `--add_slow_tools` flag pointing to the previous fast-run output directory:
+without re-running the full pipeline, use the `--extend_to_full` flag pointing to the previous fast-run output directory:
 
 ```bash
 nextflow run ebi-metagenomics/mettannotator \
@@ -390,18 +390,17 @@ nextflow run ebi-metagenomics/mettannotator \
    --input assemblies_sheet.csv \
    --outdir <OUTDIR> \
    --dbs <PATH/TO/DBS> \
-   --add_slow_tools <PATH/TO/FAST/OUTDIR>
+   --extend_to_full <PATH/TO/FAST/OUTDIR>
 ```
 
-The pipeline will load the existing fast-run results for each sample, run only the slow tools, and merge the outputs
+The pipeline will load the existing fast-run results for each sample, run only the extended tools, and merge the outputs
 into a final annotated GFF. Both Prokka and Bakta outputs from the fast run are supported.
 
-By default, the fast-run outputs are also staged into `--outdir` so the final directory contains both fast and slow
-results. To write only the slow-tool results, add `--skip_fast_staging`.
+By default, the fast-run outputs are also staged into `--outdir` so the final directory contains both fast and extended
+results. To write only the extended-tool results, add `--skip_fast_staging` (this option saves space and avoids duplication of files that are already present in the fast-run output folder).
 
-**Optional fast-run outputs**: some tools (CRISPR, AMR, BGC tools, DefenseFinder) may produce no output for a given
-sample (e.g. no CRISPR arrays found). By default, missing files are treated as errors. Use `--allow_missing_files` to
-downgrade these to warnings and allow the slow run to proceed:
+**Running extended tools on incomplete fast-run ouptut**: By default, missing files in the fast-run output folder are treated as errors. However, in some cases, users may still want to run the extended tools on the available outputs. Use `--allow_missing_files` to
+downgrade the missing file errors to warnings and allow the extended run to proceed:
 
 ```bash
 nextflow run ebi-metagenomics/mettannotator \
@@ -409,12 +408,12 @@ nextflow run ebi-metagenomics/mettannotator \
    --input assemblies_sheet.csv \
    --outdir <OUTDIR> \
    --dbs <PATH/TO/DBS> \
-   --add_slow_tools <PATH/TO/FAST/OUTDIR> \
+   --extend_to_full <PATH/TO/FAST/OUTDIR> \
    --allow_missing_files
 ```
 
 **Version consistency**: the pipeline always checks that the fast-run outputs were produced by the same pipeline
-version. If a mismatch is detected, the pipeline will error. Use `--ignore_version_mismatch` to downgrade this to
+version. If a mismatch is detected, the pipeline will produce an error. Use `--ignore_version_mismatch` to downgrade this to
 a warning and allow the run to proceed.
 
 <a name="test"></a>

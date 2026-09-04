@@ -24,7 +24,7 @@ class MettannotatorValidation {
     // Per-tool output files from the fast run.
     // By default these are treated as required: a missing file is a hard error.
     // Pass '--allow-missing-files' to downgrade missing files to warnings, which
-    // allows the slow run to proceed even when a fast-run tool produced no output
+    // allows the full run to proceed even when a fast-run tool produced no output
     // (e.g. a genome with no CRISPR arrays, or a tool that was intentionally
     // skipped).  annotate_gff.py guards every one of these with a None-check so
     // the annotation step is safely skipped when the file is absent.
@@ -75,7 +75,7 @@ class MettannotatorValidation {
     // by reading the version recorded in pipeline_info/software_versions.yml.
     //
     public static void checkVersionConsistency(params, log, String pipelineName, String currentVersion) {
-        def versionsFile = new File("${params.add_slow_tools}/pipeline_info/software_versions.yml")
+        def versionsFile = new File("${params.extend_to_full}/pipeline_info/software_versions.yml")
         if (!versionsFile.exists()) {
             log.warn(
                 "WARNING: '${versionsFile.absolutePath}' not found in the fast-run output.\n" +
@@ -124,18 +124,18 @@ class MettannotatorValidation {
      */
     public static void validateFastRunInputs(params, log) {
 
-        def resultsDir = new File(params.add_slow_tools as String)
+        def resultsDir = new File(params.extend_to_full as String)
         def inputFile  = new File(params.input as String)
 
         if (!resultsDir.exists()) {
             Nextflow.error(
-                "Directory specified by '--add-slow-tools' does not exist: ${resultsDir.absolutePath}"
+                "Directory specified by '--extend_to_full' does not exist: ${resultsDir.absolutePath}"
             )
         }
 
         if (!resultsDir.isDirectory()) {
             Nextflow.error(
-                "Path specified by '--add-slow-tools' is not a directory: ${resultsDir.absolutePath}"
+                "Path specified by '--extend_to_full' is not a directory: ${resultsDir.absolutePath}"
             )
         }
 
@@ -162,7 +162,7 @@ class MettannotatorValidation {
                     "Sample '${prefix}': output directory not found in fast-run results.\n" +
                     "  Expected: ${sampleDir.absolutePath}\n" +
                     "  Ensure the previous --fast run completed successfully and that\n" +
-                    "  '--add-slow-tools' points to the correct output directory."
+                    "  '--extend_to_full' points to the correct output directory."
                 )
                 return
             }
@@ -243,7 +243,7 @@ class MettannotatorValidation {
                 "  FAST-RUN INPUT VALIDATION FAILED",
                 header_line,
                 "  ${errors.size()} error(s) found in fast-run output directory:",
-                "  ${params.add_slow_tools}",
+                "  ${params.extend_to_full}",
                 "",
             ]
 
@@ -256,7 +256,7 @@ class MettannotatorValidation {
             Nextflow.error(msg.join('\n'))
         }
 
-        log.info "Fast-run input validation passed for all samples in '${params.add_slow_tools}'."
+        log.info "Fast-run input validation passed for all samples in '${params.extend_to_full}'."
     }
 
     //

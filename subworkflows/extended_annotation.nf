@@ -3,7 +3,7 @@ include { INTERPROSCAN               } from '../modules/local/interproscan'
 include { UNIFIRE                    } from '../modules/local/unifire'
 include { SANNTIS                    } from '../modules/local/sanntis'
 
-workflow SLOW_ANNOTATION {
+workflow EXTENDED_ANNOTATION {
 
     take:
     faa             // channel: [meta, faa]

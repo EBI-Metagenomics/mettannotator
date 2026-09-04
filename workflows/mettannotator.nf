@@ -16,7 +16,7 @@ include { CIRCOS_PLOT                                } from '../modules/local/ci
 include { STAGE_FAST_OUTPUTS                         } from '../modules/local/stage_fast_outputs'
 
 include { DOWNLOAD_DATABASES                         } from '../subworkflows/download_databases'
-include { SLOW_ANNOTATION                            } from '../subworkflows/slow_annotation'
+include { EXTENDED_ANNOTATION                        } from '../subworkflows/extended_annotation'
 include { GENE_CALLING                               } from '../subworkflows/gene_calling'
 include { FAST_ANNOTATION                            } from '../subworkflows/fast_annotation'
 
@@ -179,16 +179,19 @@ workflow METTANNOTATOR {
 
     ch_versions = Channel.empty()
 
-    if ( params.add_slow_tools ) {
+    if ( params.extend_to_full ) {
 
         //
-        // In add-slow-tools mode, we read existing results from --fast and run only slow tools
+        // The extend_to_full mode means mettannotator was previously run in the --fast mode and all results
+        // except for the additional, more resource-intensive tools have been computed. In this mode, the user
+        // will provide the results of the fast mode and only extended tools will been added.
         //
+
        Channel.fromSamplesheet("input")
                     .map { row -> [row[0].prefix, row[0].taxid] }
                     .set { samplesheet }
 
-        def results_dir = file(params.add_slow_tools)
+        def results_dir = file(params.extend_to_full)
 
         def load_files = { pattern, strip_suffix ->
             channel
@@ -224,7 +227,7 @@ workflow METTANNOTATOR {
         uniref50_files   = load_files("${results_dir}/**/functional_annotation/uniref/*_uniref50.tsv",'_uniref50\\.tsv')
 
         // Stage fast-run outputs into --outdir so the final directory
-        // contains both fast and slow results in the expected layout.
+        // contains both fast and additional results in the expected layout.
         // Skipped when --skip-fast-staging is set.
         if ( !params.skip_fast_staging ) {
             stage_fast_input = samplesheet
@@ -252,15 +255,15 @@ workflow METTANNOTATOR {
             }
             .set { annotations_gbk }
 
-        SLOW_ANNOTATION(annotations_faa_input, annotations_gbk, interproscan_db)
-        ch_versions = ch_versions.mix(SLOW_ANNOTATION.out.versions)
+        EXTENDED_ANNOTATION(annotations_faa_input, annotations_gbk, interproscan_db)
+        ch_versions = ch_versions.mix(EXTENDED_ANNOTATION.out.versions)
 
-        // Re-key slow tool outputs by prefix string for joining with disk-loaded fast results
-        ips_by_prefix     = SLOW_ANNOTATION.out.ips_annotations.map { meta, f -> [meta.prefix, f] }
-        sanntis_by_prefix = SLOW_ANNOTATION.out.sanntis_gff.map     { meta, f -> [meta.prefix, f] }
-        arba_by_prefix    = SLOW_ANNOTATION.out.arba.map            { meta, f -> [meta.prefix, f] }
-        unirule_by_prefix = SLOW_ANNOTATION.out.unirule.map         { meta, f -> [meta.prefix, f] }
-        pirsr_by_prefix   = SLOW_ANNOTATION.out.pirsr.map           { meta, f -> [meta.prefix, f] }
+        // Re-key additional-tool outputs by prefix string for joining with disk-loaded fast results
+        ips_by_prefix     = EXTENDED_ANNOTATION.out.ips_annotations.map { meta, f -> [meta.prefix, f] }
+        sanntis_by_prefix = EXTENDED_ANNOTATION.out.sanntis_gff.map     { meta, f -> [meta.prefix, f] }
+        arba_by_prefix    = EXTENDED_ANNOTATION.out.arba.map            { meta, f -> [meta.prefix, f] }
+        unirule_by_prefix = EXTENDED_ANNOTATION.out.unirule.map         { meta, f -> [meta.prefix, f] }
+        pirsr_by_prefix   = EXTENDED_ANNOTATION.out.pirsr.map           { meta, f -> [meta.prefix, f] }
 
         // Build fast results channel keyed by prefix
         fast_results = samplesheet
@@ -278,7 +281,7 @@ workflow METTANNOTATOR {
             .join(uniref50_files,  remainder: true)
             .join(pseudo_files,    remainder: true)
 
-        // Merge fast + slow, then build final meta tuple
+        // Merge fast + extended, then build final meta tuple
         annotate_gff_input = fast_results
             .join(ips_by_prefix)
             .join(sanntis_by_prefix, remainder: true)
@@ -308,6 +311,15 @@ workflow METTANNOTATOR {
         )
 
     } else {
+
+        //
+        // This is a normal execution of mettannotator. The possible options here are:
+        // No flags: GENE_CALLING, FAST_ANNOTATION, EXTENDED_ANNOTATION all run
+        // --gene_calling_only: only GENE_CALLING runs
+        // --fast: EXTENDED_ANNOTATION is skipped
+        // GENE_CALLING can take assemblies and perform structural annotation de novo, or use user structural
+        // annotations, if they were provided.
+        //
 
         assemblies_raw = Channel.fromSamplesheet("input")
         assemblies = assemblies_raw.map { row -> [row[0], row[1]] }
@@ -346,8 +358,8 @@ workflow METTANNOTATOR {
             ch_versions = ch_versions.mix(FAST_ANNOTATION.out.versions)
 
             if ( !params.fast ) {
-                SLOW_ANNOTATION(annotations_faa, annotations_gbk, interproscan_db)
-                ch_versions = ch_versions.mix(SLOW_ANNOTATION.out.versions)
+                EXTENDED_ANNOTATION(annotations_faa, annotations_gbk, interproscan_db)
+                ch_versions = ch_versions.mix(EXTENDED_ANNOTATION.out.versions)
             }
 
             /**********************************************/
@@ -381,15 +393,15 @@ workflow METTANNOTATOR {
 
             if ( !params.fast ) {
                 annotate_gff_input = annotate_gff_input.join(
-                    SLOW_ANNOTATION.out.ips_annotations
+                    EXTENDED_ANNOTATION.out.ips_annotations
                 ).join(
-                    SLOW_ANNOTATION.out.sanntis_gff, remainder: true
+                    EXTENDED_ANNOTATION.out.sanntis_gff, remainder: true
                 ).join(
-                    SLOW_ANNOTATION.out.arba, remainder: true
+                    EXTENDED_ANNOTATION.out.arba, remainder: true
                 ).join(
-                    SLOW_ANNOTATION.out.unirule, remainder: true
+                    EXTENDED_ANNOTATION.out.unirule, remainder: true
                 ).join(
-                    SLOW_ANNOTATION.out.pirsr, remainder: true
+                    EXTENDED_ANNOTATION.out.pirsr, remainder: true
                 )
             } else {
                 annotate_gff_input = annotate_gff_input.map { it ->
