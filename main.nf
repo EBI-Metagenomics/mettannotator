@@ -59,36 +59,36 @@ workflow EBIMETAGENOMICS_METTANNOTATOR {
         error "If the parameter '--dbs' is null, you must specify individual paths for each database."
     }
 
-    if (params.add_slow_tools && params.fast) {
-        error "'--add_slow_tools' and '--fast' cannot be used together. Use '--fast' for initial run, then '--add-slow-tools' to add slow annotations."
+    if (params.extend_to_full && params.fast) {
+        error "'--extend_to_full' and '--fast' cannot be used together. Use '--fast' for initial run, then '--extend_to_full' to add extended annotations."
     }
 
-    if (params.skip_fast_staging && !params.add_slow_tools) {
-        error "'--skip_fast_staging' can only be used together with '--add_slow_tools'."
+    if (params.skip_fast_staging && !params.extend_to_full) {
+        error "'--skip_fast_staging' can only be used together with '--extend_to_full'."
     }
 
-    if (params.allow_missing_files && !params.add_slow_tools) {
-        error "'--allow_missing_files' can only be used together with '--add_slow_tools'."
+    if (params.allow_missing_files && !params.extend_to_full) {
+        error "'--allow_missing_files' can only be used together with '--extend_to_full'."
     }
 
-    if (params.ignore_version_mismatch && !params.add_slow_tools) {
-        error "'--ignore_version_mismatch' can only be used together with '--add_slow_tools'."
+    if (params.ignore_version_mismatch && !params.extend_to_full) {
+        error "'--ignore_version_mismatch' can only be used together with '--extend_to_full'."
     }
 
     if (params.gene_calling_only && params.fast) {
         error "'--gene_calling_only' and '--fast' cannot be used together."
     }
 
-    if (params.gene_calling_only && params.add_slow_tools) {
-        error "'--gene_calling_only' and '--add_slow_tools' cannot be used together."
+    if (params.gene_calling_only && params.extend_to_full) {
+        error "'--gene_calling_only' and '--extend_to_full' cannot be used together."
     }
 
     if (params.gene_calling_only && params.gene_calls) {
         error "'--gene_calling_only' and '--gene_calls' cannot be used together."
     }
 
-    if (params.gene_calls && params.add_slow_tools) {
-        error "'--gene_calls' and '--add_slow_tools' cannot be used together."
+    if (params.gene_calls && params.extend_to_full) {
+        error "'--gene_calls' and '--extend_to_full' cannot be used together."
     }
 
     if (params.gene_calls && params.input) {

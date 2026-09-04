@@ -10,15 +10,29 @@
 # Output: standard Prokka-style GFF3 with ID, locus_tag, product on every CDS.
 
 import argparse
-import urllib.parse
 import sys
+import urllib.parse
 
 SKIP_FEATURES = {
-    "mRNA", "exon", "pseudogene", "pseudogenic_transcript",
-    "ncRNA_gene", "ncRNA", "pre_miRNA", "miRNA", "snoRNA", "snRNA",
-    "lnc_RNA", "antisense_RNA", "ribozyme",
-    "rRNA", "tRNA", "biological_region", "chromosome",
-    "region", "tmRNA",
+    "mRNA",
+    "exon",
+    "pseudogene",
+    "pseudogenic_transcript",
+    "ncRNA_gene",
+    "ncRNA",
+    "pre_miRNA",
+    "miRNA",
+    "snoRNA",
+    "snRNA",
+    "lnc_RNA",
+    "antisense_RNA",
+    "ribozyme",
+    "rRNA",
+    "tRNA",
+    "biological_region",
+    "chromosome",
+    "region",
+    "tmRNA",
 }
 
 
@@ -50,8 +64,8 @@ def decode_description(text):
 
 
 def normalise(in_gff, out_gff):
-    gene_info    = {}   # gene_id  -> {"name": str|None, "description": str|None}
-    mrna_to_gene = {}   # transcript_id -> gene_id
+    gene_info = {}  # gene_id  -> {"name": str|None, "description": str|None}
+    mrna_to_gene = {}  # transcript_id -> gene_id
 
     # --- Pass 1: collect gene and mRNA metadata ---
     with open(in_gff) as fh:
@@ -63,19 +77,21 @@ def normalise(in_gff, out_gff):
             if len(cols) != 9:
                 continue
             feature = cols[2]
-            attrs   = col9_to_dict(cols[8])
+            attrs = col9_to_dict(cols[8])
 
             if feature == "gene":
                 # gene_id attribute is the stable identifier (e.g. ABAYE0001)
-                gid  = attrs.get("gene_id") or attrs.get("ID", "").removeprefix("gene:")
+                gid = attrs.get("gene_id") or attrs.get("ID", "").removeprefix("gene:")
                 desc = decode_description(attrs.get("description", ""))
                 name = attrs.get("Name")
                 gene_info[gid] = {"name": name, "description": desc or None}
 
             elif feature == "mRNA":
-                tid        = attrs.get("transcript_id") or attrs.get("ID", "").removeprefix("transcript:")
+                tid = attrs.get("transcript_id") or attrs.get("ID", "").removeprefix(
+                    "transcript:"
+                )
                 parent_raw = attrs.get("Parent", "")
-                gid        = parent_raw.removeprefix("gene:")
+                gid = parent_raw.removeprefix("gene:")
                 if tid and gid:
                     mrna_to_gene[tid] = gid
 
@@ -93,7 +109,9 @@ def normalise(in_gff, out_gff):
 
             if line.startswith("#"):
                 # Keep standard GFF3 directives; drop Ensembl-specific pragmas (#!...)
-                if line.startswith("##gff-version") or line.startswith("##sequence-region"):
+                if line.startswith("##gff-version") or line.startswith(
+                    "##sequence-region"
+                ):
                     out.write(line + "\n")
                 continue
 
@@ -107,9 +125,9 @@ def normalise(in_gff, out_gff):
                 continue
 
             if feature == "gene":
-                attrs  = col9_to_dict(cols[8])
-                gid    = attrs.get("gene_id") or attrs.get("ID", "").removeprefix("gene:")
-                name   = attrs.get("Name")
+                attrs = col9_to_dict(cols[8])
+                gid = attrs.get("gene_id") or attrs.get("ID", "").removeprefix("gene:")
+                name = attrs.get("Name")
                 # Match Prokka compliant format: gene ID gets _gene suffix so CDS can
                 # reference it via Parent=<gid>_gene
                 new_attrs = [("ID", f"{gid}_gene"), ("locus_tag", gid)]
@@ -143,11 +161,11 @@ def normalise(in_gff, out_gff):
                 continue
 
             # Resolve gene info via transcript → gene chain
-            tid       = attrs.get("Parent", "").removeprefix("transcript:")
-            gid       = mrna_to_gene.get(tid, "")
+            tid = attrs.get("Parent", "").removeprefix("transcript:")
+            gid = mrna_to_gene.get(tid, "")
             gene_meta = gene_info.get(gid, {})
 
-            product   = gene_meta.get("description") or "hypothetical protein"
+            product = gene_meta.get("description") or "hypothetical protein"
             gene_name = gene_meta.get("name")
 
             # Build clean Prokka-compliant attributes.
@@ -155,9 +173,9 @@ def normalise(in_gff, out_gff):
             # gbk_generator to omit CDS from the GBK (it only iterates top-level features).
             # Gene + CDS are linked implicitly by shared locus_tag, matching Prokka's GBK format.
             new_attrs = [
-                ("ID",        protein_id),
+                ("ID", protein_id),
                 ("locus_tag", gid if gid else protein_id),
-                ("product",   product),
+                ("product", product),
             ]
             if gene_name:
                 new_attrs.append(("Name", gene_name))
@@ -170,7 +188,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Normalise an Ensembl Bacteria GFF3 for mettannotator."
     )
-    parser.add_argument("-i", "--input",  required=True, help="Input Ensembl GFF3")
+    parser.add_argument("-i", "--input", required=True, help="Input Ensembl GFF3")
     parser.add_argument("-o", "--output", required=True, help="Output normalised GFF3")
     args = parser.parse_args()
     normalise(args.input, args.output)

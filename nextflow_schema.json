@@ -39,44 +39,44 @@
           "description": "Use Bakta instead of Prokka for CDS annotation. Prokka will still be used for archaeal genomes.",
           "fa_icon": "fas fa-wrench"
         },
-        "add_slow_tools": {
+        "extend_to_full": {
           "type": "string",
           "format": "directory-path",
           "description": "Path to output directory from previous --fast run. Enables running InterProScan, SanntiS, and UniFIRE on existing results.",
-          "help_text": "Provide the path to a previous fast-mode run's output directory. The pipeline will auto-discover sample files and run only the slow annotation tools."
+          "help_text": "Provide the path to a previous fast-mode run's output directory. The pipeline will auto-discover sample files and run only the extended annotation tools."
         },
         "skip_fast_staging": {
           "type": "boolean",
           "default": false,
-          "description": "Skip staging fast-run outputs into --outdir when using --add-slow-tools.",
-          "help_text": "By default, when --add-slow-tools is used, the fast-run outputs are staged (hard-linked or rsynced) into --outdir so the final directory contains both fast and slow results. Use this flag to disable that behaviour and write only the slow-tool outputs to --outdir.",
+          "description": "Skip staging fast-run outputs into --outdir when using --extend_to_full.",
+          "help_text": "By default, when --extend_to_full is used, the fast-run outputs are staged (hard-linked or rsynced) into --outdir so the final directory contains both fast and extended results. Use this flag to disable that behaviour and write only the extended-tool outputs to --outdir.",
           "fa_icon": "fas fa-folder-minus"
         },
         "allow_missing_files": {
           "type": "boolean",
           "default": false,
-          "description": "Downgrade missing fast-run tool outputs from errors to warnings when using --add-slow-tools.",
-          "help_text": "By default all per-tool outputs from the fast run (CRISPR, AMR, antiSMASH, GECCO, dbCAN, DefenseFinder, Pseudofinder) are required. Use this flag when a file is intentionally absent — for example a genome with no CRISPR arrays, or a tool that was deliberately skipped. The slow run will still proceed; annotate_gff.py will simply omit the annotation for that tool.",
+          "description": "Downgrade missing fast-run tool outputs from errors to warnings when using --extend_to_full.",
+          "help_text": "By default all per-tool outputs from the fast run (CRISPR, AMR, antiSMASH, GECCO, dbCAN, DefenseFinder, Pseudofinder) are required. Use this flag when a file is intentionally absent — for example a genome with no CRISPR arrays, or a tool that was deliberately skipped. The extended run will still proceed; annotate_gff.py will simply omit the annotation for that tool.",
           "fa_icon": "fas fa-exclamation-triangle"
         },
         "ignore_version_mismatch": {
           "type": "boolean",
           "default": false,
-          "description": "Skip the pipeline version consistency check when using --add-slow-tools.",
-          "help_text": "By default, when --add-slow-tools is used, the pipeline checks that the fast-run results were produced by the same pipeline version. Use this flag to suppress the version mismatch error and proceed anyway — a warning will still be printed. Can only be used together with --add-slow-tools.",
+          "description": "Skip the pipeline version consistency check when using --extend_to_full.",
+          "help_text": "By default, when --extend_to_full is used, the pipeline checks that the fast-run results were produced by the same pipeline version. Use this flag to suppress the version mismatch error and proceed anyway — a warning will still be printed. Can only be used together with --extend_to_full.",
           "fa_icon": "fas fa-code-branch"
         },
         "gene_calling_only": {
           "type": "boolean",
           "default": false,
           "description": "Run only the gene calling step (Prokka/Bakta) and stop. Outputs can be used with --gene-calls in a subsequent run.",
-          "help_text": "When set, the pipeline runs LOOKUP_KINGDOM and Prokka/Bakta, writes all gene calling outputs to --outdir, then stops. Cannot be used together with --fast, --add-slow-tools, or --gene-calls.",
+          "help_text": "When set, the pipeline runs LOOKUP_KINGDOM and Prokka/Bakta, writes all gene calling outputs to --outdir, then stops. Cannot be used together with --fast, --extend_to_full, or --gene-calls.",
           "fa_icon": "fas fa-dna"
         },
         "gene_calls": {
           "type": "string",
           "description": "Path to an existing gene calling output directory. Skips Prokka/Bakta and starts the pipeline from annotation.",
-          "help_text": "The directory must follow the standard mettannotator layout. When --bakta is set, Bakta outputs are expected at functional_annotation/bakta/. Otherwise, Prokka outputs are expected at functional_annotation/prokka/ (standard annotation) and functional_annotation/prokka_compliant/ (used by Pseudofinder). The samplesheet must still specify the assembly FASTA and taxid. Cannot be used together with --add-slow-tools or --gene-calling-only.",
+          "help_text": "The directory must follow the standard mettannotator layout. When --bakta is set, Bakta outputs are expected at functional_annotation/bakta/. Otherwise, Prokka outputs are expected at functional_annotation/prokka/ (standard annotation) and functional_annotation/prokka_compliant/ (used by Pseudofinder). The samplesheet must still specify the assembly FASTA and taxid. Cannot be used together with --extend_to_full or --gene-calling-only.",
           "fa_icon": "fas fa-folder-open"
         },
         "email": {

@@ -50,16 +50,16 @@ nextflow_process {
         }
     }
 
-    test("annotate_gff - mandatory and slow-tool annotations transferred when optional fast-run files are absent") {
+    test("annotate_gff - mandatory and extended-tool annotations transferred when optional fast-run files are absent") {
 
-        // Represents --add_slow_tools + --allow_missing_files: fast-run optional tool
+        // Represents --extend_to_full + --allow_missing_files: fast-run optional tool
         // outputs (CRISPR, AMR, BGC tools, DefenseFinder) are absent for this sample.
-        // ANNOTATE_GFF must succeed, mandatory and slow-tool annotations must be present,
+        // ANNOTATE_GFF must succeed, mandatory and extended-tool annotations must be present,
         // and absent optional-tool attributes must not appear in the output.
 
         when {
             params {
-                add_slow_tools      = true
+                extend_to_full      = true
                 allow_missing_files = true
             }
             process {
@@ -127,7 +127,7 @@ nextflow_process {
                     assert gff_content.contains("tRNAscan-SE"),
                         "tRNA feature missing — tRNAscan-SE results were not transferred"
 
-                    // ── Slow-tool annotations must be present on the CDS line ──────────
+                    // ── Extended-tool annotations must be present on the CDS line ──────────
                     assert cds_line.contains("pfam="),
                         "pfam= not on TESTPFX_00001 — get_iprs() did not write Pfam accession"
 
@@ -439,11 +439,11 @@ nextflow_process {
         }
     }
 
-    test("annotate_gff - slow-tool annotations transferred (add_slow_tools mode)") {
+    test("annotate_gff - extended-tool annotations transferred (extend_to_full mode)") {
 
         when {
             params {
-                add_slow_tools = true
+                extend_to_full = true
             }
             process {
                 """
@@ -528,7 +528,7 @@ nextflow_process {
                     assert cds_line.contains("defense_finder_type="),
                         "defense_finder_type= not on TESTPFX_00001 — check get_defense_finder() in annotate_gff.py"
 
-                    // ── Slow-tool annotations ────────────────────────────────────────
+                    // ── Extended-tool annotations ────────────────────────────────────────
                     assert cds_line.contains("pfam="),
                         "pfam= not on TESTPFX_00001 — get_iprs() did not write Pfam accession to output"
 
