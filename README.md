@@ -47,7 +47,7 @@ The workflow uses the following tools and databases:
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
 | [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.2           | Protein annotation                                                                                                     |
 | [DIAMOND](https://github.com/bbuchfink/diamond)                                                  | 2.2.5            | Similarity search of hypothetical proteins against UniRef                                                              |
-| [UniRef90 / UniRef50](https://www.uniprot.org/help/downloads)                                    | 2026_02          | Databases for the DIAMOND search                                                                                       |
+| [UniRef90 / UniRef50](https://www.uniprot.org/help/downloads)                                    | 2026_03          | Databases for the DIAMOND search                                                                                       |
 | [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.2.7            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
 | [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.2 2026-05-15.1 | Database for AMRFinderPlus                                                                                             |
 | [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 3.0.0            | Annotation of anti-phage systems                                                                                       |
@@ -259,9 +259,9 @@ Reference databases
   --pseudofinder_db                  [string]  Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.
   --pseudofinder_db_version          [string]  SwissProt version. [default: 2024_06]
   --diamond_uniref90_db              [string]  UniRef90 reference database formatted with DIAMOND.
-  --diamond_uniref90_db_version      [string]  UniRef90 version. [default: 2026_02]
+  --diamond_uniref90_db_version      [string]  UniRef90 version. [default: 2026_03]
   --diamond_uniref50_db              [string]  UniRef50 reference database formatted with DIAMOND.
-  --diamond_uniref50_db_version      [string]  UniRef50 version. [default: 2026_02]
+  --diamond_uniref50_db_version      [string]  UniRef50 version. [default: 2026_03]
 
 Generic options
   --multiqc_methods_description      [string]  Custom MultiQC yaml file containing HTML including a methods description.
