@@ -168,8 +168,11 @@ workflow METTANNOTATOR {
     if ( params.extend_to_full ) {
 
         //
-        // In extend-to-full mode, we read existing results from --fast and run only the additional tools
+        // The extend_to_full mode means mettannotator was previously run in the --fast mode and all results
+        // except for the additional, more resource-intensive tools have been computed. In this mode, the user
+        // will provide the results of the fast mode and only extended tools will been added.
         //
+
        Channel.fromSamplesheet("input")
                     .map { row -> [row[0].prefix, row[0].taxid] }
                     .set { samplesheet }
@@ -290,6 +293,15 @@ workflow METTANNOTATOR {
         )
 
     } else {
+
+        //
+        // This is a normal execution of mettannotator. The possible options here are:
+        // No flags: GENE_CALLING, FAST_ANNOTATION, EXTENDED_ANNOTATION all run
+        // --gene_calling_only: only GENE_CALLING runs
+        // --fast: EXTENDED_ANNOTATION is skipped
+        // GENE_CALLING can take assemblies and perform structural annotation de novo, or use user structural
+        // annotations, if they were provided.
+        //
 
         assemblies_raw = Channel.fromSamplesheet("input")
         assemblies = assemblies_raw.map { row -> [row[0], row[1]] }
