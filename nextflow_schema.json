@@ -113,7 +113,7 @@
         },
         "interproscan_db_version": {
           "type": "string",
-          "default": "5.75-106.0",
+          "default": "5.76-107.0",
           "description": "The InterProScan reference database version."
         },
         "interpro_entry_list": {
@@ -124,7 +124,7 @@
         },
         "interpro_entry_list_version": {
           "type": "string",
-          "default": "106",
+          "default": "107",
           "description": "InterPro entry list version"
         },
         "eggnog_db": {
@@ -158,7 +158,7 @@
         },
         "amrfinder_plus_db_version": {
           "type": "string",
-          "default": "2025-07-16.1",
+          "default": "2026-05-15.1",
           "description": "The AMRFinderPlus reference database version."
         },
         "defense_finder_db": {
@@ -169,7 +169,7 @@
         },
         "defense_finder_db_version": {
           "type": "string",
-          "default": "2.0.2",
+          "default": "3.1.0",
           "description": "The Defense Finder models version."
         },
         "antismash_db": {
@@ -213,8 +213,30 @@
         },
         "pseudofinder_db_version": {
           "type": "string",
-          "default": "2024_06",
+          "default": "2026_02",
           "description": "SwissProt version."
+        },
+        "diamond_uniref90_db": {
+          "type": "string",
+          "format": "file-path",
+          "description": "UniRef90 reference database formatted with DIAMOND.",
+          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref90.fasta.gz."
+        },
+        "diamond_uniref90_db_version": {
+          "type": "string",
+          "default": "2026_02",
+          "description": "UniRef90 version."
+        },
+        "diamond_uniref50_db": {
+          "type": "string",
+          "format": "file-path",
+          "description": "UniRef50 reference database formatted with DIAMOND.",
+          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref50.fasta.gz."
+        },
+        "diamond_uniref50_db_version": {
+          "type": "string",
+          "default": "2026_02",
+          "description": "UniRef50 version."
         }
       },
       "fa_icon": "fas fa-database"

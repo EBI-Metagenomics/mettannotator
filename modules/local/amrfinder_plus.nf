@@ -35,7 +35,7 @@ process AMRFINDER_PLUS {
     label 'process_low'
     label 'error_retry'
 
-    container 'quay.io/biocontainers/ncbi-amrfinderplus:4.0.23--hf69ffd2_0'
+    container 'quay.io/biocontainers/ncbi-amrfinderplus:4.2.7--hf69ffd2_0'
 
     input:
     tuple val(meta), path(fna), path(faa), path(gff), val(detected_organism)
@@ -127,7 +127,7 @@ process AMRFINDER_PLUS_TO_GFF {
     process_amrfinderplus_results.py \\
     -i ${amrfinder_tsv} \\
     -o ${meta.prefix}_amrfinderplus.gff \\
-    -v 4.0.23
+    -v 4.2.7
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

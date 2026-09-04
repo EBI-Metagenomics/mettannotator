@@ -41,15 +41,17 @@ The workflow uses the following tools and databases:
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.11.4           | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | v6.0             | Bakta DB (when Bakta is used as the gene caller)                                                                       |
 | [Pseudofinder](https://github.com/filip-husnik/pseudofinder)                                     | v1.1.0           | Identification of possible pseudogenes                                                                                 |
-| [Swiss-Prot](https://www.uniprot.org/help/downloads)                                             | 2024_06          | Database for Pseudofinder                                                                                              |
-| [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.75-106.0       | Protein annotation (InterPro, Pfam)                                                                                    |
+| [Swiss-Prot](https://www.uniprot.org/help/downloads)                                             | 2026_02          | Database for Pseudofinder                                                                                              |
+| [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/)                               | 5.76-107.0       | Protein annotation (InterPro, Pfam)                                                                                    |
 | [eggNOG-mapper](https://github.com/eggnogdb/eggnog-mapper)                                       | 2.1.11           | Protein annotation (eggNOG, KEGG, COG, GO-terms)                                                                       |
 | [eggNOG DB](http://eggnog6.embl.de/download/)                                                    | 5.0.2            | Database for eggNOG-mapper                                                                                             |
-| [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.1           | Protein annotation                                                                                                     |
-| [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.0.23           | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
-| [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.0 2025-07-16.1 | Database for AMRFinderPlus                                                                                             |
-| [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 2.0.0            | Annotation of anti-phage systems                                                                                       |
-| [DefenseFinder models](https://github.com/mdmparis/defense-finder-models)                        | 2.0.2            | Database for DefenseFinder                                                                                             |
+| [UniFIRE](https://gitlab.ebi.ac.uk/uniprot-public/unifire)                                       | 2026.2           | Protein annotation                                                                                                     |
+| [DIAMOND](https://github.com/bbuchfink/diamond)                                                  | 2.2.5            | Similarity search of hypothetical proteins against UniRef                                                              |
+| [UniRef90 / UniRef50](https://www.uniprot.org/help/downloads)                                    | 2026_02          | Databases for the DIAMOND search                                                                                       |
+| [AMRFinderPlus](https://github.com/ncbi/amr)                                                     | 4.2.7            | Antimicrobial resistance gene annotation; virulence factors, biocide, heat, acid, and metal resistance gene annotation |
+| [AMRFinderPlus DB](https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/)              | 4.2 2026-05-15.1 | Database for AMRFinderPlus                                                                                             |
+| [DefenseFinder](https://github.com/mdmparis/defense-finder)                                      | 3.0.0            | Annotation of anti-phage systems                                                                                       |
+| [DefenseFinder models](https://github.com/mdmparis/defense-finder-models)                        | 3.1.0            | Database for DefenseFinder                                                                                             |
 | [GECCO](https://github.com/zellerlab/GECCO)                                                      | 0.9.8            | Biosynthetic gene cluster annotation                                                                                   |
 | [antiSMASH](https://antismash.secondarymetabolites.org/#!/download)                              | 8.0.1            | Biosynthetic gene cluster annotation                                                                                   |
 | [SanntiS](https://github.com/Finn-Lab/SanntiS)                                                   | 0.9.3.4          | Biosynthetic gene cluster annotation                                                                                   |
@@ -93,6 +95,8 @@ The pipeline needs reference databases in order to work, they take roughly 180G.
 | interpro_entry_list | 2.6M |
 | rfam_models         | 637M |
 | pseudofinder        | 273M |
+| uniref90            | 58G  |
+| uniref50            | 17G  |
 | total               | 184G |
 
 `mettannotator` has an automated mechanism to download the databases using the `--dbs <db_path>` flag. When this flag is provided, the pipeline inspects the folder to verify if the required databases are already present. If any of the databases are missing, the pipeline will automatically download them.
@@ -227,10 +231,10 @@ Reference databases
                                                mixing the --dbs flag with individual database paths and versions is not allowed; they are mutually
                                                exclusive.
   --interproscan_db                  [string]  The InterProScan reference database, ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/
-  --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.75-106.0]
+  --interproscan_db_version          [string]  The InterProScan reference database version. [default: 5.76-107.0]
   --interpro_entry_list              [string]  TSV file listing basic InterPro entry information - the accessions, types and names,
-                                               ftp://ftp.ebi.ac.uk/pub/databases/interpro/releases/106.0/entry.list
-  --interpro_entry_list_version      [string]  InterPro entry list version [default: 106.0]
+                                               ftp://ftp.ebi.ac.uk/pub/databases/interpro/releases/107.0/entry.list
+  --interpro_entry_list_version      [string]  InterPro entry list version [default: 107.0]
   --eggnog_db                        [string]  The EggNOG reference database folder,
                                                https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.12#requirements
   --eggnog_db_version                [string]  The EggNOG reference database version. [default: 5.0.2]
@@ -239,14 +243,14 @@ Reference databases
   --amrfinder_plus_db                [string]  AMRFinderPlus reference database,
                                                https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/. Go to the following
                                                documentation for the db setup https://github.com/ncbi/amr/wiki/Upgrading#database-updates.
-  --amrfinder_plus_db_version        [string]  The AMRFinderPlus reference database version. [default: 2023-02-23.1]
+  --amrfinder_plus_db_version        [string]  The AMRFinderPlus reference database version. [default: 2026-05-15.1]
   --defense_finder_db                [string]  Defense Finder reference models, https://github.com/mdmparis/defense-finder#updating-defensefinder. The
                                                Microbiome Informatics team provides a pre-indexed version of the models for version 1.2.3 on this ftp location:
                                                ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/defense-finder/defense-finder-models_1.2.3.tar.gz.
   --defense_finder_db_version        [string]  The Defense Finder models version. [default: 1.2.3]
   --antismash_db                     [string]  antiSMASH reference database, go to this documentation to do the database setup
                                                https://docs.antismash.secondarymetabolites.org/install/#installing-the-latest-antismash-release.
-  --antismash_db_version             [string]  The antiSMASH reference database version. [default: 7.1.0]
+  --antismash_db_version             [string]  The antiSMASH reference database version. [default: 8.0.1]
   --dbcan_db                         [string]  dbCAN indexed reference database, please go to the documentation for the setup
                                                https://dbcan.readthedocs.io/en/latest/. The Microbiome Informatics team provides a pre-indexed version of the
                                                database for version 4.0 on this ftp location:
@@ -254,6 +258,10 @@ Reference databases
   --dbcan_db_version                 [string]  The dbCAN reference database version. [default: 4.1.3_V12]
   --pseudofinder_db                  [string]  Pseudofinder reference database. Mettannotator uses SwissProt as the database for Pseudofinder.
   --pseudofinder_db_version          [string]  SwissProt version. [default: 2024_06]
+  --diamond_uniref90_db              [string]  UniRef90 reference database formatted with DIAMOND.
+  --diamond_uniref90_db_version      [string]  UniRef90 version. [default: 2026_02]
+  --diamond_uniref50_db              [string]  UniRef50 reference database formatted with DIAMOND.
+  --diamond_uniref50_db_version      [string]  UniRef50 version. [default: 2026_02]
 
 Generic options
   --multiqc_methods_description      [string]  Custom MultiQC yaml file containing HTML including a methods description.
@@ -364,9 +372,9 @@ Prokka as Bakta is only intended for annotation of bacterial genomes.
 ### Fast mode
 
 To reduce the compute time and the amount of resources used, the pipeline can be executed with the `--fast` flag. When
-run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE and SanntiS. This could be a suitable option
-for a first-pass of annotation or if computational resources are limited, however, we recommend running the full version
-of the pipeline whenever possible.
+run in the fast mode, `mettannotator` will skip InterProScan, UniFIRE and SanntiS. This could be a suitable option for a first-pass of
+annotation or if computational resources are limited, however, we recommend running the full version of the pipeline
+whenever possible.
 
 When generating an input file for a fast mode run, it is sufficient to indicate the taxid of the superkingdom (`2` for
 bacteria and `2157` for Archaea) in the "taxid" column rather than the taxid of the lowest known taxon.
@@ -447,7 +455,8 @@ The output folder structure will look as follows:
    │  ├─merged_gff
    │  ├─prokka
    │  ├─pseudofinder
-   │  └─unifire
+   │  ├─unifire
+   │  └─uniref
    ├─mobilome
    │  └─crisprcas_finder
    ├─quast
