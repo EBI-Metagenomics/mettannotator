@@ -2,7 +2,7 @@
  * STAGE_FAST_OUTPUTS
  *
  * Stages fast-run per-sample results into the current run's output directory
- * so that slow-tool outputs land alongside them in a unified directory tree.
+ * so that extended-tool outputs land alongside them in a unified directory tree.
  *
  * Staging strategy (in priority order)
  * ──────────────────────────────────────
@@ -38,7 +38,7 @@ process STAGE_FAST_OUTPUTS {
     fi
 
     # Drop the old merged_gff — ANNOTATE_GFF produces the definitive version
-    # that integrates both fast and slow tool results.
+    # that integrates both fast and extended tool results.
     rm -rf "staged/functional_annotation/merged_gff"
     """
 
