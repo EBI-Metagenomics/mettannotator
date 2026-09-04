@@ -388,11 +388,11 @@ nextflow run ebi-metagenomics/mettannotator \
 The pipeline will load the existing fast-run results for each sample, run only the extended tools, and merge the outputs
 into a final annotated GFF. Both Prokka and Bakta outputs from the fast run are supported.
 
-By default, the fast-run outputs are also staged into `--outdir` so the final directory contains both fast and slow
-results. To write only the slow-tool results, add `--skip_fast_staging` (this option saves space and avoids duplication of files that are already present in the fast-run output folder).
+By default, the fast-run outputs are also staged into `--outdir` so the final directory contains both fast and extended
+results. To write only the extended-tool results, add `--skip_fast_staging` (this option saves space and avoids duplication of files that are already present in the fast-run output folder).
 
-**Running slow tools on incomplete fast-run ouptut**: By default, missing files in the fast-run output folder are treated as errors. However, in some cases, users may still want to run the slow tools on the available outputs. Use `--allow_missing_files` to
-downgrade the missing file errors to warnings and allow the slow run to proceed:
+**Running extended tools on incomplete fast-run ouptut**: By default, missing files in the fast-run output folder are treated as errors. However, in some cases, users may still want to run the extended tools on the available outputs. Use `--allow_missing_files` to
+downgrade the missing file errors to warnings and allow the extended run to proceed:
 
 ```bash
 nextflow run ebi-metagenomics/mettannotator \
