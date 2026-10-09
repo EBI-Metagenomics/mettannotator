@@ -220,7 +220,7 @@
           "type": "string",
           "format": "file-path",
           "description": "UniRef90 reference database formatted with DIAMOND.",
-          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref90.fasta.gz."
+          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref90.fasta.gz, without clusters whose representative name comes from Google ProtNLM (db.filtered.dmnd)."
         },
         "diamond_uniref90_db_version": {
           "type": "string",
@@ -231,7 +231,7 @@
           "type": "string",
           "format": "file-path",
           "description": "UniRef50 reference database formatted with DIAMOND.",
-          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref50.fasta.gz."
+          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref50.fasta.gz, without clusters whose representative name comes from Google ProtNLM (db.filtered.dmnd)."
         },
         "diamond_uniref50_db_version": {
           "type": "string",
