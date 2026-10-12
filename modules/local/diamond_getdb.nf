@@ -59,6 +59,7 @@ process DIAMOND_GETDB {
 
     - Clusters in ${db_name}.fasta.gz: \$(cat total.txt)
     - Clusters removed: \$(cat removed.txt)
+    - Clusters kept in db.filtered.dmnd: \$((\$(cat total.txt) - \$(cat removed.txt)))
     - TrEMBL entries with ProtNLM names: \$(wc -l < ${protnlm_ids} | tr -d " ")
 
     END_README
