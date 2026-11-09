@@ -224,8 +224,8 @@
         },
         "diamond_uniref90_db_version": {
           "type": "string",
-          "default": "2026_03",
-          "description": "UniRef90 version."
+          "default": "2026_04",
+          "description": "UniRef90 release. Picks the hosted release to download, or labels --diamond_uniref90_db."
         },
         "diamond_uniref50_db": {
           "type": "string",
@@ -235,8 +235,8 @@
         },
         "diamond_uniref50_db_version": {
           "type": "string",
-          "default": "2026_03",
-          "description": "UniRef50 version."
+          "default": "2026_04",
+          "description": "UniRef50 release. Picks the hosted release to download, or labels --diamond_uniref50_db."
         }
       },
       "fa_icon": "fas fa-database"

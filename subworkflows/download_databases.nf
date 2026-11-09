@@ -13,7 +13,6 @@ include { INTERPRO_ENTRY_LIST_GETDB } from '../modules/local/interpro_list_getdb
 include { RFAM_GETMODELS           } from '../modules/local/rfam_getmodels'
 include { BAKTA_GETDB              } from '../modules/local/bakta_getdb'
 include { PSEUDOFINDER_GETDB       } from '../modules/local/pseudofinder_getdb'
-include { PROTNLM_GETIDS           } from '../modules/local/protnlm_getids'
 include { DIAMOND_GETDB as DIAMOND_GETDB_UNIREF90 } from '../modules/local/diamond_getdb'
 include { DIAMOND_GETDB as DIAMOND_GETDB_UNIREF50 } from '../modules/local/diamond_getdb'
 
@@ -155,15 +154,11 @@ workflow DOWNLOAD_DATABASES {
             pseudofinder_db = PSEUDOFINDER_GETDB.out.pseudofinder_db.first()
         }
 
-        if (!diamond_uniref90_dir.exists() || !diamond_uniref50_dir.exists()) {
-            PROTNLM_GETIDS()
-        }
-
         if (diamond_uniref90_dir.exists()) {
             log.info("DIAMOND UniRef90 database exists, or at least the expected folder.")
             diamond_uniref90_db = existing_diamond_db(diamond_uniref90_dir)
         } else {
-            DIAMOND_GETDB_UNIREF90("uniref90", PROTNLM_GETIDS.out.protnlm_ids)
+            DIAMOND_GETDB_UNIREF90("uniref90", params.diamond_uniref90_db_version)
             diamond_uniref90_db = DIAMOND_GETDB_UNIREF90.out.diamond_uniref_db.first()
         }
 
@@ -171,7 +166,7 @@ workflow DOWNLOAD_DATABASES {
             log.info("DIAMOND UniRef50 database exists, or at least the expected folder.")
             diamond_uniref50_db = existing_diamond_db(diamond_uniref50_dir)
         } else {
-            DIAMOND_GETDB_UNIREF50("uniref50", PROTNLM_GETIDS.out.protnlm_ids)
+            DIAMOND_GETDB_UNIREF50("uniref50", params.diamond_uniref50_db_version)
             diamond_uniref50_db = DIAMOND_GETDB_UNIREF50.out.diamond_uniref_db.first()
         }
 
