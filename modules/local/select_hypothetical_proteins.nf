@@ -5,8 +5,8 @@ process SELECT_HYPOTHETICAL_PROTEINS {
     label 'process_nano'
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'https://depot.galaxyproject.org/singularity/python:3.9' :
-        'biocontainers/python:3.9' }"
+        'https://depot.galaxyproject.org/singularity/python:3.12' :
+        'biocontainers/python:3.12' }"
 
     input:
     tuple val(meta), path(faa)
