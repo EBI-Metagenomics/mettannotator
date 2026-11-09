@@ -19,8 +19,8 @@ process DIAMOND_GETDB {
 
     script:
     """
-    wget "https://ftp.uniprot.org/pub/databases/uniprot/uniref/${db_name}/${db_name}.fasta.gz"
-    wget "https://ftp.uniprot.org/pub/databases/uniprot/uniref/${db_name}/RELEASE.metalink"
+    wget "https://ftp.ebi.ac.uk/pub/databases/uniprot/uniref/${db_name}/${db_name}.fasta.gz"
+    wget "https://ftp.ebi.ac.uk/pub/databases/uniprot/uniref/${db_name}/RELEASE.metalink"
 
     mkdir -p ${db_name}
 

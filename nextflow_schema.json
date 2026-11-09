@@ -224,7 +224,7 @@
         },
         "diamond_uniref90_db_version": {
           "type": "string",
-          "default": "2026_02",
+          "default": "2026_03",
           "description": "UniRef90 version."
         },
         "diamond_uniref50_db": {
@@ -235,7 +235,7 @@
         },
         "diamond_uniref50_db_version": {
           "type": "string",
-          "default": "2026_02",
+          "default": "2026_03",
           "description": "UniRef50 version."
         }
       },
