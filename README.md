@@ -36,7 +36,7 @@
 The workflow uses the following tools and databases:
 
 | Tool/Database                                                                                    | Version          | Purpose                                                                                                                |
-| ------------------------------------------------------------------------------------------------ |------------------| ---------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------------------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6           | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.11.4           | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | v6.0             | Bakta DB (when Bakta is used as the gene caller)                                                                       |
