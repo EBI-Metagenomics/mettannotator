@@ -568,19 +568,14 @@ nextflow run \
     --output <prefix>
 ```
 
-2. Run the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline):
+2. Run the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline). You need to create a [samples sheet](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/usage.md#samplesheet-format) to specify the inputs (use mettanotator proteins and gff file as well as interproscan tsv file) and an [annotation manifest](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/annotation_manifest.md) to reuse other mettanotator results:
 
 ```bash
 nextflow run mobilome-annotation-pipeline/main.nf \
     --assembly <genome_fasta.fna> \
-    --user_genes true \
-    --prot_gff <mettannotator_results_folder/<prefix>/functional_annotation/merged_gff/<prefix>_annotations.gff \
-    --virify true # only if the next two VIRify files exist, otherwise skip this line \
-    --vir_gff Virify_output_folder/08-final/gff/<prefix>_virify.gff # only if file exists, otherwise skip this line \
-    --vir_checkv Virify_output_folder/07-checkv/\*quality_summary.tsv # only if the GFF file above exists, otherwise skip this line \
+    --input samplesheet.csv \
+    --annotation_manifest manifest.csv \
     --outdir <mobilome_output_folder> \
-    --skip_crispr true \
-    --skip_amr true \
     -profile <profile>"
 ```
 
@@ -589,13 +584,13 @@ nextflow run mobilome-annotation-pipeline/main.nf \
 ```bash
 # Add mobilome to the merged GFF produced by mettannotator
 python3 postprocessing/add_mobilome_to_gff.py \
-    -m <mobilome_output_folder>/gff_output_files/mobilome_nogenes.gff \
+    -m <mobilome_output_folder>/gff/mobilome_nogenes.gff \
     -i <mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_annotations.gff \
     -o <prefix>_annotations_with_mobilome.gff
 
 # Add mobilome to the GFF with descriptions produced by mettannotator
 python3 postprocessing/add_mobilome_to_gff.py \
-    -m <mobilome_output_folder>/gff_output_files/mobilome_nogenes.gff \
+    -m <mobilome_output_folder>/gff/mobilome_nogenes.gff \
     -i <mettannotator_results_folder>/<prefix>/functional_annotation/merged_gff/<prefix>_annotations_with_descriptions.gff \
     -o <prefix>_annotations_with_descriptions_with_mobilome.gff
 ```
