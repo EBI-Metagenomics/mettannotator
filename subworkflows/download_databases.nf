@@ -17,6 +17,15 @@ include { PROTNLM_GETIDS           } from '../modules/local/protnlm_getids'
 include { DIAMOND_GETDB as DIAMOND_GETDB_UNIREF90 } from '../modules/local/diamond_getdb'
 include { DIAMOND_GETDB as DIAMOND_GETDB_UNIREF50 } from '../modules/local/diamond_getdb'
 
+// Folders from older dev runs only have the unfiltered db.dmnd
+def existing_diamond_db(dir) {
+    def db = file("${dir}/db.filtered.dmnd")
+    if (!db.exists()) {
+        error("${db} not found: ${dir} predates the ProtNLM filtering. Delete it so the pipeline rebuilds it.")
+    }
+    return tuple(db, file("${dir}/VERSION.txt", checkIfExists: true).text)
+}
+
 
 workflow DOWNLOAD_DATABASES {
 
@@ -147,15 +156,12 @@ workflow DOWNLOAD_DATABASES {
         }
 
         if (!diamond_uniref90_dir.exists() || !diamond_uniref50_dir.exists()) {
-            PROTNLM_GETIDS(params.diamond_uniref90_db_version)
+            PROTNLM_GETIDS()
         }
 
         if (diamond_uniref90_dir.exists()) {
             log.info("DIAMOND UniRef90 database exists, or at least the expected folder.")
-            diamond_uniref90_db = tuple(
-                file("${diamond_uniref90_dir}/db.filtered.dmnd", checkIfExists: true),
-                file("${diamond_uniref90_dir}/VERSION.txt", checkIfExists: true).text
-            )
+            diamond_uniref90_db = existing_diamond_db(diamond_uniref90_dir)
         } else {
             DIAMOND_GETDB_UNIREF90("uniref90", PROTNLM_GETIDS.out.protnlm_ids)
             diamond_uniref90_db = DIAMOND_GETDB_UNIREF90.out.diamond_uniref_db.first()
@@ -163,10 +169,7 @@ workflow DOWNLOAD_DATABASES {
 
         if (diamond_uniref50_dir.exists()) {
             log.info("DIAMOND UniRef50 database exists, or at least the expected folder.")
-            diamond_uniref50_db = tuple(
-                file("${diamond_uniref50_dir}/db.filtered.dmnd", checkIfExists: true),
-                file("${diamond_uniref50_dir}/VERSION.txt", checkIfExists: true).text
-            )
+            diamond_uniref50_db = existing_diamond_db(diamond_uniref50_dir)
         } else {
             DIAMOND_GETDB_UNIREF50("uniref50", PROTNLM_GETIDS.out.protnlm_ids)
             diamond_uniref50_db = DIAMOND_GETDB_UNIREF50.out.diamond_uniref_db.first()

@@ -1,6 +1,6 @@
 process PROTNLM_GETIDS {
 
-    tag "UniProtKB/TrEMBL ${version} ProtNLM"
+    tag "UniProtKB/TrEMBL ProtNLM"
 
     label 'process_single'
     label 'process_long'
@@ -9,37 +9,28 @@ process PROTNLM_GETIDS {
         'https://depot.galaxyproject.org/singularity/diamond:2.2.5--he361c42_0' :
         'biocontainers/diamond:2.2.5--he361c42_0' }"
 
-    input:
-    val version
+    // Kept as a record of what was removed from the UniRef DIAMOND databases
+    publishDir "${params.dbs}/protnlm", mode: "copy"
 
     output:
-    tuple path("protnlm_ids.txt"), val(version), emit: protnlm_ids
+    tuple path("protnlm_ids.txt"), env("VERSION"), emit: protnlm_ids
+    path "VERSION.txt",                            emit: version_file
 
     script:
+    // Always the current release, the only one UniProt keeps as plain files
     """
-    BASE="https://ftp.ebi.ac.uk/pub/databases/uniprot"
+    URL="https://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/complete"
 
-    release_version() {
-        wget -qO- "\$1/RELEASE.metalink" | grep -m1 "<version>" | sed -e 's/.*<version>//' -e 's/<.*//'
-    }
+    wget -qO- "\$URL/RELEASE.metalink" | grep -m1 "<version>" | sed -e 's/.*<version>//' -e 's/<.*//' > VERSION.txt
+    VERSION=\$(cat VERSION.txt)
 
-    # Check the correct release ${version} and set the URL and unpacking command accordingly
-    # Older releases keep a knowledgebase<version>.tar.gz file with the uniprot_trembl.dat.gz inside
-    if [ "\$(release_version \$BASE/current_release/knowledgebase/complete)" = "${version}" ]; then
-        URL="\$BASE/current_release/knowledgebase/complete/uniprot_trembl.dat.gz"
-        UNPACK="cat"
-    elif [ "\$(release_version \$BASE/previous_major_releases/release-${version}/knowledgebase)" = "${version}" ]; then
-        URL="\$BASE/previous_major_releases/release-${version}/knowledgebase/knowledgebase${version}.tar.gz"
-        UNPACK="tar -xzOf - uniprot_trembl.dat.gz"
-    else
-        echo "UniProt release ${version} not found in current_release nor previous_major_releases" >&2
-        exit 1
-    fi
-
-    # Stream the TrEMBL file and extract IDs of entries predicted by Google ProtNLM
-    wget -qO- "\$URL" \\
-        | \$UNPACK \\
+    # IDs of entries whose name was predicted by Google ProtNLM.
+    # Only the first top-level name counts, as that is the name UniRef uses for the cluster.
+    wget -qO- "\$URL/uniprot_trembl.dat.gz" \\
         | gzip -dc \\
-        | awk '/^ID   /{id=\$2} /^DE   (RecName|SubName): Full=.*Google:ProtNLM/{print id}' > protnlm_ids.txt
+        | awk '/^ID   /{id=\$2; named=0}
+               /^DE   (RecName|SubName): Full=/ && !named++ && /Google:ProtNLM/{print id}' > protnlm_ids.txt
+
+    [ -s protnlm_ids.txt ] || { echo "No ProtNLM entries found in TrEMBL \$VERSION" >&2; exit 1; }
     """
 }
