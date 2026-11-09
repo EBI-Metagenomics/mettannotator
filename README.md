@@ -36,7 +36,7 @@
 The workflow uses the following tools and databases:
 
 | Tool/Database                                                                                    | Version          | Purpose                                                                                                                |
-| ------------------------------------------------------------------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------------------------------------------------ |------------------| ---------------------------------------------------------------------------------------------------------------------- |
 | [Prokka](https://github.com/tseemann/prokka)                                                     | 1.14.6           | CDS calling and functional annotation (default)                                                                        |
 | [Bakta](https://github.com/oschwengers/bakta)                                                    | 1.11.4           | CDS calling and functional annotation (if --bakta flag is used)                                                        |
 | [Bakta db](https://zenodo.org/record/10522951/)                                                  | v6.0             | Bakta DB (when Bakta is used as the gene caller)                                                                       |
@@ -59,7 +59,7 @@ The workflow uses the following tools and databases:
 | [dbCAN DB](https://bcb.unl.edu/dbCAN2/download/Databases/)                                       | v5-2_9-13-2025   | Database for run_dbCAN                                                                                                 |
 | [CRISPRCasFinder](https://github.com/dcouvin/CRISPRCasFinder)                                    | 4.3.2            | Annotation of CRISPR arrays                                                                                            |
 | [cmscan](http://eddylab.org/infernal/)                                                           | 1.1.5            | ncRNA predictions                                                                                                      |
-| [Rfam](https://rfam.org/)                                                                        | 15.0             | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
+| [Rfam](https://rfam.org/)                                                                        | 15.1             | Identification of SSU/LSU rRNA and other ncRNAs                                                                        |
 | [tRNAscan-SE](https://github.com/UCSC-LoweLab/tRNAscan-SE)                                       | 2.0.9            | tRNA predictions                                                                                                       |
 | [pyCirclize](https://github.com/moshi4/pyCirclize)                                               | 1.4.0            | Visualise the merged GFF file                                                                                          |
 | [VIRify](https://github.com/EBI-Metagenomics/emg-viral-pipeline)                                 | 2.0.0            | Viral sequence annotation (runs separately)                                                                            |
@@ -239,7 +239,7 @@ Reference databases
                                                https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2.1.5-to-v2.1.12#requirements
   --eggnog_db_version                [string]  The EggNOG reference database version. [default: 5.0.2]
   --rfam_ncrna_models                [string]  Rfam ncRNA models, ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/genomes-pipeline/ncrna/
-  --rfam_ncrna_models_rfam_version   [string]  Rfam release version where the models come from. [default: 15.0]
+  --rfam_ncrna_models_rfam_version   [string]  Rfam release version where the models come from. [default: 15.1]
   --amrfinder_plus_db                [string]  AMRFinderPlus reference database,
                                                https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/. Go to the following
                                                documentation for the db setup https://github.com/ncbi/amr/wiki/Upgrading#database-updates.

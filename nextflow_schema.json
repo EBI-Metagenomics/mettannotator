@@ -146,7 +146,7 @@
         },
         "rfam_ncrna_models_rfam_version": {
           "type": "string",
-          "default": "15.0",
+          "default": "15.1",
           "description": "Rfam release version where the models come from.",
           "help_text": "Rfam release version."
         },
