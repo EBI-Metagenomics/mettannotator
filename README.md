@@ -568,7 +568,7 @@ nextflow run \
     --output <prefix>
 ```
 
-2. Run the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline). You need to create a [samples sheet](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/usage.md#samplesheet-format) to specify the inputs (use mettanotator proteins and gff file as well as interproscan tsv file) and an [annotation manifest](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/annotation_manifest.md) to reuse other mettanotator results:
+2. Run the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline). You need to create a [samplesheet](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/usage.md#samplesheet-format) to specify the inputs (use mettanotator proteins and gff file as well as interproscan tsv file) and an [annotation manifest](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/annotation_manifest.md) to reuse other mettanotator results:
 
 ```bash
 nextflow run mobilome-annotation-pipeline/main.nf \
