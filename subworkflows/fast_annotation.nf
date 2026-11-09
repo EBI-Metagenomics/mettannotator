@@ -13,6 +13,9 @@ include { ANTISMASH_SUMMARY                          } from '../modules/local/an
 include { DBCAN                                      } from '../modules/local/dbcan'
 include { PSEUDOFINDER                               } from '../modules/local/pseudofinder'
 include { PSEUDOFINDER_POSTPROCESSING                } from '../modules/local/pseudofinder'
+include { SELECT_HYPOTHETICAL_PROTEINS               } from '../modules/local/select_hypothetical_proteins'
+include { DIAMOND_BLASTP as DIAMOND_UNIREF90         } from '../modules/local/diamond_blastp'
+include { DIAMOND_BLASTP as DIAMOND_UNIREF50         } from '../modules/local/diamond_blastp'
 include { GECCO_RUN                                  } from '../modules/nf-core/gecco/run/main'
 include { QUAST                                      } from '../modules/nf-core/quast/main'
 
@@ -34,6 +37,8 @@ workflow FAST_ANNOTATION {
     eggnog_db
     rfam_ncrna_models
     pseudofinder_db
+    uniref90_db      // channel: [path, version]
+    uniref50_db      // channel: [path, version]
 
     main:
     ch_versions = Channel.empty()
@@ -104,6 +109,14 @@ workflow FAST_ANNOTATION {
     DBCAN(faa.join(gff), dbcan_db)
     ch_versions = ch_versions.mix(DBCAN.out.versions.first())
 
+    SELECT_HYPOTHETICAL_PROTEINS(faa)
+
+    DIAMOND_UNIREF90(SELECT_HYPOTHETICAL_PROTEINS.out.hypothetical_faa, uniref90_db, "uniref90")
+    ch_versions = ch_versions.mix(DIAMOND_UNIREF90.out.versions.first())
+
+    DIAMOND_UNIREF50(SELECT_HYPOTHETICAL_PROTEINS.out.hypothetical_faa, uniref50_db, "uniref50")
+    ch_versions = ch_versions.mix(DIAMOND_UNIREF50.out.versions.first())
+
     emit:
     eggnog_annotations = EGGNOG_MAPPER_ANNOTATIONS.out.annotations
     ncrna_tblout       = DETECT_NCRNA.out.ncrna_tblout
@@ -116,5 +129,7 @@ workflow FAST_ANNOTATION {
     defense_gff        = DEFENSE_FINDER.out.gff
     pseudofinder_gff   = PSEUDOFINDER_POSTPROCESSING.out.pseudofinder_processed_gff
     quast_results      = QUAST.out.results
+    uniref90_tsv       = DIAMOND_UNIREF90.out.hits_tsv
+    uniref50_tsv       = DIAMOND_UNIREF50.out.hits_tsv
     versions           = ch_versions
 }

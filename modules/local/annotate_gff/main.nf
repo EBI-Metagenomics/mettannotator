@@ -5,8 +5,8 @@ process ANNOTATE_GFF {
     label 'process_nano'
 
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] ?
-        'https://depot.galaxyproject.org/singularity/python:3.9' :
-        'biocontainers/python:3.9' }"
+        'https://depot.galaxyproject.org/singularity/python:3.12' :
+        'biocontainers/python:3.12' }"
 
     input:
     tuple val(meta),
@@ -20,6 +20,8 @@ process ANNOTATE_GFF {
         file(gecco_gff),
         file(dbcan_gff),
         file(df_gff),
+        file(uniref90_tsv),
+        file(uniref50_tsv),
         file(pseudofinder_gff),
         file(ips_annotations_tsv),     // empty in fast mode
         file(sanntis_annotations_gff), // empty in fast mode

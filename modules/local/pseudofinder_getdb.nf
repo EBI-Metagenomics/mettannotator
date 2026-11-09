@@ -13,7 +13,7 @@ process PSEUDOFINDER_GETDB {
 
     script:
     """
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/pseudofinder/uniprot_sprot_2024_06.tar.gz
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/pipelines/tool-dbs/pseudofinder/2026_02/uniprot_sprot_2026_02.tar.gz
 
     mkdir -p uniprot_sprot
 

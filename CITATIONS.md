@@ -42,6 +42,14 @@
 
   > MacDougall A, Volynkin V, Saidi R, Poggioli D, Zellner H, Hatton-Ellis E, Joshi V, O'Donovan C, Orchard S, Auchincloss AH, Baratin D, Bolleman J, Coudert E, de Castro E, Hulo C, Masson P, Pedruzzi I, Rivoire C, Arighi C, Wang Q, Chen C, Huang H, Garavelli J, Vinayaka CR, Yeh LS, Natale DA, Laiho K, Martin MJ, Renaux A, Pichler K; UniProt Consortium. UniRule: a unified rule resource for automatic annotation in the UniProt Knowledgebase. Bioinformatics. 2020 Nov 1;36(17):4643-4648. doi: 10.1093/bioinformatics/btaa485. Erratum in: Bioinformatics. 2021 Apr 1;36(22-23):5562. PMID: 32399560; PMCID: PMC7750954.
 
+- [DIAMOND](https://pubmed.ncbi.nlm.nih.gov/33828273/)
+
+  > Buchfink B, Reuter K, Drost HG. Sensitive protein alignments at tree-of-life scale using DIAMOND. Nat Methods. 2021 Apr;18(4):366-368. doi: 10.1038/s41592-021-01101-x. Epub 2021 Apr 7. PMID: 33828273; PMCID: PMC8026399.
+
+- [UniRef](https://pubmed.ncbi.nlm.nih.gov/25398609/)
+
+  > Suzek BE, Wang Y, Huang H, McGarvey PB, Wu CH; UniProt Consortium. UniRef clusters: a comprehensive and scalable alternative for improving sequence similarity searches. Bioinformatics. 2015 Mar 15;31(6):926-32. doi: 10.1093/bioinformatics/btu739. Epub 2014 Nov 13. PMID: 25398609; PMCID: PMC4375400.
+
 - [AMRFinderPlus](https://pubmed.ncbi.nlm.nih.gov/34135355/)
 
   > Feldgarden M, Brover V, Gonzalez-Escalona N, Frye JG, Haendiges J, Haft DH, Hoffmann M, Pettengill JB, Prasad AB, Tillman GE, Tyson GH, Klimke W. AMRFinderPlus and the Reference Gene Catalog facilitate examination of the genomic links among antimicrobial resistance, stress response, and virulence. Sci Rep. 2021 Jun 16;11(1):12728. doi: 10.1038/s41598-021-91456-0. PMID: 34135355; PMCID: PMC8208984.
