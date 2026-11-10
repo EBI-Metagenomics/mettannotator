@@ -30,13 +30,18 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 METTANOTATOR_PATHS = {
     "proteins_gff":     "functional_annotation/merged_gff/{s}_annotations.gff",
-    "proteins_faa":     "functional_annotation/prokka/{s}.faa",
     "interproscan_tsv": "functional_annotation/interproscan/{s}.IPS.tsv",
     "amrfinder_tsv":    "antimicrobial_resistance/amrfinder_plus/{s}_amrfinderplus.tsv",
     "antismash_gff":    "biosynthetic_gene_clusters/antismash/{s}_antismash.gff",
     "gecco_gff":        "biosynthetic_gene_clusters/gecco/{s}_gecco_clusters.gff",
     "sanntis_gff":      "biosynthetic_gene_clusters/sanntis/{s}_sanntis.gff",
 }
+
+# proteins_faa can come from either the prokka or bakta gene caller; try both.
+PROTEINS_FAA_PATHS = [
+    "functional_annotation/prokka/{s}.faa",
+    "functional_annotation/bakta/{s}.faa",
+]
 
 # virify gff, relative to <virify_results>/<sample>/
 VIRIFY_REL = "08-final/gff/{s}_virify.gff.gz"
@@ -119,6 +124,18 @@ def resolve(base, rel, sample, warn_missing, label):
     return ""
 
 
+def resolve_first(base, rels, sample, warn_missing, label):
+    """Return the first existing path among several candidates, else empty string."""
+    for rel in rels:
+        candidate = base / sample / rel.format(s=sample)
+        if candidate.is_file():
+            return str(candidate.resolve())
+    if warn_missing:
+        tried = ", ".join(str(base / sample / r.format(s=sample)) for r in rels)
+        print(f"WARNING: [{sample}] missing {label}: tried {tried}", file=sys.stderr)
+    return ""
+
+
 def main():
     args = parse_args()
 
@@ -174,7 +191,7 @@ def main():
         mett = args.mettanotator_results
 
         proteins_gff = resolve(mett, METTANOTATOR_PATHS["proteins_gff"], sample, args.warn_missing, "proteins_gff (merged_gff)")
-        proteins_faa = resolve(mett, METTANOTATOR_PATHS["proteins_faa"], sample, args.warn_missing, "proteins_faa (prokka)")
+        proteins_faa = resolve_first(mett, PROTEINS_FAA_PATHS, sample, args.warn_missing, "proteins_faa (prokka/bakta)")        
         ips_tsv      = resolve(mett, METTANOTATOR_PATHS["interproscan_tsv"], sample, args.warn_missing, "interproscan_tsv")
         amrfinder    = resolve(mett, METTANOTATOR_PATHS["amrfinder_tsv"], sample, args.warn_missing, "amrfinder_tsv")
         antismash    = resolve(mett, METTANOTATOR_PATHS["antismash_gff"], sample, args.warn_missing, "antismash_gff")
