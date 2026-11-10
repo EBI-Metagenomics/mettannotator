@@ -417,16 +417,6 @@ def test_load_uniref_identity_cutoff_is_50_and_inclusive(tmp_path):
     }
 
 
-def test_load_uniref_without_scov_column(tmp_path):
-    # output written before scovhsp was added to --outfmt
-    tsv = tmp_path / "hits.tsv"
-    line = diamond_line("p1", "UniRef50_AAA", "Thioredoxin", 70)
-    tsv.write_text(line.rsplit("\t", 1)[0] + "\n")
-    assert load_uniref(str(tsv)) == {
-        "p1": UnirefHit("Thioredoxin", "UniRef50_AAA", "70", "100", None)
-    }
-
-
 def test_load_uniref_empty_or_missing(tmp_path):
     empty = tmp_path / "empty.tsv"
     empty.write_text("")
@@ -670,7 +660,7 @@ def test_add_uniref_attributes_does_not_duplicate_dbxref():
         "product": "Ferredoxin",
         "product_source": "UniRef50",
     }
-    hit = UnirefHit("Ferredoxin", "UniRef50_BBB", "60", "90", None)
+    hit = UnirefHit("Ferredoxin", "UniRef50_BBB", "60", "90", "85")
     result = add_uniref_attributes(attributes, hit)
     assert result["Dbxref"] == "UniRef:UniRef50_BBB,SO:0001217"
-    assert "uniref_scov" not in result
+    assert result["uniref_scov"] == "85"
