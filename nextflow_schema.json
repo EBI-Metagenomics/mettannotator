@@ -220,23 +220,23 @@
           "type": "string",
           "format": "file-path",
           "description": "UniRef90 reference database formatted with DIAMOND.",
-          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref90.fasta.gz."
+          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref90.fasta.gz, without clusters whose representative name comes from Google ProtNLM (db.filtered.dmnd)."
         },
         "diamond_uniref90_db_version": {
           "type": "string",
-          "default": "2026_03",
-          "description": "UniRef90 version."
+          "default": "2026_04",
+          "description": "UniRef90 release. Picks the hosted release to download, or labels --diamond_uniref90_db."
         },
         "diamond_uniref50_db": {
           "type": "string",
           "format": "file-path",
           "description": "UniRef50 reference database formatted with DIAMOND.",
-          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref50.fasta.gz."
+          "help_text": "Set this variable to the path of the .dmnd file built with 'diamond makedb' from uniref50.fasta.gz, without clusters whose representative name comes from Google ProtNLM (db.filtered.dmnd)."
         },
         "diamond_uniref50_db_version": {
           "type": "string",
-          "default": "2026_03",
-          "description": "UniRef50 version."
+          "default": "2026_04",
+          "description": "UniRef50 release. Picks the hosted release to download, or labels --diamond_uniref50_db."
         }
       },
       "fa_icon": "fas fa-database"
