@@ -568,15 +568,22 @@ nextflow run \
     --output <prefix>
 ```
 
-2. Run the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline). You need to create a [samplesheet](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/usage.md#samplesheet-format) to specify the inputs (use mettanotator proteins and gff file as well as interproscan tsv file) and an [annotation manifest](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/annotation_manifest.md) to reuse other mettanotator results:
+2. Run the [mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline). You need to create a [samplesheet](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/usage.md#samplesheet-format) and an [annotation manifest](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline/blob/dev/docs/annotation_manifest.md) to reuse other mettanotator results. Such input files can be generated using the `generate_map_inputs.py` script:
 
 ```bash
+python3 postprocessing/generate_map_inputs.py \
+  -i mettanotator_samplesheet \
+  -m <mettannotator_results_folder> \
+  -v <virify_results_folder>                     # optional
+```
+
+Then run the MAP:
+```bash
 nextflow run mobilome-annotation-pipeline/main.nf \
-    --assembly <genome_fasta.fna> \
-    --input samplesheet.csv \
-    --annotation_manifest manifest.csv \
+    --input map_samplesheet.csv \
+    --annotation_manifest map_annotation_manifest.csv \
     --outdir <mobilome_output_folder> \
-    -profile <profile>"
+    -profile <profile>
 ```
 
 3. Integrate the output into the `mettannotator` GFF
