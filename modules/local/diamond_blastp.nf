@@ -24,7 +24,7 @@ process DIAMOND_BLASTP {
         --db ${diamond_db} \\
         --query ${query_faa} \\
         --out ${meta.prefix}_${db_label}.tsv \\
-        --outfmt 6 qseqid stitle qlen slen length qcovhsp pident evalue bitscore \\
+        --outfmt 6 qseqid stitle qlen slen length qcovhsp pident evalue bitscore scovhsp \\
         --threads ${task.cpus} \\
         --header simple \\
         ${args}
