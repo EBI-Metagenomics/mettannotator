@@ -48,6 +48,13 @@ process ANNOTATE_GFF {
     def ips_flag = "";
     def hypothetical_ips_flags = "";
     def sanntis_flag = "";
+    def uniref_flags = "";
+    if ( uniref90_tsv ) {
+        uniref_flags += "--uniref90 ${uniref90_tsv} "
+    }
+    if ( uniref50_tsv ) {
+        uniref_flags += "--uniref50 ${uniref50_tsv} "
+    }
     if ( crisprcas_hq_gff ) {
         crisprcas_flag = "-c ${crisprcas_hq_gff} ";
     }
@@ -107,7 +114,7 @@ process ANNOTATE_GFF {
     add_hypothetical_protein_descriptions.py \\
     --eggnog-output ${eggnog_annotations_tsv} \\
     -i ${hypothetical_tmp_gff} \\
-    -o ${meta.prefix}_annotations.gff ${hypothetical_ips_flags} ${annotation_source_flag}
+    -o ${meta.prefix}_annotations.gff ${hypothetical_ips_flags} ${uniref_flags} ${annotation_source_flag}
 
     prepare_gff_for_conversion.py \\
     -i ${meta.prefix}_annotations.gff \\
