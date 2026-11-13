@@ -19,6 +19,7 @@ import logging
 import re
 import sys
 from enum import Enum
+from typing import NamedTuple
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,6 +27,64 @@ EVALUE_CUTOFF = 1e-10
 EGGNOG_DESCRIPTION_LENGTH_LIMIT = 12
 EGGNOG_NOTE_LENGTH_LIMIT = 70
 MINIMUM_IPR_MATCH = 0.10
+
+# Minimum percent identity for a UniRef cluster name to be transferred (both UniRef90 and UniRef50)
+UNIREF_MIN_IDENTITY = 50.0
+UNIREF90_SOURCE = "UniRef90"
+UNIREF50_SOURCE = "UniRef50"
+
+# UniRef FASTA title: "UniRef90_A0A803U0R6 Ig-like domain-containing protein n=2 Tax=Anolis TaxID=28376 RepID=..."
+UNIREF_TITLE_PATTERN = re.compile(
+    r"^(?P<cluster>UniRef\d+_\S+)\s+(?P<name>.+?)\s+n=\d+\s+Tax="
+)
+# Cluster names that carry no functional information and are never transferred.
+# Matched against the whole name (case-insensitive).
+UNINFORMATIVE_UNIREF_NAMES = [
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in [
+        # any uncharacterised or hypothetical protein, e.g. "Uncharacterized protein YhgN",
+        # "Putative uncharacterized protein", "Conserved hypothetical protein"
+        r"(?:putative |probable |predicted |conserved )?(?:uncharacteri[sz]ed|hypothetical)\b.*",
+        r"(?:putative |conserved )?(?:protein|domain|family) of unknown function(?: \S+)?",
+        r"(?:putative )?(?:predicted|unknown|unnamed) protein(?: product)?",
+        # DUF names come from Pfam via InterPro; leave them to the InterPro priority levels
+        r"(?:putative )?DUF\d+ (?:domain-containing |family )?protein(?: \S+)?",
+    ]
+]
+
+
+class UnirefHit(NamedTuple):
+    name: str  # cluster name, transferred as the product
+    cluster: str  # cluster accession, e.g. UniRef90_A0A803U0R6
+    identity: str  # percent identity (DIAMOND pident)
+    qcov: str  # percent of the query covered (DIAMOND qcovhsp)
+    scov: str  # percent of the cluster representative covered (DIAMOND scovhsp)
+
+
+def add_uniref_attributes(attributes_dict, hit: UnirefHit):
+    """
+    Record the UniRef hit a product was transferred from: the cluster goes into Dbxref as
+    UniRef:<cluster> (to match Bakta's format) and the alignment statistics go into
+    uniref_identity, uniref_qcov and uniref_scov, all placed after product_source.
+    """
+    hit_stats = {"uniref_identity": hit.identity, "uniref_qcov": hit.qcov, "uniref_scov": hit.scov}
+    anchor = "product_source"
+    for key, value in hit_stats.items():
+        attributes_dict = insert_attribute_after(attributes_dict, anchor, key, value)
+        anchor = key
+
+    dbxref = f"UniRef:{hit.cluster}"
+    if "Dbxref" in attributes_dict:
+        existing = attributes_dict["Dbxref"].split(",")
+        if (
+            dbxref not in existing
+        ):  # Bakta may already have cross-referenced this cluster
+            attributes_dict["Dbxref"] = ",".join(existing + [dbxref])
+    else:
+        attributes_dict = insert_attribute_after(
+            attributes_dict, "product_source", "Dbxref", dbxref
+        )
+    return attributes_dict
 
 
 class GeneCaller(str, Enum):
@@ -42,8 +101,16 @@ def main(
     infile,
     outfile,
     annotation_source: GeneCaller = GeneCaller.PROKKA,
+    uniref90_file=None,
+    uniref50_file=None,
 ):
     eggnog_info = load_eggnog(eggnog_file)
+    uniref90_info = load_uniref(uniref90_file)
+    uniref50_info = load_uniref(uniref50_file)
+    uniref_info_by_source = {
+        UNIREF90_SOURCE: uniref90_info,
+        UNIREF50_SOURCE: uniref50_info,
+    }
     if ipr_file:
         levels = load_hierarchy(hierarchy_file)
         ipr_types = load_ipr_types(ipr_types_file)
@@ -85,6 +152,8 @@ def main(
                                 ipr_info,
                                 ipr_memberdb_only,
                                 gene_caller,
+                                uniref90_info,
+                                uniref50_info,
                             )
 
                             if not function_source == "UniFIRE":
@@ -110,6 +179,13 @@ def main(
                             attributes_dict = insert_product_source(
                                 attributes_dict, function_source
                             )
+                            if function_source in uniref_info_by_source:
+                                hit = uniref_info_by_source[function_source][
+                                    attributes_dict["ID"]
+                                ]
+                                attributes_dict = add_uniref_attributes(
+                                    attributes_dict, hit
+                                )
                         else:
                             attributes_dict = insert_product_source(
                                 attributes_dict, gene_caller.value
@@ -248,8 +324,8 @@ def keep_or_move_to_note(
             "uncharacterised protein conserved in ",
             "Uncharacterised protein family",
             "Uncharacterized protein family",
-            "short repeat of unknown function"
-            "hmm "
+            "short repeat of unknown function",
+            "hmm ",
             "protein of uncharacterised function",
             "once ",
             "now ",
@@ -383,12 +459,16 @@ def load_hierarchy(parent_child_file):
 
 
 def insert_product_source(my_dict, source):
+    return insert_attribute_after(my_dict, "product", "product_source", source)
+
+
+def insert_attribute_after(my_dict, anchor_key, new_key, value):
     keys_list = list(my_dict.keys())
-    product_index = keys_list.index("product")
+    anchor_index = keys_list.index(anchor_key)
     return (
-        {k: my_dict[k] for k in keys_list[: product_index + 1]}
-        | {"product_source": source}
-        | {k: my_dict[k] for k in keys_list[product_index + 1 :]}
+        {k: my_dict[k] for k in keys_list[: anchor_index + 1]}
+        | {new_key: value}
+        | {k: my_dict[k] for k in keys_list[anchor_index + 1 :]}
     )
 
 
@@ -399,33 +479,49 @@ def get_function(
     ipr_info,
     ipr_memberdb_only,
     gene_caller: GeneCaller,
+    uniref90_info=None,
+    uniref50_info=None,
 ):
     """
     Identify function by carrying it over from a db match. The following priority is used:
     Priority 1: UniFIRE protein recommended full name
     Priority 2: InterPro Family (NCBIfam)
     Priority 3: InterPro Family (except NCBI fam; Pfam prioritised)
-    Priority 4: InterPro Domain (NCBIfam)
-    Priority 5: InterPro Domain (except NCBIfam; Pfam prioritised)
-    Priority 6: InterPro member db (NCBIfam)
-    Priority 7: InterPro member db (except SUPERFAMILY, Gene3D, NCBIfam; Pfam prioritised)
-    Priority 8: InterPro (SUPERFAMILY or Gene3D)
-    Priority 9: InterPro member db (SUPERFAMILY and Gene3D)
-    Priority 10: eggNOG
+    Priority 4: UniRef90 cluster name (>= 50% identity, >= 80% query and subject coverage)
+    Priority 5: InterPro Domain (NCBIfam)
+    Priority 6: InterPro Domain (except NCBIfam; Pfam prioritised)
+    Priority 7: InterPro member db (NCBIfam)
+    Priority 8: InterPro member db (except SUPERFAMILY, Gene3D, NCBIfam; Pfam prioritised)
+    Priority 9: UniRef50 cluster name (>= 50% identity, >= 80% query and subject coverage)
+    Priority 10: InterPro (SUPERFAMILY or Gene3D)
+    Priority 11: InterPro member db (SUPERFAMILY and Gene3D)
+    Priority 12: eggNOG
+
+    A full-length UniRef90 match describes the whole protein, so it ranks above domain-level
+    InterPro matches; curated family assignments (UniFIRE, InterPro Family) still win. UniRef50
+    clusters are broader, so the broad function usually transfers but specifics may not; UniRef50
+    therefore ranks below the signature-based InterPro matches and above superfamilies and eggNOG.
 
     :param acc: query protein accession
     :param attributes_dict: column 9 from GFF with annotation for query protein
     :param eggnog_annot: saved eggNOG annotations
     :param ipr_info: InterPro annotation
     :param ipr_memberdb_only: annotations that don't have IPR accessions but are from InterPro member databases
+    :param uniref90_info: best informative UniRef90 hit per protein, {acc: UnirefHit}
+    :param uniref50_info: best informative UniRef50 hit per protein, {acc: UnirefHit}
     :return: function, source db
     """
+    uniref90_info = uniref90_info or dict()
+    uniref50_info = uniref50_info or dict()
+
     if "uf_prot_rec_fullname" in attributes_dict:
         return attributes_dict["uf_prot_rec_fullname"], "UniFIRE"
     if acc in ipr_info and "Family" in ipr_info[acc]:
         func_description, source = get_description_and_source(ipr_info[acc], "Family")
         if func_description:
             return func_description, source
+    if acc in uniref90_info:
+        return uniref90_info[acc].name, UNIREF90_SOURCE
     if acc in ipr_info and "Domain" in ipr_info[acc]:
         func_description, source = get_description_and_source(ipr_info[acc], "Domain")
         if func_description:
@@ -436,6 +532,9 @@ def get_function(
         )
         if func_description:
             return func_description, source
+
+    if acc in uniref50_info:
+        return uniref50_info[acc].name, UNIREF50_SOURCE
 
     if acc in ipr_info and "Homologous_superfamily" in ipr_info[acc]:
         func_description, source = get_superfamily_info(
@@ -554,6 +653,71 @@ def pull_out_description(my_dict, first_priority, second_priority):
         return my_dict[first_priority], first_priority
     else:
         return my_dict[second_priority], second_priority
+
+
+def load_uniref(file, min_identity=UNIREF_MIN_IDENTITY):
+    """
+    Load the DIAMOND output of the search against a UniRef database and keep, for each protein,
+    the highest-scoring hit whose cluster name is informative.
+
+    Expected columns (DIAMOND --outfmt 6, optionally with --header simple):
+    qseqid stitle qlen slen length qcovhsp pident evalue bitscore scovhsp
+
+    :param file: path to the DIAMOND TSV; None or an empty file give no hits
+    :param min_identity: minimum percent identity for a cluster name to be transferred
+    :return: {protein accession: UnirefHit}
+    """
+    best_hits = dict()
+    if not file:
+        return best_hits
+    with open(file) as file_in:
+        for line in file_in:
+            cols = line.rstrip("\n").split("\t")
+            if len(cols) < 10:
+                continue
+            acc, stitle, qcov, identity, scov = cols[0], cols[1], cols[5], cols[6], cols[9]
+            try:
+                pident, evalue, bitscore = (
+                    float(identity),
+                    float(cols[7]),
+                    float(cols[8]),
+                )
+            except ValueError:  # header line
+                continue
+            if pident < min_identity or evalue > EVALUE_CUTOFF:
+                continue
+            parsed_title = parse_uniref_title(stitle)
+            if not parsed_title:
+                logging.warning(f"Could not parse UniRef title, skipping hit: {stitle}")
+                continue
+            cluster, name = parsed_title
+            if not is_informative_uniref_name(name):
+                continue
+            # Ties keep the first hit, which is DIAMOND's own ranking
+            if acc not in best_hits or bitscore > best_hits[acc][0]:
+                best_hits[acc] = (
+                    bitscore,
+                    UnirefHit(name, cluster, identity, qcov, scov),
+                )
+    return {acc: hit for acc, (_, hit) in best_hits.items()}
+
+
+def parse_uniref_title(stitle):
+    """
+    Split a UniRef FASTA title into the cluster accession and the cluster name.
+    Returns None if the title is not in the UniRef format.
+    """
+    match = UNIREF_TITLE_PATTERN.match(stitle)
+    if not match:
+        return None
+    name = re.sub(r"\s*\(Fragment\)$", "", match.group("name")).strip()
+    return match.group("cluster"), name
+
+
+def is_informative_uniref_name(name):
+    return bool(name) and not any(
+        pattern.fullmatch(name) for pattern in UNINFORMATIVE_UNIREF_NAMES
+    )
 
 
 def load_eggnog(file):
@@ -1028,7 +1192,7 @@ def clean_panther(sig_description):
 def parse_args():
     parser = argparse.ArgumentParser(
         description=(
-            "The script Uses UniFIRE information, InterProScan and eggNOG outputs to, where possible, change "
+            "The script Uses UniFIRE information, InterProScan, UniRef and eggNOG outputs to, where possible, change "
             "product description from 'hypothetical protein' to a putative function based on homology to db entrees."
         )
     )
@@ -1051,6 +1215,22 @@ def parse_args():
         "--eggnog-output",
         required=True,
         help="The path to the TSV annotations file produced by emapper.",
+    )
+    parser.add_argument(
+        "--uniref90",
+        required=False,
+        help=(
+            "The path to the DIAMOND TSV from the search against UniRef90 "
+            "(columns: qseqid stitle qlen slen length qcovhsp pident evalue bitscore scovhsp)."
+        ),
+    )
+    parser.add_argument(
+        "--uniref50",
+        required=False,
+        help=(
+            "The path to the DIAMOND TSV from the search against UniRef50 "
+            "(columns: qseqid stitle qlen slen length qcovhsp pident evalue bitscore scovhsp)."
+        ),
     )
     parser.add_argument(
         "-i",
@@ -1093,4 +1273,6 @@ if __name__ == "__main__":
         args.infile,
         args.outfile,
         args.annotation_source,
+        args.uniref90,
+        args.uniref50,
     )

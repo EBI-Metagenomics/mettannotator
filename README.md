@@ -512,6 +512,10 @@ Below is an explanation of how each field in column 3 and 9 of the final GFF fil
 | CDS                   | `ID`, `eC_number`, `Name`, `Dbxref`, `gene`, `inference`, `locus_tag`      | Prokka/Bakta    | Protein annotation                                                                                                                                                                                          |
 | CDS                   | `product`                                                                  | mettannotator   | Product assigned as described in [ Determining the product ](#product)                                                                                                                                      |
 | CDS                   | `product_source`                                                           | mettannotator   | Tool that reported the product chosen by mettannotator                                                                                                                                                      |
+| CDS                   | `Dbxref` (`UniRef:` entry)                                                 | DIAMOND         | UniRef90 or UniRef50 cluster whose name was used as the product, (only when `product_source` is UniRef90 or UniRef50)                                                     |
+| CDS                   | `uniref_identity`                                                          | DIAMOND         | Percent identity between the protein and the representative of the UniRef cluster in `Dbxref`                                                                                                               |
+| CDS                   | `uniref_qcov`                                                              | DIAMOND         | Percent of the protein (query) covered by the alignment to the representative of the UniRef cluster                                                                                                         |
+| CDS                   | `uniref_scov`                                                              | DIAMOND         | Percent of the representative of the UniRef cluster (subject) covered by the alignment                                                                                                                      |
 | CDS                   | `eggNOG`                                                                   | eggNOG-mapper   | Seed ortholog from eggNOG                                                                                                                                                                                   |
 | CDS                   | `cog`                                                                      | eggNOG-mapper   | COG category                                                                                                                                                                                                |
 | CDS                   | `kegg`                                                                     | eggNOG-mapper   | KEGG orthology term                                                                                                                                                                                         |
@@ -554,7 +558,20 @@ The following logic is used by `mettannotator` to fill out the `product` field i
 
 <img src="media/mettannotator-product.png">
 
-If the pipeline is executed with the `--fast` flag, only the output of eggNOG-mapper is used to determine the product of proteins that were labeled as hypothetical by the gene caller.
+If the gene caller labelled a protein as hypothetical, the first of these sources that has a usable match provides the product:
+
+1. UniFIRE recommended name
+2. InterPro Family (NCBIfam, then Pfam, then other member databases)
+3. UniRef90 cluster name
+4. InterPro Domain (NCBIfam, then Pfam, then other member databases)
+5. Member database match without an InterPro entry (NCBIfam, then Pfam, then others except SUPERFAMILY and Gene3D)
+6. UniRef50 cluster name
+7. InterPro Homologous superfamily, then SUPERFAMILY or Gene3D match without an InterPro entry
+8. eggNOG-mapper description
+
+When hypothetical proteins are searched against UniRef90 and UniRef50 with DIAMOND, a hit has to cover at least 80% of both the query and the cluster representative, have at least 50% identity to it and have an e-value of at most 1e-10 to be considered for functional transfer. When the product comes from UniRef, the cluster is added to `Dbxref` as `UniRef:<cluster accession>`, and the percent identity and query and subject coverage of the hit are reported in the `uniref_identity`, `uniref_qcov` and `uniref_scov` attributes. `UniRef:` entries, including those from Bakta, are moved from `Dbxref` to `Note` in the GFF for INSDC submission. The UniRef databases have been pre-filtered to remove all ProtNLM annotations.
+
+If the pipeline is executed with the `--fast` flag, InterProScan and UniFIRE are not run, so the product of proteins that were labelled as hypothetical by the gene caller comes from UniRef90, then UniRef50, then eggNOG-mapper.
 
 #### Detection of pseudogenes and spurious ORFs
 
