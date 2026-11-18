@@ -1,0 +1,5 @@
+##gff-version 3
+contig_1	proMGE	mobile_genetic_element	1500	2500	1000	.	.	ID=MGE_genome1_contig_1:1500-2500;mge=is_tn:1;genome_type=ACC;mge_type=non-nested;size=1000;n_genes=1;mgeR=dde_tnp_is66:1;name=ISLAND
+contig_1	.	gene	1501	2100	599	+	.	ID=contig_1_2;Parent=MGE_genome1_contig_1:1501-2100;cluster=contig_1_2;size=599;genome_type=ACC
+contig_2	proMGE	mobile_genetic_element	2000	6500	4500	+	.	ID=MGE_genome1_contig_2:3500-4500;mge=mi:1;genome_type=COR;mge_type=non-nested;size=4500;n_genes=4;mgeR=int_ctndot:1;name=ISLAND
+contig_4	proMGE	mobile_genetic_element	10000	20000	10000	+	.	ID=MGE_genome1_contig_4:10000-20000;mge=phage_like:1;genome_type=ACC;mge_type=non-nested;size=10000;n_genes=8;mgeR=phage_integrase:1;name=ISLAND

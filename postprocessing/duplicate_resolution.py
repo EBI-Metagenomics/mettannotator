@@ -165,29 +165,34 @@ def main(reference, target, outfile, species):
                             )
                             printed_stat += "No\tSource and replacement dicts have different lengths\n"
                         else:
-                            replacements, reverse, stats_dict, printed_stat = (
-                                resolve_duplicate(
-                                    dedupl_dict[base],
-                                    decision_dict,
-                                    replacements,
-                                    reverse,
-                                    stats_dict,
-                                    base,
-                                    printed_stat,
-                                )
+                            (
+                                replacements,
+                                reverse,
+                                stats_dict,
+                                printed_stat,
+                            ) = resolve_duplicate(
+                                dedupl_dict[base],
+                                decision_dict,
+                                replacements,
+                                reverse,
+                                stats_dict,
+                                base,
+                                printed_stat,
                             )
                             if "Yes" in printed_stat:
                                 replace = True
         if replace:
-            replacements, printed_stat, replacements_ids = (
-                try_to_remove_more_underscores(
-                    replacements,
-                    base,
-                    printed_stat,
-                    decision_dict,
-                    dedupl_dict[base],
-                    replacements_ids,
-                )
+            (
+                replacements,
+                printed_stat,
+                replacements_ids,
+            ) = try_to_remove_more_underscores(
+                replacements,
+                base,
+                printed_stat,
+                decision_dict,
+                dedupl_dict[base],
+                replacements_ids,
             )
         stats_out.write(printed_stat)
     print("replacement ids", replacements_ids)
