@@ -43,6 +43,9 @@ def modify_line(line):
     attributes_dict = dict(
         re.split(r"(?<!\\)=", item) for item in re.split(r"(?<!\\);", columns[8])
     )
+    # UniRef is not an INSDC db_xref database, so UniRef cross-references are moved into Note
+    attributes_dict = move_uniref_dbxref_to_note(attributes_dict)
+
     # Move all GO terms into Dbxref and deduplicate if needed
     attributes_dict = collect_go_terms(attributes_dict)
 
@@ -67,6 +70,9 @@ def modify_line(line):
         "drug_class": "drug_class",
         "drug_subclass": "drug_subclass",
         "eggNOG": "eggNOG",
+        "uniref_identity": "UniRef_identity",
+        "uniref_qcov": "UniRef_query_coverage",
+        "uniref_scov": "UniRef_subject_coverage",
         "substrate_dbcan-pul": "dbcan-PUL_substrate",
         "substrate_dbcan-sub": "dbcan-subfam_substrate",
         "uf_chebi": "UniFIRE_ChEBI",
@@ -102,6 +108,26 @@ def move_values_to_note(attributes_dict, attributes_to_move_to_note):
             else:
                 attributes_dict["Note"] = f"{reformatted_term}:{attributes_dict[term]}"
             attributes_dict.pop(term)
+    return attributes_dict
+
+
+def move_uniref_dbxref_to_note(attributes_dict):
+    if "Dbxref" not in attributes_dict:
+        return attributes_dict
+    dbxrefs = [x for x in attributes_dict["Dbxref"].split(",") if x]
+    uniref = [x for x in dbxrefs if x.startswith("UniRef:")]
+    if not uniref:
+        return attributes_dict
+    kept = [x for x in dbxrefs if not x.startswith("UniRef:")]
+    if kept:
+        attributes_dict["Dbxref"] = ",".join(kept)
+    else:
+        del attributes_dict["Dbxref"]
+    note = ",".join(f"UniRef_cluster:{x[len('UniRef:'):]}" for x in uniref)
+    if "Note" in attributes_dict:
+        attributes_dict["Note"] += f",{note}"
+    else:
+        attributes_dict["Note"] = note
     return attributes_dict
 
 
